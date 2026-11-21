@@ -1,12 +1,12 @@
 ---
-id: 0009-projection-gaps-wave-2
+id: 0010-projection-gaps-wave-2
 status: proposed
 milestone: M2
 owner: planner
 created: 2026-11-21
 ---
 
-# Decision 0009: Projection Gaps Found During Wave 2
+# Decision 0010: Projection Gaps Found During Wave 2
 
 ## Context
 Wave 2 sheets compile only what the server publishes (Rule 1, Rule 2). Review found five places where the frozen contracts or golden fixtures do not publish a value the sheets need. Workers correctly refused to fill the gaps on the client, because a derived or borrowed value would break zero client compute and proof-per-mark. This note lists the gaps for a planner bump. It edits no contract and no fixture.
