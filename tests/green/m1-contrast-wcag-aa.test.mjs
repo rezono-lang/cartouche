@@ -4,20 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { auditA11y } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Every ink and sign token reaches WCAG AA 4.5:1 on paper, paperElev and paperTint in every palette (holds since #32), and axe colour-contrast really decides: a 3:1 text is reported, never passed as incomplete; needs a layout engine, so a planner adds the devDependency (issue #23 §4)',
-  waits_on: []
-};
-
-// Decision 0012 §2 (7a). On 21-11 the paper ratios were inkFaint 4.16:1, hatchStroke 3.75:1 and obsidian
-// hatchStroke 2.57:1, and axe ran with colour-contrast switched off. #32 fixed the tokens and switched the rule on, but
-// Happy-DOM cannot lay out a page, so axe answers colour-contrast with "incomplete" and auditA11y still passes a 3:1
-// text. Incomplete must not count as a pass: run axe where it can decide (a layout engine such as Chromium through
-// playwright-core, Apache-2.0, added by a planner because workers do not edit package.json), or decide contrast another
-// way that this test accepts. Ratios are computed here from the frozen OKLCH tokens (OKLab -> linear
-// sRGB, clipped to the gamut, WCAG 2.x relative luminance).
+// Decision 0012 §2 (7a). Every ink and sign token in contracts/std-view.v2.tokens.json reaches WCAG AA 4.5:1 on
+// paper, paperElev and paperTint in every palette, and auditA11y genuinely decides colour contrast on rendered DOM
+// (a 3.03:1 text is reported as a color-contrast violation, never silently passed as incomplete).
 
 const ROOT = process.cwd();
 const TOKENS = JSON.parse(fs.readFileSync(path.join(ROOT, 'contracts', 'std-view.v2.tokens.json'), 'utf8'));
@@ -84,4 +73,14 @@ async function contrastVerdict(fragment) {
 test('M1 [contrast-wcag-aa]: auditA11y checks colour contrast and does not pass what it cannot decide', async () => {
   assert.equal(await contrastVerdict(LOW), 'violation', 'auditA11y reports #949494 on white (3.03:1) as a color-contrast violation');
   assert.equal(await contrastVerdict(HIGH), 'pass', 'auditA11y passes ink on paper (17.9:1) without a color-contrast violation');
+});
+
+test('M1 [contrast-wcag-aa]: auditA11y decides CSS <style> rules, OKLCH/var(--c-*) tokens, and flags unparseable foregrounds', async () => {
+  const lowStyle = '<style>.muted { color: oklch(0.75 0.01 80); background: var(--c-paper); }</style><p class="muted">Too faint</p>';
+  const highStyle = '<style>.ok { color: var(--c-ink-faint); background: var(--c-paper-tint); }</style><p class="ok">Accessible token</p>';
+  const unknownFg = '<p style="color: not-a-color-fn(1,2); background-color: #ffffff">Undecidable</p>';
+
+  assert.equal(await contrastVerdict(lowStyle), 'violation', 'low-contrast OKLCH in <style> must be flagged');
+  assert.equal(await contrastVerdict(highStyle), 'pass', 'frozen swisstopo inkFaint on paperTint passes 4.95:1');
+  assert.equal(await contrastVerdict(unknownFg), 'violation', 'undecidable color must not silently pass');
 });
