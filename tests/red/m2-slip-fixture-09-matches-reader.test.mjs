@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export const RED_META = {
   milestone: 'M2',
-  decision: 'decisions/0010-slip-reads-rezono-reader.md',
+  decision: 'decisions/0009-slip-reads-rezono-reader.md',
   summary: 'fixtures/09-slip-conformance.json equals what the ported model produces from the recorded reader answers for the same rows (lines, links, states, values, reasons, verbs, stops, folds), and renders with the same Rezono marks',
   waits_on: ['m2-slip-reads-rezono-reader']
 };
