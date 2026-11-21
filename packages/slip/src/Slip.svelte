@@ -2,6 +2,9 @@
   import { PALETTES, SIGNS, STD_VERBS, canonicalJson, paletteCss } from '../../reader-core/src/index.ts';
   import type { CartoucheSeal, PaletteName, RawCellInput, StdVerbSpec } from '../../reader-core/src/index.ts';
   import type { SlipModel, VerbKey } from './slip-controller.ts';
+  import SlipSeal from './SlipSeal.svelte';
+  import SlipUnserved from './SlipUnserved.svelte';
+  import SlipValueCell from './SlipValueCell.svelte';
 
   interface UnservedInfo {
     readonly code: string;
@@ -345,48 +348,10 @@
   <style>{themeCssText}</style>
 
   {#if isUnserved}
-    <div
-      class="slip-unserved"
-      data-part="unserved"
-      data-state="invalid"
-      data-reason={unserved?.code ?? 'publication_withdrawn'}
-      role="alert"
-    >
-      <h2>Publication Unserved</h2>
-      <p class="slip-unserved-code">{unserved?.code ?? 'publication_withdrawn'}</p>
-      {#if unserved?.reason_message_id}
-        <p class="slip-unserved-reason">{unserved.reason_message_id}</p>
-      {/if}
-      {#if unserved?.superseded_by}
-        <p class="slip-unserved-supersede">Superseded by: <code>{unserved.superseded_by}</code></p>
-      {/if}
-      {#if unserved?.withdrawn_by_decision_ref}
-        <p class="slip-unserved-decision">
-          Decision: <a href={`#${unserved.withdrawn_by_decision_ref}`} data-proof-ref={unserved.withdrawn_by_decision_ref}>{unserved.withdrawn_by_decision_ref}</a>
-        </p>
-      {/if}
-    </div>
+    <SlipUnserved {unserved} {httpStatus} />
   {:else}
     {#if seal}
-      <section
-        class="slip-seal"
-        data-part="seal"
-        data-trust-tier={seal.trustTier}
-        aria-label="Verification seal"
-      >
-        <div class="slip-seal-meta">
-          <span class="slip-manifest-hash" data-part="manifest-hash">{seal.manifestId}</span>
-          <span class="slip-seal-tier">{seal.trustTier}</span>
-          <span class="slip-seal-role">{seal.role}</span>
-        </div>
-        <ul class="slip-seal-checks" aria-label="Seal checks">
-          {#each effectiveSealChecks as chk (chk.id)}
-            <li data-check={chk.id} data-status={chk.status}>
-              {chk.label ?? chk.id}: {chk.status}
-            </li>
-          {/each}
-        </ul>
-      </section>
+      <SlipSeal {seal} checks={effectiveSealChecks} />
     {/if}
 
     {#if horizon && !horizon.complete}
@@ -506,40 +471,7 @@
                 </span>
               </td>
               <td>{line.relation}</td>
-              {#if line.cell.state === 'known'}
-                <td
-                  data-part="value"
-                  data-state="known"
-                  data-proof-ref={line.cell.proof_ref}
-                >
-                  {#if folded && activeSweepStop?.fold_display !== null}
-                    <del>{line.cell.display ?? ''}</del>
-                    <ins>{activeSweepStop?.fold_display ?? ''}</ins>
-                  {:else}
-                    {line.cell.display ?? ''}
-                  {/if}
-                </td>
-              {:else}
-                <td
-                  data-part="value"
-                  data-state={line.cell.state}
-                  data-reason={nonKnownReason(line.cell)}
-                  data-proof-ref={line.cell.proof_ref}
-                  data-completeness-ref={line.cell.state === 'absent' ? (line.cell.completeness_witness_ref ?? undefined) : undefined}
-                >
-                  <span
-                    class="cartouche-sign"
-                    role="img"
-                    aria-label={line.cell.state}
-                    data-sign={line.cell.state}
-                    data-proof-ref={line.cell.proof_ref}
-                    data-reason={nonKnownReason(line.cell)}
-                  >
-                    <span aria-hidden="true">{glyphForSign(line.cell.state)}</span>
-                  </span>
-                  <span>{nonKnownReason(line.cell)}</span>
-                </td>
-              {/if}
+              <SlipValueCell cell={line.cell} fold={folded ? (activeSweepStop?.fold_display ?? null) : null} />
               <td>
                 {#each lineVerbs as spec (spec.verb)}
                   <button
@@ -572,35 +504,7 @@
             <tr data-proof-ref={conformanceRow.result_cell.proof_ref}>
               <td>{conformanceRow.sentence_template ?? conformanceRow.rule_id}</td>
               <td></td>
-              {#if conformanceRow.result_cell.state === 'known'}
-                <td
-                  data-part="value"
-                  data-state="known"
-                  data-proof-ref={conformanceRow.result_cell.proof_ref}
-                >
-                  {conformanceRow.result_cell.display ?? ''}
-                </td>
-              {:else}
-                <td
-                  data-part="value"
-                  data-state={conformanceRow.result_cell.state}
-                  data-reason={nonKnownReason(conformanceRow.result_cell)}
-                  data-proof-ref={conformanceRow.result_cell.proof_ref}
-                  data-completeness-ref={conformanceRow.result_cell.state === 'absent' ? (conformanceRow.result_cell.completeness_witness_ref ?? undefined) : undefined}
-                >
-                  <span
-                    class="cartouche-sign"
-                    role="img"
-                    aria-label={conformanceRow.result_cell.state}
-                    data-sign={conformanceRow.result_cell.state}
-                    data-proof-ref={conformanceRow.result_cell.proof_ref}
-                    data-reason={nonKnownReason(conformanceRow.result_cell)}
-                  >
-                    <span aria-hidden="true">{glyphForSign(conformanceRow.result_cell.state)}</span>
-                  </span>
-                  <span>{nonKnownReason(conformanceRow.result_cell)}</span>
-                </td>
-              {/if}
+              <SlipValueCell cell={conformanceRow.result_cell} />
             </tr>
           {/if}
           {#each calcSteps as step (step.path)}
@@ -615,35 +519,7 @@
                   <span aria-hidden="true">{glyphForSign(step.sign)}</span>
                 </span>
               </td>
-              {#if step.cell.state === 'known'}
-                <td
-                  data-part="value"
-                  data-state="known"
-                  data-proof-ref={step.cell.proof_ref}
-                >
-                  {step.cell.display ?? ''}
-                </td>
-              {:else}
-                <td
-                  data-part="value"
-                  data-state={step.cell.state}
-                  data-reason={nonKnownReason(step.cell)}
-                  data-proof-ref={step.cell.proof_ref}
-                  data-completeness-ref={step.cell.state === 'absent' ? (step.cell.completeness_witness_ref ?? undefined) : undefined}
-                >
-                  <span
-                    class="cartouche-sign"
-                    role="img"
-                    aria-label={step.cell.state}
-                    data-sign={step.cell.state}
-                    data-proof-ref={step.cell.proof_ref}
-                    data-reason={nonKnownReason(step.cell)}
-                  >
-                    <span aria-hidden="true">{glyphForSign(step.cell.state)}</span>
-                  </span>
-                  <span>{nonKnownReason(step.cell)}</span>
-                </td>
-              {/if}
+              <SlipValueCell cell={step.cell} />
             </tr>
           {/each}
         </tbody>
