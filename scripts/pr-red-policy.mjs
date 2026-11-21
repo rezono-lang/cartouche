@@ -31,9 +31,17 @@ const PROTECTED_POLICY_PATHS = new Set([
   'scripts/pr-red-policy.mjs',
   'scripts/svelte-test-harness.mjs',
   'scripts/leak-and-domain-check.mjs',
+  'scripts/fast-check.mjs',
   'package.json',
+  'package-lock.json',
   '.github/workflows/red-policy.yml'
 ]);
+
+const PROTECTED_POLICY_PREFIXES = ['tests/support/'];
+
+function isProtectedPolicyPath(filePath) {
+  return PROTECTED_POLICY_PATHS.has(filePath) || PROTECTED_POLICY_PREFIXES.some((p) => filePath.startsWith(p));
+}
 
 export function evaluatePrPolicy(changes, labels = []) {
   const hasPlanner = labels.map((l) => l.toLowerCase()).includes('planner');
@@ -57,7 +65,7 @@ export function evaluatePrPolicy(changes, labels = []) {
       );
     }
 
-    if (PROTECTED_POLICY_PATHS.has(ch.path) && !hasPlanner) {
+    if (isProtectedPolicyPath(ch.path) && !hasPlanner) {
       violations.push(
         `Protected guard/policy file "${ch.path}" cannot be modified without the "planner" label.`
       );
