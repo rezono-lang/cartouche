@@ -13,6 +13,7 @@ export * from './bitemporal-model.ts';
 export * from './bitemporal-gate.ts';
 export * from './coverage-sheet.ts';
 export * from './question-desk.ts';
+export * from './try-kits.ts';
 export * from './monge-model.ts';
 export * from './i18n-mf2.ts';
 export { escapeXml } from './flow-split-svg.ts';

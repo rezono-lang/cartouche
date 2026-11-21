@@ -1,0 +1,68 @@
+{
+  "catalog_version": "cartouche.try-kits/1",
+  "kits": [
+    {
+      "id": "kit-allowance",
+      "title": {
+        "en": "Healthcare Allowance (Bitemporal Slice)",
+        "nl": "Zorgtoeslag (Bitemporele Snede)"
+      },
+      "fixturePath": "fixtures/11-zorgtoeslag-bitemporal-gate-answers.json",
+      "source": {
+        "repository": "rezono-lang/rezono",
+        "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+        "pack": "examples/zorgtoeslag-slice"
+      },
+      "baseDisplay": "13500",
+      "supposeDisplay": "13600",
+      "turnStatus": null,
+      "baseProofRef": "m-2/calc__allowance/ann",
+      "supposeProofRef": "m-4/calc__allowance/ann",
+      "baseSlipHref": "#slip/calc__allowance/ann?pin=m-2",
+      "supposeSlipHref": "#slip/calc__allowance/ann?pin=m-4",
+      "hasPublishedTurningPoint": false
+    },
+    {
+      "id": "kit-sweep",
+      "title": {
+        "en": "Tax Return Threshold Sweep",
+        "nl": "Belastingaangifte Drempelverkenning"
+      },
+      "fixturePath": "fixtures/10-slip-reader-answers.json",
+      "source": {
+        "repository": "rezono-lang/rezono",
+        "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+        "pack": "tests/fixtures/slip"
+      },
+      "baseDisplay": "12",
+      "supposeDisplay": "10",
+      "turnStatus": "turns",
+      "baseProofRef": "m-2/flagged/item-a/12",
+      "supposeProofRef": "v-item_amount-02-3/flagged/item-a/10",
+      "baseSlipHref": "#slip/flagged/item-a?pin=m-2",
+      "supposeSlipHref": "#slip/flagged/item-a?pin=v-item_amount-02-3",
+      "hasPublishedTurningPoint": true
+    },
+    {
+      "id": "kit-platform",
+      "title": {
+        "en": "Platform Capped Scenario",
+        "nl": "Platform Begrensd Scenario"
+      },
+      "fixturePath": "fixtures/10-slip-reader-answers.json",
+      "source": {
+        "repository": "rezono-lang/rezono",
+        "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+        "pack": "tests/fixtures/slip"
+      },
+      "baseDisplay": "12",
+      "supposeDisplay": "0",
+      "turnStatus": null,
+      "baseProofRef": "m-2/calc__capped_amount/item-a",
+      "supposeProofRef": "v-item_amount-00-3/calc__capped_amount/item-a",
+      "baseSlipHref": "#slip/calc__capped_amount/item-a?pin=m-2",
+      "supposeSlipHref": "#slip/calc__capped_amount/item-a?pin=v-item_amount-00-3",
+      "hasPublishedTurningPoint": false
+    }
+  ]
+}
