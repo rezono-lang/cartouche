@@ -1,7 +1,7 @@
 name: Rezono Reader Parity (slip)
 
 # Decision 0009, point 3: record what Rezono's local reader answers for its slip fixture, at the Rezono commit
-# pinned in packages/slip/rezono-source.json, and compare it with fixtures/10-slip-reader-answers.json.
+# pinned in contracts/rezono-pin.json, and compare it with fixtures/10-slip-reader-answers.json.
 # Rezono's publisher and reader run here, on a GitHub-hosted runner, from that public commit, with no secrets and
 # a read-only token. A difference opens an issue and fails the run; the fixture is re-recorded only in a pull
 # request that names the Rezono change behind the difference.
@@ -34,9 +34,9 @@ jobs:
         id: pin
         run: |
           set -euo pipefail
-          commit=$(jq -r .commit cartouche/packages/slip/rezono-source.json)
+          commit=$(jq -r .pinned_commit cartouche/contracts/rezono-pin.json)
           if ! [[ "$commit" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error::packages/slip/rezono-source.json must pin a full 40-character commit, got '$commit'"
+            echo "::error::contracts/rezono-pin.json must pin a full 40-character commit, got '$commit'"
             exit 1
           fi
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
