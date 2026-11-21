@@ -1,7 +1,7 @@
 {
   "fixture_id": "10-slip-reader-answers",
   "manifest": {
-    "id": "sha256:0000000000000000000000000000000000000000000000000000000000000a01",
+    "id": "sha256:eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df",
     "epoch": 1,
     "knowledge_time": "2026-01-01T00:00:00Z",
     "role": "reader",
@@ -14,242 +14,15 @@
     "commit": "f15c89d665e2815b02e12665203a9d48dd6abc40",
     "pack": "tests/fixtures/slip",
     "stores": {
-      "main": "tests/slip/slip_support.py publish_main: epoch 1, manifest m-1, roles reader and summary",
-      "sweeps": "tests/slip/slip_support.py publish_sweeps, then drop_variant of v-item_amount-03 (as test_stops_only does): manifest m-2"
+      "main": "tests/slip/slip_support.py publish_main",
+      "sweeps": "tests/slip/slip_support.py publish_sweeps, then drop_variant(v-item_amount-03-3)"
     },
-    "how": "Derived by reading the local reader (edge/gate/src/local.ts and what it calls), the publisher and the contracts at that commit, for exactly the requests src/model.ts sends. Not produced by running Rezono. Each answer keeps the reader's status and body.",
-    "placeholders": [
-      "definition_sha256, manifest_sha256 and the compiled bundle sha256 in both heads are well-formed placeholders",
-      "the knowledge_time of m-2 is a placeholder: the publisher takes the commit time of the test repository"
-    ],
-    "uncertain": [
-      "stratum numbers of witness premises",
-      "whether reach from group [group-a] lists the may_read rows of both roles",
-      "calc witness definition/version for item-c, and source locators on base rows",
-      "the std-access module name and enum order in the bundle; the four rule-less std-access relations shown to summary",
-      "red check names at stop 6, and the green status of rezono:origins (a warning there would make green stops warning)"
-    ],
-    "regenerate": "Replace with answers recorded from Rezono's local reader at the pinned commit when that runs in CI (Decision 0009, point 3)."
+    "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the commit by .github/workflows/rezono-reader-parity.yml: every request packages/slip/src/model.ts sends for the slip tests' pages, with the reader's status and body as served. Git dates of the sweeps repository fixed at 2026-01-01T00:00:00Z.",
+    "recorded_by": "https://github.com/rezono-lang/cartouche/actions/runs/44886156416"
   },
   "reader_answers": {
     "main": {
       "reader": {
-        "/slip/head": {
-          "status": 200,
-          "body": {
-            "id": "m-1",
-            "epoch": 1,
-            "knowledge_time": "2026-01-01T00:00:00Z",
-            "access_semantics": 2,
-            "definition_sha256": "0000000000000000000000000000000000000000000000000000000000000d01",
-            "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000a01",
-            "witness_check": "green",
-            "compiled": [
-              {
-                "file": "bundle/schema-bundle.json",
-                "sha256": "0000000000000000000000000000000000000000000000000000000000000b01"
-              }
-            ],
-            "snapshots": [
-              {
-                "relation": "busy",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "calc__as_of",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "calc__capped_amount",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "capability",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "flagged",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "group",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "group_size",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "held",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold__item",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__amount",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__group",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link__head",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link__tail",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "linked",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_execute",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_propose",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_publish",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_read",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_read_full",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_review",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "recorded_amount",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role__capability",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role__title",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "too_large",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              }
-            ]
-          }
-        },
         "/slip/bundle?m=m-1": {
           "status": 200,
           "body": {
@@ -2245,15 +2018,627 @@
             ]
           }
         },
-        "/slip/m-1/rows/flagged?limit=2": {
+        "/slip/head": {
           "status": 200,
           "body": {
-            "rows": [
+            "id": "m-1",
+            "epoch": 1,
+            "knowledge_time": "2026-01-01T00:00:00Z",
+            "access_semantics": 2,
+            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
+            "manifest_sha256": "eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df",
+            "witness_check": "green",
+            "compiled": [
               {
-                "key": [
-                  "item-a",
-                  "12"
+                "file": "bundle/schema-bundle.json",
+                "sha256": "2c1194a0977577331b063834ed2199a7165a4f23a42509c4d38044a5eaea2d4f"
+              }
+            ],
+            "snapshots": [
+              {
+                "relation": "busy",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__as_of",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__capped_amount",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "capability",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "flagged",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group_size",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "held",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold__item",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__amount",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__group",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link__head",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link__tail",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "linked",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_execute",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_propose",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_publish",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_read",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_read_full",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_review",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "recorded_amount",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role__capability",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role__title",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "too_large",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              }
+            ]
+          }
+        },
+        "/slip/m-1/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
+          "status": 501,
+          "body": {
+            "error": "question unavailable for this publication"
+          }
+        },
+        "/slip/m-1/ask/grounds?relation=busy&key=%5B%22group-a%22%5D": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "grounds",
+            "manifest_id": "m-1",
+            "start": {
+              "relation": "busy",
+              "key": "[\"group-a\"]"
+            },
+            "nodes": [
+              {
+                "relation": "busy",
+                "key": "[\"group-a\"]",
+                "distance": 0
+              },
+              {
+                "relation": "group_size",
+                "key": "[\"group-a\",\"2\"]",
+                "distance": 1
+              },
+              {
+                "relation": "group",
+                "key": "[\"group-a\"]",
+                "distance": 2,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
                 ]
+              },
+              {
+                "relation": "item__group",
+                "key": "[\"item-a\",\"group-a\"]",
+                "distance": 2,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
+                ]
+              },
+              {
+                "relation": "item__group",
+                "key": "[\"item-b\",\"group-a\"]",
+                "distance": 2,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
+                ]
+              }
+            ],
+            "steps": [
+              {
+                "conclusion": {
+                  "relation": "busy",
+                  "key": "[\"group-a\"]"
+                },
+                "premise": {
+                  "relation": "group_size",
+                  "key": "[\"group-a\",\"2\"]"
+                },
+                "how": "positive",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "group_size",
+                  "key": "[\"group-a\",\"2\"]"
+                },
+                "premise": {
+                  "relation": "item__group",
+                  "key": "[\"item-a\",\"group-a\"]"
+                },
+                "how": "contributes",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "group_size",
+                  "key": "[\"group-a\",\"2\"]"
+                },
+                "premise": {
+                  "relation": "item__group",
+                  "key": "[\"item-b\",\"group-a\"]"
+                },
+                "how": "contributes",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "group_size",
+                  "key": "[\"group-a\",\"2\"]"
+                },
+                "premise": {
+                  "relation": "group",
+                  "key": "[\"group-a\"]"
+                },
+                "how": "positive",
+                "position": 0
+              }
+            ],
+            "witnesses": [
+              {
+                "bindings": [
+                  {
+                    "value": "group-a",
+                    "variable": "?g"
+                  },
+                  {
+                    "value": "2",
+                    "variable": "?n"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"group-a\"]",
+                  "relation": "busy"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"group-a\",\"2\"]",
+                      "relation": "group_size"
+                    },
+                    "stratum": 1
+                  }
+                ],
+                "rule_id": "busy"
+              },
+              {
+                "aggregates": [
+                  {
+                    "contributors_sha256": "cadff0a6efe5a68e759971863e6a85ef14478a29d7f700e8201db23b051e055d",
+                    "count": 2,
+                    "group_key": "[\"group-a\"]",
+                    "position": 0,
+                    "relation": "item__group",
+                    "result": "known:2"
+                  }
+                ],
+                "bindings": [
+                  {
+                    "value": "group-a",
+                    "variable": "?g"
+                  },
+                  {
+                    "value": "2",
+                    "variable": "?n"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"group-a\",\"2\"]",
+                  "relation": "group_size"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"group-a\"]",
+                      "relation": "group"
+                    },
+                    "stratum": 0
+                  }
+                ],
+                "rule_id": "group_size"
+              }
+            ]
+          }
+        },
+        "/slip/m-1/ask/grounds?relation=calc__capped_amount&key=%5B%22item-a%22%2C%2212%22%2C%22known%22%2C%22%22%5D": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "grounds",
+            "manifest_id": "m-1",
+            "start": {
+              "relation": "calc__capped_amount",
+              "key": "[\"item-a\",\"12\",\"known\",\"\"]"
+            },
+            "nodes": [
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 1
+              },
+              {
+                "relation": "item",
+                "key": "[\"item-a\"]",
+                "distance": 2,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
+                ]
+              },
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 2,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
+                ]
+              }
+            ],
+            "steps": [
+              {
+                "conclusion": {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]"
+                },
+                "premise": {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "how": "positive",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "premise": {
+                  "relation": "item",
+                  "key": "[\"item-a\"]"
+                },
+                "how": "positive",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "premise": {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "how": "positive",
+                "position": 1
+              }
+            ],
+            "witnesses": [
+              {
+                "bindings": [
+                  {
+                    "value": "12",
+                    "variable": "?a"
+                  },
+                  {
+                    "value": "item-a",
+                    "variable": "?i"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"item-a\",\"12\"]",
+                  "relation": "recorded_amount"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"item-a\"]",
+                      "relation": "item"
+                    },
+                    "stratum": 0
+                  },
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"item-a\",\"12\"]",
+                      "relation": "item__amount"
+                    },
+                    "stratum": 0
+                  }
+                ],
+                "rule_id": "recorded_amount"
+              }
+            ],
+            "calc_witnesses": [
+              {
+                "conclusion": {
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                  "relation": "calc__capped_amount"
+                },
+                "definition": "at_most_twenty",
+                "known_at": "2026-01-01",
+                "premises": [
+                  {
+                    "key": "[\"item-a\",\"12\"]",
+                    "relation": "recorded_amount"
+                  }
+                ],
+                "reads": [
+                  "calc__as_of",
+                  "recorded_amount"
+                ],
+                "reason": "",
+                "rule": "capped_amount",
+                "state": "known",
+                "steps": [
+                  {
+                    "op": "min",
+                    "path": "at_most_twenty/value",
+                    "reason": "",
+                    "state": "known",
+                    "value": "12"
+                  },
+                  {
+                    "op": "fact",
+                    "path": "at_most_twenty/value/0",
+                    "reason": "",
+                    "ref": "recorded_amount.amount",
+                    "relation": "recorded_amount",
+                    "state": "known",
+                    "value": "12"
+                  }
+                ],
+                "valid_at": "2026-01-01",
+                "value": "12",
+                "version": "v1"
+              }
+            ]
+          }
+        },
+        "/slip/m-1/ask/grounds?relation=calc__capped_amount&key=%5B%22item-c%22%2C%22%22%2C%22unknown%22%2C%22fact%20recorded_amount.amount%20is%20missing%22%5D": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "grounds",
+            "manifest_id": "m-1",
+            "start": {
+              "relation": "calc__capped_amount",
+              "key": "[\"item-c\",\"\",\"unknown\",\"fact recorded_amount.amount is missing\"]"
+            },
+            "nodes": [
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-c\",\"\",\"unknown\",\"fact recorded_amount.amount is missing\"]",
+                "distance": 0
+              }
+            ],
+            "steps": [],
+            "witnesses": [],
+            "calc_witnesses": [
+              {
+                "conclusion": {
+                  "key": "[\"item-c\",\"\",\"unknown\",\"fact recorded_amount.amount is missing\"]",
+                  "relation": "calc__capped_amount"
+                },
+                "definition": "at_most_twenty",
+                "known_at": "2026-01-01",
+                "premises": [],
+                "reads": [
+                  "calc__as_of",
+                  "recorded_amount"
+                ],
+                "reason": "fact recorded_amount.amount is missing",
+                "rule": "capped_amount",
+                "state": "unknown",
+                "steps": [
+                  {
+                    "op": "min",
+                    "path": "at_most_twenty/value",
+                    "reason": "fact recorded_amount.amount is missing",
+                    "state": "unknown",
+                    "value": ""
+                  },
+                  {
+                    "op": "fact",
+                    "path": "at_most_twenty/value/0",
+                    "reason": "fact recorded_amount.amount is missing",
+                    "ref": "recorded_amount.amount",
+                    "relation": "recorded_amount",
+                    "state": "unknown",
+                    "value": ""
+                  }
+                ],
+                "valid_at": "2026-01-01",
+                "value": "",
+                "version": "v1"
               }
             ]
           }
@@ -2357,327 +2742,10 @@
             ]
           }
         },
-        "/slip/m-1/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
-          "status": 501,
-          "body": {
-            "error": "question unavailable for this publication"
-          }
-        },
-        "/slip/m-1/ask/grounds?relation=item__amount&key=%5B%22item-a%22%2C%2212%22%5D": {
+        "/slip/m-1/ask/grounds?relation=group&key=%5B%22group-a%22%5D": {
           "status": 404,
           "body": {
             "error": "not found"
-          }
-        },
-        "/slip/m-1/ask/reach?relation=item__amount&key=%5B%22item-a%22%2C%2212%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "reach",
-            "manifest_id": "m-1",
-            "start": {
-              "relation": "item__amount",
-              "key": "[\"item-a\",\"12\"]"
-            },
-            "nodes": [
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 0,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              },
-              {
-                "relation": "flagged",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 1
-              },
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 1
-              },
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                "distance": 2
-              }
-            ],
-            "steps": [
-              {
-                "conclusion": {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]"
-                },
-                "premise": {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "how": "positive",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "premise": {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "how": "positive",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "premise": {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "how": "positive",
-                "position": 1
-              }
-            ],
-            "witnesses": [
-              {
-                "bindings": [
-                  {
-                    "value": "12",
-                    "variable": "?a"
-                  },
-                  {
-                    "value": "item-a",
-                    "variable": "?i"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"item-a\",\"12\"]",
-                  "relation": "flagged"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"item-a\",\"12\"]",
-                      "relation": "item__amount"
-                    },
-                    "stratum": 0
-                  },
-                  {
-                    "polarity": "negative",
-                    "row": {
-                      "key": "[\"item-a\"]",
-                      "relation": "held"
-                    },
-                    "stratum": 1
-                  }
-                ],
-                "rule_id": "flagged"
-              },
-              {
-                "bindings": [
-                  {
-                    "value": "12",
-                    "variable": "?a"
-                  },
-                  {
-                    "value": "item-a",
-                    "variable": "?i"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"item-a\",\"12\"]",
-                  "relation": "recorded_amount"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"item-a\"]",
-                      "relation": "item"
-                    },
-                    "stratum": 0
-                  },
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"item-a\",\"12\"]",
-                      "relation": "item__amount"
-                    },
-                    "stratum": 0
-                  }
-                ],
-                "rule_id": "recorded_amount"
-              }
-            ],
-            "calc_witnesses": [
-              {
-                "conclusion": {
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                  "relation": "calc__capped_amount"
-                },
-                "definition": "at_most_twenty",
-                "known_at": "2026-01-01",
-                "premises": [
-                  {
-                    "key": "[\"item-a\",\"12\"]",
-                    "relation": "recorded_amount"
-                  }
-                ],
-                "reads": [
-                  "calc__as_of",
-                  "recorded_amount"
-                ],
-                "reason": "",
-                "rule": "capped_amount",
-                "state": "known",
-                "steps": [
-                  {
-                    "op": "min",
-                    "path": "at_most_twenty/value",
-                    "reason": "",
-                    "state": "known",
-                    "value": "12"
-                  },
-                  {
-                    "op": "fact",
-                    "path": "at_most_twenty/value/0",
-                    "reason": "",
-                    "ref": "recorded_amount.amount",
-                    "relation": "recorded_amount",
-                    "state": "known",
-                    "value": "12"
-                  }
-                ],
-                "valid_at": "2026-01-01",
-                "value": "12",
-                "version": "v1"
-              }
-            ]
-          }
-        },
-        "/slip/sweeps?m=m-1": {
-          "status": 200,
-          "body": {
-            "manifest_id": "m-1",
-            "sweeps": [
-              {
-                "name": "item_amount",
-                "cell": {
-                  "kind": "item",
-                  "id": "item-a",
-                  "slot": "amount"
-                },
-                "min": "0",
-                "max": "30",
-                "step": "5",
-                "cells": [
-                  {
-                    "index": 0,
-                    "value": "0",
-                    "status": "not_computed"
-                  },
-                  {
-                    "index": 1,
-                    "value": "5",
-                    "status": "not_computed"
-                  },
-                  {
-                    "index": 2,
-                    "value": "10",
-                    "status": "not_computed"
-                  },
-                  {
-                    "index": 3,
-                    "value": "15",
-                    "status": "not_computed"
-                  },
-                  {
-                    "index": 4,
-                    "value": "20",
-                    "status": "not_computed"
-                  },
-                  {
-                    "index": 5,
-                    "value": "25",
-                    "status": "not_computed"
-                  },
-                  {
-                    "index": 6,
-                    "value": "30",
-                    "status": "not_computed"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "/slip/m-1/ask/sweep?sweep=item_amount&relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "sweep",
-            "manifest_id": "m-1",
-            "start": {
-              "relation": "flagged",
-              "key": "[\"item-a\",\"12\"]"
-            },
-            "delta": {
-              "kind": "sweep",
-              "id": "item_amount"
-            },
-            "nodes": [],
-            "series": [
-              {
-                "index": 0,
-                "value": "0",
-                "status": "not_computed"
-              },
-              {
-                "index": 1,
-                "value": "5",
-                "status": "not_computed",
-                "turn": "unknown"
-              },
-              {
-                "index": 2,
-                "value": "10",
-                "status": "not_computed",
-                "turn": "unknown"
-              },
-              {
-                "index": 3,
-                "value": "15",
-                "status": "not_computed",
-                "turn": "unknown"
-              },
-              {
-                "index": 4,
-                "value": "20",
-                "status": "not_computed",
-                "turn": "unknown"
-              },
-              {
-                "index": 5,
-                "value": "25",
-                "status": "not_computed",
-                "turn": "unknown"
-              },
-              {
-                "index": 6,
-                "value": "30",
-                "status": "not_computed",
-                "turn": "unknown"
-              }
-            ]
           }
         },
         "/slip/m-1/ask/grounds?relation=group_size&key=%5B%22group-a%22%2C%222%22%5D": {
@@ -2812,7 +2880,131 @@
             ]
           }
         },
-        "/slip/m-1/ask/grounds?relation=group&key=%5B%22group-a%22%5D": {
+        "/slip/m-1/ask/grounds?relation=item__amount&key=%5B%22item-a%22%2C%2212%22%5D": {
+          "status": 404,
+          "body": {
+            "error": "not found"
+          }
+        },
+        "/slip/m-1/ask/grounds?relation=item__group&key=%5B%22item-a%22%2C%22group-a%22%5D": {
+          "status": 404,
+          "body": {
+            "error": "not found"
+          }
+        },
+        "/slip/m-1/ask/grounds?relation=item__group&key=%5B%22item-b%22%2C%22group-a%22%5D": {
+          "status": 404,
+          "body": {
+            "error": "not found"
+          }
+        },
+        "/slip/m-1/ask/grounds?relation=recorded_amount&key=%5B%22item-a%22%2C%2212%22%5D": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "grounds",
+            "manifest_id": "m-1",
+            "start": {
+              "relation": "recorded_amount",
+              "key": "[\"item-a\",\"12\"]"
+            },
+            "nodes": [
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 0
+              },
+              {
+                "relation": "item",
+                "key": "[\"item-a\"]",
+                "distance": 1,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
+                ]
+              },
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 1,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
+                ]
+              }
+            ],
+            "steps": [
+              {
+                "conclusion": {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "premise": {
+                  "relation": "item",
+                  "key": "[\"item-a\"]"
+                },
+                "how": "positive",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "premise": {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "how": "positive",
+                "position": 1
+              }
+            ],
+            "witnesses": [
+              {
+                "bindings": [
+                  {
+                    "value": "12",
+                    "variable": "?a"
+                  },
+                  {
+                    "value": "item-a",
+                    "variable": "?i"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"item-a\",\"12\"]",
+                  "relation": "recorded_amount"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"item-a\"]",
+                      "relation": "item"
+                    },
+                    "stratum": 0
+                  },
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"item-a\",\"12\"]",
+                      "relation": "item__amount"
+                    },
+                    "stratum": 0
+                  }
+                ],
+                "rule_id": "recorded_amount"
+              }
+            ]
+          }
+        },
+        "/slip/m-1/ask/grounds?relation=recorded_amount&key=%5B%22item-c%22%5D": {
           "status": 404,
           "body": {
             "error": "not found"
@@ -3050,10 +3242,303 @@
             ]
           }
         },
-        "/slip/m-1/ask/grounds?relation=item__group&key=%5B%22item-a%22%2C%22group-a%22%5D": {
-          "status": 404,
+        "/slip/m-1/ask/reach?relation=group_size&key=%5B%22group-a%22%2C%222%22%5D": {
+          "status": 200,
           "body": {
-            "error": "not found"
+            "format": "rezono.answer/1",
+            "question": "reach",
+            "manifest_id": "m-1",
+            "start": {
+              "relation": "group_size",
+              "key": "[\"group-a\",\"2\"]"
+            },
+            "nodes": [
+              {
+                "relation": "group_size",
+                "key": "[\"group-a\",\"2\"]",
+                "distance": 0
+              },
+              {
+                "relation": "busy",
+                "key": "[\"group-a\"]",
+                "distance": 1
+              }
+            ],
+            "steps": [
+              {
+                "conclusion": {
+                  "relation": "busy",
+                  "key": "[\"group-a\"]"
+                },
+                "premise": {
+                  "relation": "group_size",
+                  "key": "[\"group-a\",\"2\"]"
+                },
+                "how": "positive",
+                "position": 0
+              }
+            ],
+            "witnesses": [
+              {
+                "aggregates": [
+                  {
+                    "contributors_sha256": "cadff0a6efe5a68e759971863e6a85ef14478a29d7f700e8201db23b051e055d",
+                    "count": 2,
+                    "group_key": "[\"group-a\"]",
+                    "position": 0,
+                    "relation": "item__group",
+                    "result": "known:2"
+                  }
+                ],
+                "bindings": [
+                  {
+                    "value": "group-a",
+                    "variable": "?g"
+                  },
+                  {
+                    "value": "2",
+                    "variable": "?n"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"group-a\",\"2\"]",
+                  "relation": "group_size"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"group-a\"]",
+                      "relation": "group"
+                    },
+                    "stratum": 0
+                  }
+                ],
+                "rule_id": "group_size"
+              },
+              {
+                "bindings": [
+                  {
+                    "value": "group-a",
+                    "variable": "?g"
+                  },
+                  {
+                    "value": "2",
+                    "variable": "?n"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"group-a\"]",
+                  "relation": "busy"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"group-a\",\"2\"]",
+                      "relation": "group_size"
+                    },
+                    "stratum": 1
+                  }
+                ],
+                "rule_id": "busy"
+              }
+            ]
+          }
+        },
+        "/slip/m-1/ask/reach?relation=item__amount&key=%5B%22item-a%22%2C%2212%22%5D": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "reach",
+            "manifest_id": "m-1",
+            "start": {
+              "relation": "item__amount",
+              "key": "[\"item-a\",\"12\"]"
+            },
+            "nodes": [
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 0,
+                "sources": [
+                  {
+                    "kind": "synthetic",
+                    "name": "tests/fixtures/slip/README.md",
+                    "position": "facts/rows.yaml"
+                  }
+                ]
+              },
+              {
+                "relation": "flagged",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 1
+              },
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 1
+              },
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                "distance": 2
+              }
+            ],
+            "steps": [
+              {
+                "conclusion": {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]"
+                },
+                "premise": {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "how": "positive",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "premise": {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "how": "positive",
+                "position": 0
+              },
+              {
+                "conclusion": {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "premise": {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"12\"]"
+                },
+                "how": "positive",
+                "position": 1
+              }
+            ],
+            "witnesses": [
+              {
+                "bindings": [
+                  {
+                    "value": "12",
+                    "variable": "?a"
+                  },
+                  {
+                    "value": "item-a",
+                    "variable": "?i"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"item-a\",\"12\"]",
+                  "relation": "flagged"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"item-a\",\"12\"]",
+                      "relation": "item__amount"
+                    },
+                    "stratum": 0
+                  },
+                  {
+                    "polarity": "negative",
+                    "row": {
+                      "key": "[\"item-a\"]",
+                      "relation": "held"
+                    },
+                    "stratum": 1
+                  }
+                ],
+                "rule_id": "flagged"
+              },
+              {
+                "bindings": [
+                  {
+                    "value": "12",
+                    "variable": "?a"
+                  },
+                  {
+                    "value": "item-a",
+                    "variable": "?i"
+                  }
+                ],
+                "conclusion": {
+                  "key": "[\"item-a\",\"12\"]",
+                  "relation": "recorded_amount"
+                },
+                "premises": [
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"item-a\"]",
+                      "relation": "item"
+                    },
+                    "stratum": 0
+                  },
+                  {
+                    "polarity": "positive",
+                    "row": {
+                      "key": "[\"item-a\",\"12\"]",
+                      "relation": "item__amount"
+                    },
+                    "stratum": 0
+                  }
+                ],
+                "rule_id": "recorded_amount"
+              }
+            ],
+            "calc_witnesses": [
+              {
+                "conclusion": {
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                  "relation": "calc__capped_amount"
+                },
+                "definition": "at_most_twenty",
+                "known_at": "2026-01-01",
+                "premises": [
+                  {
+                    "key": "[\"item-a\",\"12\"]",
+                    "relation": "recorded_amount"
+                  }
+                ],
+                "reads": [
+                  "calc__as_of",
+                  "recorded_amount"
+                ],
+                "reason": "",
+                "rule": "capped_amount",
+                "state": "known",
+                "steps": [
+                  {
+                    "op": "min",
+                    "path": "at_most_twenty/value",
+                    "reason": "",
+                    "state": "known",
+                    "value": "12"
+                  },
+                  {
+                    "op": "fact",
+                    "path": "at_most_twenty/value/0",
+                    "reason": "",
+                    "ref": "recorded_amount.amount",
+                    "relation": "recorded_amount",
+                    "state": "known",
+                    "value": "12"
+                  }
+                ],
+                "valid_at": "2026-01-01",
+                "value": "12",
+                "version": "v1"
+              }
+            ]
           }
         },
         "/slip/m-1/ask/reach?relation=item__group&key=%5B%22item-a%22%2C%22group-a%22%5D": {
@@ -3184,12 +3669,6 @@
             ]
           }
         },
-        "/slip/m-1/ask/grounds?relation=item__group&key=%5B%22item-b%22%2C%22group-a%22%5D": {
-          "status": 404,
-          "body": {
-            "error": "not found"
-          }
-        },
         "/slip/m-1/ask/reach?relation=item__group&key=%5B%22item-b%22%2C%22group-a%22%5D": {
           "status": 200,
           "body": {
@@ -3318,559 +3797,6 @@
             ]
           }
         },
-        "/slip/m-1/ask/grounds?relation=busy&key=%5B%22group-a%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "grounds",
-            "manifest_id": "m-1",
-            "start": {
-              "relation": "busy",
-              "key": "[\"group-a\"]"
-            },
-            "nodes": [
-              {
-                "relation": "busy",
-                "key": "[\"group-a\"]",
-                "distance": 0
-              },
-              {
-                "relation": "group_size",
-                "key": "[\"group-a\",\"2\"]",
-                "distance": 1
-              },
-              {
-                "relation": "group",
-                "key": "[\"group-a\"]",
-                "distance": 2,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              },
-              {
-                "relation": "item__group",
-                "key": "[\"item-a\",\"group-a\"]",
-                "distance": 2,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              },
-              {
-                "relation": "item__group",
-                "key": "[\"item-b\",\"group-a\"]",
-                "distance": 2,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              }
-            ],
-            "steps": [
-              {
-                "conclusion": {
-                  "relation": "busy",
-                  "key": "[\"group-a\"]"
-                },
-                "premise": {
-                  "relation": "group_size",
-                  "key": "[\"group-a\",\"2\"]"
-                },
-                "how": "positive",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "group_size",
-                  "key": "[\"group-a\",\"2\"]"
-                },
-                "premise": {
-                  "relation": "item__group",
-                  "key": "[\"item-a\",\"group-a\"]"
-                },
-                "how": "contributes",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "group_size",
-                  "key": "[\"group-a\",\"2\"]"
-                },
-                "premise": {
-                  "relation": "item__group",
-                  "key": "[\"item-b\",\"group-a\"]"
-                },
-                "how": "contributes",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "group_size",
-                  "key": "[\"group-a\",\"2\"]"
-                },
-                "premise": {
-                  "relation": "group",
-                  "key": "[\"group-a\"]"
-                },
-                "how": "positive",
-                "position": 0
-              }
-            ],
-            "witnesses": [
-              {
-                "bindings": [
-                  {
-                    "value": "group-a",
-                    "variable": "?g"
-                  },
-                  {
-                    "value": "2",
-                    "variable": "?n"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"group-a\"]",
-                  "relation": "busy"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"group-a\",\"2\"]",
-                      "relation": "group_size"
-                    },
-                    "stratum": 1
-                  }
-                ],
-                "rule_id": "busy"
-              },
-              {
-                "aggregates": [
-                  {
-                    "contributors_sha256": "cadff0a6efe5a68e759971863e6a85ef14478a29d7f700e8201db23b051e055d",
-                    "count": 2,
-                    "group_key": "[\"group-a\"]",
-                    "position": 0,
-                    "relation": "item__group",
-                    "result": "known:2"
-                  }
-                ],
-                "bindings": [
-                  {
-                    "value": "group-a",
-                    "variable": "?g"
-                  },
-                  {
-                    "value": "2",
-                    "variable": "?n"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"group-a\",\"2\"]",
-                  "relation": "group_size"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"group-a\"]",
-                      "relation": "group"
-                    },
-                    "stratum": 0
-                  }
-                ],
-                "rule_id": "group_size"
-              }
-            ]
-          }
-        },
-        "/slip/m-1/ask/reach?relation=group_size&key=%5B%22group-a%22%2C%222%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "reach",
-            "manifest_id": "m-1",
-            "start": {
-              "relation": "group_size",
-              "key": "[\"group-a\",\"2\"]"
-            },
-            "nodes": [
-              {
-                "relation": "group_size",
-                "key": "[\"group-a\",\"2\"]",
-                "distance": 0
-              },
-              {
-                "relation": "busy",
-                "key": "[\"group-a\"]",
-                "distance": 1
-              }
-            ],
-            "steps": [
-              {
-                "conclusion": {
-                  "relation": "busy",
-                  "key": "[\"group-a\"]"
-                },
-                "premise": {
-                  "relation": "group_size",
-                  "key": "[\"group-a\",\"2\"]"
-                },
-                "how": "positive",
-                "position": 0
-              }
-            ],
-            "witnesses": [
-              {
-                "aggregates": [
-                  {
-                    "contributors_sha256": "cadff0a6efe5a68e759971863e6a85ef14478a29d7f700e8201db23b051e055d",
-                    "count": 2,
-                    "group_key": "[\"group-a\"]",
-                    "position": 0,
-                    "relation": "item__group",
-                    "result": "known:2"
-                  }
-                ],
-                "bindings": [
-                  {
-                    "value": "group-a",
-                    "variable": "?g"
-                  },
-                  {
-                    "value": "2",
-                    "variable": "?n"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"group-a\",\"2\"]",
-                  "relation": "group_size"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"group-a\"]",
-                      "relation": "group"
-                    },
-                    "stratum": 0
-                  }
-                ],
-                "rule_id": "group_size"
-              },
-              {
-                "bindings": [
-                  {
-                    "value": "group-a",
-                    "variable": "?g"
-                  },
-                  {
-                    "value": "2",
-                    "variable": "?n"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"group-a\"]",
-                  "relation": "busy"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"group-a\",\"2\"]",
-                      "relation": "group_size"
-                    },
-                    "stratum": 1
-                  }
-                ],
-                "rule_id": "busy"
-              }
-            ]
-          }
-        },
-        "/slip/m-1/ask/grounds?relation=calc__capped_amount&key=%5B%22item-a%22%2C%2212%22%2C%22known%22%2C%22%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "grounds",
-            "manifest_id": "m-1",
-            "start": {
-              "relation": "calc__capped_amount",
-              "key": "[\"item-a\",\"12\",\"known\",\"\"]"
-            },
-            "nodes": [
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 1
-              },
-              {
-                "relation": "item",
-                "key": "[\"item-a\"]",
-                "distance": 2,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              },
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 2,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              }
-            ],
-            "steps": [
-              {
-                "conclusion": {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]"
-                },
-                "premise": {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "how": "positive",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "premise": {
-                  "relation": "item",
-                  "key": "[\"item-a\"]"
-                },
-                "how": "positive",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "premise": {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "how": "positive",
-                "position": 1
-              }
-            ],
-            "witnesses": [
-              {
-                "bindings": [
-                  {
-                    "value": "12",
-                    "variable": "?a"
-                  },
-                  {
-                    "value": "item-a",
-                    "variable": "?i"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"item-a\",\"12\"]",
-                  "relation": "recorded_amount"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"item-a\"]",
-                      "relation": "item"
-                    },
-                    "stratum": 0
-                  },
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"item-a\",\"12\"]",
-                      "relation": "item__amount"
-                    },
-                    "stratum": 0
-                  }
-                ],
-                "rule_id": "recorded_amount"
-              }
-            ],
-            "calc_witnesses": [
-              {
-                "conclusion": {
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                  "relation": "calc__capped_amount"
-                },
-                "definition": "at_most_twenty",
-                "known_at": "2026-01-01",
-                "premises": [
-                  {
-                    "key": "[\"item-a\",\"12\"]",
-                    "relation": "recorded_amount"
-                  }
-                ],
-                "reads": [
-                  "calc__as_of",
-                  "recorded_amount"
-                ],
-                "reason": "",
-                "rule": "capped_amount",
-                "state": "known",
-                "steps": [
-                  {
-                    "op": "min",
-                    "path": "at_most_twenty/value",
-                    "reason": "",
-                    "state": "known",
-                    "value": "12"
-                  },
-                  {
-                    "op": "fact",
-                    "path": "at_most_twenty/value/0",
-                    "reason": "",
-                    "ref": "recorded_amount.amount",
-                    "relation": "recorded_amount",
-                    "state": "known",
-                    "value": "12"
-                  }
-                ],
-                "valid_at": "2026-01-01",
-                "value": "12",
-                "version": "v1"
-              }
-            ]
-          }
-        },
-        "/slip/m-1/ask/grounds?relation=recorded_amount&key=%5B%22item-a%22%2C%2212%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "grounds",
-            "manifest_id": "m-1",
-            "start": {
-              "relation": "recorded_amount",
-              "key": "[\"item-a\",\"12\"]"
-            },
-            "nodes": [
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 0
-              },
-              {
-                "relation": "item",
-                "key": "[\"item-a\"]",
-                "distance": 1,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              },
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 1,
-                "sources": [
-                  {
-                    "kind": "synthetic",
-                    "name": "tests/fixtures/slip/README.md",
-                    "position": "facts/rows.yaml"
-                  }
-                ]
-              }
-            ],
-            "steps": [
-              {
-                "conclusion": {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "premise": {
-                  "relation": "item",
-                  "key": "[\"item-a\"]"
-                },
-                "how": "positive",
-                "position": 0
-              },
-              {
-                "conclusion": {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "premise": {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"12\"]"
-                },
-                "how": "positive",
-                "position": 1
-              }
-            ],
-            "witnesses": [
-              {
-                "bindings": [
-                  {
-                    "value": "12",
-                    "variable": "?a"
-                  },
-                  {
-                    "value": "item-a",
-                    "variable": "?i"
-                  }
-                ],
-                "conclusion": {
-                  "key": "[\"item-a\",\"12\"]",
-                  "relation": "recorded_amount"
-                },
-                "premises": [
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"item-a\"]",
-                      "relation": "item"
-                    },
-                    "stratum": 0
-                  },
-                  {
-                    "polarity": "positive",
-                    "row": {
-                      "key": "[\"item-a\",\"12\"]",
-                      "relation": "item__amount"
-                    },
-                    "stratum": 0
-                  }
-                ],
-                "rule_id": "recorded_amount"
-              }
-            ]
-          }
-        },
         "/slip/m-1/ask/reach?relation=recorded_amount&key=%5B%22item-a%22%2C%2212%22%5D": {
           "status": 200,
           "body": {
@@ -3990,296 +3916,143 @@
             ]
           }
         },
-        "/slip/m-1/ask/grounds?relation=calc__capped_amount&key=%5B%22item-c%22%2C%22%22%2C%22unknown%22%2C%22fact%20recorded_amount.amount%20is%20missing%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "grounds",
-            "manifest_id": "m-1",
-            "start": {
-              "relation": "calc__capped_amount",
-              "key": "[\"item-c\",\"\",\"unknown\",\"fact recorded_amount.amount is missing\"]"
-            },
-            "nodes": [
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-c\",\"\",\"unknown\",\"fact recorded_amount.amount is missing\"]",
-                "distance": 0
-              }
-            ],
-            "steps": [],
-            "witnesses": [],
-            "calc_witnesses": [
-              {
-                "conclusion": {
-                  "key": "[\"item-c\",\"\",\"unknown\",\"fact recorded_amount.amount is missing\"]",
-                  "relation": "calc__capped_amount"
-                },
-                "definition": "at_most_twenty",
-                "known_at": "2026-01-01",
-                "premises": [],
-                "reads": [
-                  "calc__as_of",
-                  "recorded_amount"
-                ],
-                "reason": "fact recorded_amount.amount is missing",
-                "rule": "capped_amount",
-                "state": "unknown",
-                "steps": [
-                  {
-                    "op": "min",
-                    "path": "at_most_twenty/value",
-                    "reason": "fact recorded_amount.amount is missing",
-                    "state": "unknown",
-                    "value": ""
-                  },
-                  {
-                    "op": "fact",
-                    "path": "at_most_twenty/value/0",
-                    "reason": "fact recorded_amount.amount is missing",
-                    "ref": "recorded_amount.amount",
-                    "relation": "recorded_amount",
-                    "state": "unknown",
-                    "value": ""
-                  }
-                ],
-                "valid_at": "2026-01-01",
-                "value": "",
-                "version": "v1"
-              }
-            ]
-          }
-        },
-        "/slip/m-1/ask/grounds?relation=recorded_amount&key=%5B%22item-c%22%5D": {
-          "status": 404,
-          "body": {
-            "error": "not found"
-          }
-        },
         "/slip/m-1/ask/reach?relation=recorded_amount&key=%5B%22item-c%22%5D": {
           "status": 404,
           "body": {
             "error": "not found"
           }
-        }
-      },
-      "summary": {
-        "/slip/head": {
+        },
+        "/slip/m-1/ask/sweep?sweep=item_amount&relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
           "status": 200,
           "body": {
-            "id": "m-1",
-            "epoch": 1,
-            "knowledge_time": "2026-01-01T00:00:00Z",
-            "access_semantics": 2,
-            "definition_sha256": "0000000000000000000000000000000000000000000000000000000000000d01",
-            "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000a01",
-            "witness_check": "green",
-            "compiled": [
+            "format": "rezono.answer/1",
+            "question": "sweep",
+            "manifest_id": "m-1",
+            "start": {
+              "relation": "flagged",
+              "key": "[\"item-a\",\"12\"]"
+            },
+            "delta": {
+              "kind": "sweep",
+              "id": "item_amount"
+            },
+            "nodes": [],
+            "series": [
               {
-                "file": "bundle/schema-bundle.json",
-                "sha256": "0000000000000000000000000000000000000000000000000000000000000b01"
-              }
-            ],
-            "snapshots": [
-              {
-                "relation": "busy",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
+                "index": 0,
+                "value": "0",
+                "status": "not_computed"
               },
               {
-                "relation": "calc__as_of",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
+                "index": 1,
+                "value": "5",
+                "status": "not_computed",
+                "turn": "unknown"
               },
               {
-                "relation": "calc__capped_amount",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
+                "index": 2,
+                "value": "10",
+                "status": "not_computed",
+                "turn": "unknown"
               },
               {
-                "relation": "capability",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
+                "index": 3,
+                "value": "15",
+                "status": "not_computed",
+                "turn": "unknown"
               },
               {
-                "relation": "flagged",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
+                "index": 4,
+                "value": "20",
+                "status": "not_computed",
+                "turn": "unknown"
               },
               {
-                "relation": "group",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
+                "index": 5,
+                "value": "25",
+                "status": "not_computed",
+                "turn": "unknown"
               },
               {
-                "relation": "group_size",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "held",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold__item",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__amount",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__group",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "link__head",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "link__tail",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "linked",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "may_execute",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_propose",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_publish",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_read",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "may_read_full",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "may_review",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "recorded_amount",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "role__capability",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "role__title",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "too_large",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
+                "index": 6,
+                "value": "30",
+                "status": "not_computed",
+                "turn": "unknown"
               }
             ]
           }
         },
+        "/slip/m-1/rows/flagged?limit=2": {
+          "status": 200,
+          "body": {
+            "rows": [
+              {
+                "key": [
+                  "item-a",
+                  "12"
+                ]
+              }
+            ]
+          }
+        },
+        "/slip/sweeps?m=m-1": {
+          "status": 200,
+          "body": {
+            "manifest_id": "m-1",
+            "sweeps": [
+              {
+                "name": "item_amount",
+                "cell": {
+                  "kind": "item",
+                  "id": "item-a",
+                  "slot": "amount"
+                },
+                "min": "0",
+                "max": "30",
+                "step": "5",
+                "cells": [
+                  {
+                    "index": 0,
+                    "value": "0",
+                    "status": "not_computed"
+                  },
+                  {
+                    "index": 1,
+                    "value": "5",
+                    "status": "not_computed"
+                  },
+                  {
+                    "index": 2,
+                    "value": "10",
+                    "status": "not_computed"
+                  },
+                  {
+                    "index": 3,
+                    "value": "15",
+                    "status": "not_computed"
+                  },
+                  {
+                    "index": 4,
+                    "value": "20",
+                    "status": "not_computed"
+                  },
+                  {
+                    "index": 5,
+                    "value": "25",
+                    "status": "not_computed"
+                  },
+                  {
+                    "index": 6,
+                    "value": "30",
+                    "status": "not_computed"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "summary": {
         "/slip/bundle?m=m-1": {
           "status": 200,
           "body": {
@@ -5244,17 +5017,226 @@
             ]
           }
         },
-        "/slip/m-1/rows/flagged?limit=2": {
+        "/slip/head": {
           "status": 200,
           "body": {
-            "rows": [
+            "id": "m-1",
+            "epoch": 1,
+            "knowledge_time": "2026-01-01T00:00:00Z",
+            "access_semantics": 2,
+            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
+            "manifest_sha256": "eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df",
+            "witness_check": "green",
+            "compiled": [
               {
-                "key": [
-                  "item-a",
-                  "12"
-                ]
+                "file": "bundle/schema-bundle.json",
+                "sha256": "2c1194a0977577331b063834ed2199a7165a4f23a42509c4d38044a5eaea2d4f"
+              }
+            ],
+            "snapshots": [
+              {
+                "relation": "busy",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__as_of",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__capped_amount",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "capability",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "flagged",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group_size",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "held",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold__item",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__amount",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__group",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "link__head",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "link__tail",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "linked",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "may_execute",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_propose",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_publish",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_read",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "may_read_full",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "may_review",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "recorded_amount",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "role__capability",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "role__title",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "too_large",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
               }
             ]
+          }
+        },
+        "/slip/m-1/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
+          "status": 501,
+          "body": {
+            "error": "question unavailable for this publication"
           }
         },
         "/slip/m-1/ask/grounds?relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
@@ -5354,12 +5336,6 @@
                 "rule_id": "flagged"
               }
             ]
-          }
-        },
-        "/slip/m-1/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
-          "status": 501,
-          "body": {
-            "error": "question unavailable for this publication"
           }
         },
         "/slip/m-1/ask/grounds?relation=item__amount&key=%5B%22item-a%22%2C%2212%22%5D": {
@@ -5563,62 +5539,6 @@
             ]
           }
         },
-        "/slip/sweeps?m=m-1": {
-          "status": 200,
-          "body": {
-            "manifest_id": "m-1",
-            "sweeps": [
-              {
-                "name": "item_amount",
-                "cell": {
-                  "kind": "item",
-                  "id": "item-a",
-                  "slot": "amount"
-                },
-                "min": "0",
-                "max": "30",
-                "step": "5",
-                "cells": [
-                  {
-                    "index": 0,
-                    "value": "0",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 1,
-                    "value": "5",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 2,
-                    "value": "10",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 3,
-                    "value": "15",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 4,
-                    "value": "20",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 5,
-                    "value": "25",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 6,
-                    "value": "30",
-                    "status": "unavailable"
-                  }
-                ]
-              }
-            ]
-          }
-        },
         "/slip/m-1/ask/sweep?sweep=item_amount&relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
           "status": 200,
           "body": {
@@ -5678,227 +5598,80 @@
               }
             ]
           }
+        },
+        "/slip/m-1/rows/flagged?limit=2": {
+          "status": 200,
+          "body": {
+            "rows": [
+              {
+                "key": [
+                  "item-a",
+                  "12"
+                ]
+              }
+            ]
+          }
+        },
+        "/slip/sweeps?m=m-1": {
+          "status": 200,
+          "body": {
+            "manifest_id": "m-1",
+            "sweeps": [
+              {
+                "name": "item_amount",
+                "cell": {
+                  "kind": "item",
+                  "id": "item-a",
+                  "slot": "amount"
+                },
+                "min": "0",
+                "max": "30",
+                "step": "5",
+                "cells": [
+                  {
+                    "index": 0,
+                    "value": "0",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 1,
+                    "value": "5",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 2,
+                    "value": "10",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 3,
+                    "value": "15",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 4,
+                    "value": "20",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 5,
+                    "value": "25",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 6,
+                    "value": "30",
+                    "status": "unavailable"
+                  }
+                ]
+              }
+            ]
+          }
         }
       }
     },
     "sweeps": {
       "reader": {
-        "/slip/head": {
-          "status": 200,
-          "body": {
-            "id": "m-2",
-            "epoch": 2,
-            "knowledge_time": "2000-01-01T00:00:00+00:00",
-            "access_semantics": 2,
-            "definition_sha256": "0000000000000000000000000000000000000000000000000000000000000d01",
-            "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000a02",
-            "witness_check": "green",
-            "compiled": [
-              {
-                "file": "bundle/schema-bundle.json",
-                "sha256": "0000000000000000000000000000000000000000000000000000000000000b01"
-              }
-            ],
-            "snapshots": [
-              {
-                "relation": "busy",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "calc__as_of",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "calc__capped_amount",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "capability",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "flagged",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "group",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "group_size",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "held",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold__item",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__amount",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__group",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link__head",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link__tail",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "linked",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_execute",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_propose",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_publish",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_read",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_read_full",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_review",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "recorded_amount",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role__capability",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role__title",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "too_large",
-                "role": "reader",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              }
-            ]
-          }
-        },
         "/slip/bundle?m=m-2": {
           "status": 200,
           "body": {
@@ -7894,17 +7667,226 @@
             ]
           }
         },
-        "/slip/m-2/rows/flagged?limit=2": {
+        "/slip/head": {
           "status": 200,
           "body": {
-            "rows": [
+            "id": "m-2",
+            "epoch": 2,
+            "knowledge_time": "2026-01-01T00:00:00Z",
+            "access_semantics": 2,
+            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
+            "manifest_sha256": "e4a4d07329b9dba3b66135fcab5406baa21351d59e041b99dbb902e8045aa81e",
+            "witness_check": "green",
+            "compiled": [
               {
-                "key": [
-                  "item-a",
-                  "12"
-                ]
+                "file": "bundle/schema-bundle.json",
+                "sha256": "2c1194a0977577331b063834ed2199a7165a4f23a42509c4d38044a5eaea2d4f"
+              }
+            ],
+            "snapshots": [
+              {
+                "relation": "busy",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__as_of",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__capped_amount",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "capability",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "flagged",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group_size",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "held",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold__item",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__amount",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__group",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link__head",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link__tail",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "linked",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_execute",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_propose",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_publish",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_read",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_read_full",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_review",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "recorded_amount",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role__capability",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role__title",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "too_large",
+                "role": "reader",
+                "complete": false,
+                "full": true,
+                "format": "json"
               }
             ]
+          }
+        },
+        "/slip/m-2/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
+          "status": 501,
+          "body": {
+            "error": "question unavailable for this publication"
           }
         },
         "/slip/m-2/ask/grounds?relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
@@ -8004,12 +7986,6 @@
                 "rule_id": "flagged"
               }
             ]
-          }
-        },
-        "/slip/m-2/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
-          "status": 501,
-          "body": {
-            "error": "question unavailable for this publication"
           }
         },
         "/slip/m-2/ask/grounds?relation=item__amount&key=%5B%22item-a%22%2C%2212%22%5D": {
@@ -8209,6 +8185,588 @@
                 "valid_at": "2026-01-01",
                 "value": "12",
                 "version": "v1"
+              }
+            ]
+          }
+        },
+        "/slip/m-2/ask/scenario?variant=v-item_amount-00-3": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "scenario",
+            "manifest_id": "m-2",
+            "delta": {
+              "kind": "variant",
+              "id": "v-item_amount-00-3",
+              "manifest": "v-item_amount-00-3"
+            },
+            "nodes": [
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"0\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "flagged",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 0
+              },
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"0\"]",
+                "distance": 0
+              },
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"0\"]",
+                "distance": 0
+              }
+            ],
+            "difference": {
+              "counts": [
+                {
+                  "relation": "calc__capped_amount",
+                  "added": 1,
+                  "removed": 1,
+                  "changed": 0
+                },
+                {
+                  "relation": "flagged",
+                  "added": 0,
+                  "removed": 1,
+                  "changed": 0
+                },
+                {
+                  "relation": "item__amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "recorded_amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                }
+              ],
+              "entries": [
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"0\",\"known\",\"\"]",
+                  "change": "added"
+                },
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                  "change": "removed"
+                },
+                {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"12\"]",
+                  "change": "removed"
+                },
+                {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"0\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"0\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                }
+              ]
+            }
+          }
+        },
+        "/slip/m-2/ask/scenario?variant=v-item_amount-01-3": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "scenario",
+            "manifest_id": "m-2",
+            "delta": {
+              "kind": "variant",
+              "id": "v-item_amount-01-3",
+              "manifest": "v-item_amount-01-3"
+            },
+            "nodes": [
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"5\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "flagged",
+                "key": "[\"item-a\",\"12\"]",
+                "distance": 0
+              },
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"5\"]",
+                "distance": 0
+              },
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"5\"]",
+                "distance": 0
+              }
+            ],
+            "difference": {
+              "counts": [
+                {
+                  "relation": "calc__capped_amount",
+                  "added": 1,
+                  "removed": 1,
+                  "changed": 0
+                },
+                {
+                  "relation": "flagged",
+                  "added": 0,
+                  "removed": 1,
+                  "changed": 0
+                },
+                {
+                  "relation": "item__amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "recorded_amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                }
+              ],
+              "entries": [
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                  "change": "removed"
+                },
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"5\",\"known\",\"\"]",
+                  "change": "added"
+                },
+                {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"12\"]",
+                  "change": "removed"
+                },
+                {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"5\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"5\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                }
+              ]
+            }
+          }
+        },
+        "/slip/m-2/ask/scenario?variant=v-item_amount-02-3": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "scenario",
+            "manifest_id": "m-2",
+            "delta": {
+              "kind": "variant",
+              "id": "v-item_amount-02-3",
+              "manifest": "v-item_amount-02-3"
+            },
+            "nodes": [
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"10\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "flagged",
+                "key": "[\"item-a\",\"10\"]",
+                "distance": 0
+              },
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"10\"]",
+                "distance": 0
+              },
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"10\"]",
+                "distance": 0
+              }
+            ],
+            "difference": {
+              "counts": [
+                {
+                  "relation": "calc__capped_amount",
+                  "added": 1,
+                  "removed": 1,
+                  "changed": 0
+                },
+                {
+                  "relation": "flagged",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "item__amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "recorded_amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                }
+              ],
+              "entries": [
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"10\",\"known\",\"\"]",
+                  "change": "added"
+                },
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                  "change": "removed"
+                },
+                {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"10\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"10\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"10\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                }
+              ]
+            }
+          }
+        },
+        "/slip/m-2/ask/scenario?variant=v-item_amount-04-3": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "scenario",
+            "manifest_id": "m-2",
+            "delta": {
+              "kind": "variant",
+              "id": "v-item_amount-04-3",
+              "manifest": "v-item_amount-04-3"
+            },
+            "nodes": [
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"20\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "flagged",
+                "key": "[\"item-a\",\"20\"]",
+                "distance": 0
+              },
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"20\"]",
+                "distance": 0
+              },
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"20\"]",
+                "distance": 0
+              }
+            ],
+            "difference": {
+              "counts": [
+                {
+                  "relation": "calc__capped_amount",
+                  "added": 1,
+                  "removed": 1,
+                  "changed": 0
+                },
+                {
+                  "relation": "flagged",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "item__amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "recorded_amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                }
+              ],
+              "entries": [
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                  "change": "removed"
+                },
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"20\",\"known\",\"\"]",
+                  "change": "added"
+                },
+                {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"20\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"20\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"20\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                }
+              ]
+            }
+          }
+        },
+        "/slip/m-2/ask/scenario?variant=v-item_amount-05-3": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "scenario",
+            "manifest_id": "m-2",
+            "delta": {
+              "kind": "variant",
+              "id": "v-item_amount-05-3",
+              "manifest": "v-item_amount-05-3"
+            },
+            "nodes": [
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "calc__capped_amount",
+                "key": "[\"item-a\",\"20\",\"known\",\"\"]",
+                "distance": 0
+              },
+              {
+                "relation": "flagged",
+                "key": "[\"item-a\",\"25\"]",
+                "distance": 0
+              },
+              {
+                "relation": "item__amount",
+                "key": "[\"item-a\",\"25\"]",
+                "distance": 0
+              },
+              {
+                "relation": "recorded_amount",
+                "key": "[\"item-a\",\"25\"]",
+                "distance": 0
+              }
+            ],
+            "difference": {
+              "counts": [
+                {
+                  "relation": "calc__capped_amount",
+                  "added": 1,
+                  "removed": 1,
+                  "changed": 0
+                },
+                {
+                  "relation": "flagged",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "item__amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                },
+                {
+                  "relation": "recorded_amount",
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 1
+                }
+              ],
+              "entries": [
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
+                  "change": "removed"
+                },
+                {
+                  "relation": "calc__capped_amount",
+                  "key": "[\"item-a\",\"20\",\"known\",\"\"]",
+                  "change": "added"
+                },
+                {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"25\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "item__amount",
+                  "key": "[\"item-a\",\"25\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                },
+                {
+                  "relation": "recorded_amount",
+                  "key": "[\"item-a\",\"25\"]",
+                  "change": "changed",
+                  "was": "[\"item-a\",\"12\"]"
+                }
+              ]
+            }
+          }
+        },
+        "/slip/m-2/ask/sweep?sweep=item_amount&relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
+          "status": 200,
+          "body": {
+            "format": "rezono.answer/1",
+            "question": "sweep",
+            "manifest_id": "m-2",
+            "start": {
+              "relation": "flagged",
+              "key": "[\"item-a\",\"12\"]"
+            },
+            "delta": {
+              "kind": "sweep",
+              "id": "item_amount"
+            },
+            "nodes": [],
+            "series": [
+              {
+                "index": 0,
+                "value": "0",
+                "status": "green",
+                "manifest": "v-item_amount-00-3"
+              },
+              {
+                "index": 1,
+                "value": "5",
+                "status": "green",
+                "manifest": "v-item_amount-01-3",
+                "turn": "same"
+              },
+              {
+                "index": 2,
+                "value": "10",
+                "status": "green",
+                "manifest": "v-item_amount-02-3",
+                "row": {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"10\"]"
+                },
+                "turn": "turns",
+                "causes": [
+                  "presence"
+                ]
+              },
+              {
+                "index": 3,
+                "value": "15",
+                "status": "not_computed",
+                "turn": "unknown"
+              },
+              {
+                "index": 4,
+                "value": "20",
+                "status": "green",
+                "manifest": "v-item_amount-04-3",
+                "row": {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"20\"]"
+                },
+                "turn": "unknown"
+              },
+              {
+                "index": 5,
+                "value": "25",
+                "status": "green",
+                "manifest": "v-item_amount-05-3",
+                "row": {
+                  "relation": "flagged",
+                  "key": "[\"item-a\",\"25\"]"
+                },
+                "turn": "same"
+              },
+              {
+                "index": 6,
+                "value": "30",
+                "status": "red",
+                "diagnosis": "v-item_amount-06-3",
+                "turn": "unknown"
+              }
+            ]
+          }
+        },
+        "/slip/m-2/rows/flagged?limit=2": {
+          "status": 200,
+          "body": {
+            "rows": [
+              {
+                "key": [
+                  "item-a",
+                  "12"
+                ]
               }
             ]
           }
@@ -8973,794 +9531,9 @@
               }
             ]
           }
-        },
-        "/slip/m-2/ask/sweep?sweep=item_amount&relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "sweep",
-            "manifest_id": "m-2",
-            "start": {
-              "relation": "flagged",
-              "key": "[\"item-a\",\"12\"]"
-            },
-            "delta": {
-              "kind": "sweep",
-              "id": "item_amount"
-            },
-            "nodes": [],
-            "series": [
-              {
-                "index": 0,
-                "value": "0",
-                "status": "green",
-                "manifest": "v-item_amount-00-3"
-              },
-              {
-                "index": 1,
-                "value": "5",
-                "status": "green",
-                "manifest": "v-item_amount-01-3",
-                "turn": "same"
-              },
-              {
-                "index": 2,
-                "value": "10",
-                "status": "green",
-                "manifest": "v-item_amount-02-3",
-                "row": {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"10\"]"
-                },
-                "turn": "turns",
-                "causes": [
-                  "presence"
-                ]
-              },
-              {
-                "index": 3,
-                "value": "15",
-                "status": "not_computed",
-                "turn": "unknown"
-              },
-              {
-                "index": 4,
-                "value": "20",
-                "status": "green",
-                "manifest": "v-item_amount-04-3",
-                "row": {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"20\"]"
-                },
-                "turn": "unknown"
-              },
-              {
-                "index": 5,
-                "value": "25",
-                "status": "green",
-                "manifest": "v-item_amount-05-3",
-                "row": {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"25\"]"
-                },
-                "turn": "same"
-              },
-              {
-                "index": 6,
-                "value": "30",
-                "status": "red",
-                "diagnosis": "v-item_amount-06-3",
-                "turn": "unknown"
-              }
-            ]
-          }
-        },
-        "/slip/m-2/ask/scenario?variant=v-item_amount-00-3": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "scenario",
-            "manifest_id": "m-2",
-            "delta": {
-              "kind": "variant",
-              "id": "v-item_amount-00-3",
-              "manifest": "v-item_amount-00-3"
-            },
-            "nodes": [
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"0\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "flagged",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 0
-              },
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"0\"]",
-                "distance": 0
-              },
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"0\"]",
-                "distance": 0
-              }
-            ],
-            "difference": {
-              "counts": [
-                {
-                  "relation": "calc__capped_amount",
-                  "added": 1,
-                  "removed": 1,
-                  "changed": 0
-                },
-                {
-                  "relation": "flagged",
-                  "added": 0,
-                  "removed": 1,
-                  "changed": 0
-                },
-                {
-                  "relation": "item__amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "recorded_amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                }
-              ],
-              "entries": [
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"0\",\"known\",\"\"]",
-                  "change": "added"
-                },
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                  "change": "removed"
-                },
-                {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"12\"]",
-                  "change": "removed"
-                },
-                {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"0\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"0\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                }
-              ]
-            }
-          }
-        },
-        "/slip/m-2/ask/scenario?variant=v-item_amount-01-3": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "scenario",
-            "manifest_id": "m-2",
-            "delta": {
-              "kind": "variant",
-              "id": "v-item_amount-01-3",
-              "manifest": "v-item_amount-01-3"
-            },
-            "nodes": [
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"5\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "flagged",
-                "key": "[\"item-a\",\"12\"]",
-                "distance": 0
-              },
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"5\"]",
-                "distance": 0
-              },
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"5\"]",
-                "distance": 0
-              }
-            ],
-            "difference": {
-              "counts": [
-                {
-                  "relation": "calc__capped_amount",
-                  "added": 1,
-                  "removed": 1,
-                  "changed": 0
-                },
-                {
-                  "relation": "flagged",
-                  "added": 0,
-                  "removed": 1,
-                  "changed": 0
-                },
-                {
-                  "relation": "item__amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "recorded_amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                }
-              ],
-              "entries": [
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                  "change": "removed"
-                },
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"5\",\"known\",\"\"]",
-                  "change": "added"
-                },
-                {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"12\"]",
-                  "change": "removed"
-                },
-                {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"5\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"5\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                }
-              ]
-            }
-          }
-        },
-        "/slip/m-2/ask/scenario?variant=v-item_amount-02-3": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "scenario",
-            "manifest_id": "m-2",
-            "delta": {
-              "kind": "variant",
-              "id": "v-item_amount-02-3",
-              "manifest": "v-item_amount-02-3"
-            },
-            "nodes": [
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"10\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "flagged",
-                "key": "[\"item-a\",\"10\"]",
-                "distance": 0
-              },
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"10\"]",
-                "distance": 0
-              },
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"10\"]",
-                "distance": 0
-              }
-            ],
-            "difference": {
-              "counts": [
-                {
-                  "relation": "calc__capped_amount",
-                  "added": 1,
-                  "removed": 1,
-                  "changed": 0
-                },
-                {
-                  "relation": "flagged",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "item__amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "recorded_amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                }
-              ],
-              "entries": [
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"10\",\"known\",\"\"]",
-                  "change": "added"
-                },
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                  "change": "removed"
-                },
-                {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"10\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"10\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"10\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                }
-              ]
-            }
-          }
-        },
-        "/slip/m-2/ask/scenario?variant=v-item_amount-04-3": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "scenario",
-            "manifest_id": "m-2",
-            "delta": {
-              "kind": "variant",
-              "id": "v-item_amount-04-3",
-              "manifest": "v-item_amount-04-3"
-            },
-            "nodes": [
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"20\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "flagged",
-                "key": "[\"item-a\",\"20\"]",
-                "distance": 0
-              },
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"20\"]",
-                "distance": 0
-              },
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"20\"]",
-                "distance": 0
-              }
-            ],
-            "difference": {
-              "counts": [
-                {
-                  "relation": "calc__capped_amount",
-                  "added": 1,
-                  "removed": 1,
-                  "changed": 0
-                },
-                {
-                  "relation": "flagged",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "item__amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "recorded_amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                }
-              ],
-              "entries": [
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                  "change": "removed"
-                },
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"20\",\"known\",\"\"]",
-                  "change": "added"
-                },
-                {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"20\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"20\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"20\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                }
-              ]
-            }
-          }
-        },
-        "/slip/m-2/ask/scenario?variant=v-item_amount-05-3": {
-          "status": 200,
-          "body": {
-            "format": "rezono.answer/1",
-            "question": "scenario",
-            "manifest_id": "m-2",
-            "delta": {
-              "kind": "variant",
-              "id": "v-item_amount-05-3",
-              "manifest": "v-item_amount-05-3"
-            },
-            "nodes": [
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "calc__capped_amount",
-                "key": "[\"item-a\",\"20\",\"known\",\"\"]",
-                "distance": 0
-              },
-              {
-                "relation": "flagged",
-                "key": "[\"item-a\",\"25\"]",
-                "distance": 0
-              },
-              {
-                "relation": "item__amount",
-                "key": "[\"item-a\",\"25\"]",
-                "distance": 0
-              },
-              {
-                "relation": "recorded_amount",
-                "key": "[\"item-a\",\"25\"]",
-                "distance": 0
-              }
-            ],
-            "difference": {
-              "counts": [
-                {
-                  "relation": "calc__capped_amount",
-                  "added": 1,
-                  "removed": 1,
-                  "changed": 0
-                },
-                {
-                  "relation": "flagged",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "item__amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                },
-                {
-                  "relation": "recorded_amount",
-                  "added": 0,
-                  "removed": 0,
-                  "changed": 1
-                }
-              ],
-              "entries": [
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"12\",\"known\",\"\"]",
-                  "change": "removed"
-                },
-                {
-                  "relation": "calc__capped_amount",
-                  "key": "[\"item-a\",\"20\",\"known\",\"\"]",
-                  "change": "added"
-                },
-                {
-                  "relation": "flagged",
-                  "key": "[\"item-a\",\"25\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "item__amount",
-                  "key": "[\"item-a\",\"25\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                },
-                {
-                  "relation": "recorded_amount",
-                  "key": "[\"item-a\",\"25\"]",
-                  "change": "changed",
-                  "was": "[\"item-a\",\"12\"]"
-                }
-              ]
-            }
-          }
         }
       },
       "summary": {
-        "/slip/head": {
-          "status": 200,
-          "body": {
-            "id": "m-2",
-            "epoch": 2,
-            "knowledge_time": "2000-01-01T00:00:00+00:00",
-            "access_semantics": 2,
-            "definition_sha256": "0000000000000000000000000000000000000000000000000000000000000d01",
-            "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000a02",
-            "witness_check": "green",
-            "compiled": [
-              {
-                "file": "bundle/schema-bundle.json",
-                "sha256": "0000000000000000000000000000000000000000000000000000000000000b01"
-              }
-            ],
-            "snapshots": [
-              {
-                "relation": "busy",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "calc__as_of",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "calc__capped_amount",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "capability",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "flagged",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "group",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "group_size",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "held",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "hold__item",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__amount",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "item__group",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "link",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "link__head",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "link__tail",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "linked",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "may_execute",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_propose",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_publish",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "may_read",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "may_read_full",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "may_review",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "recorded_amount",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              },
-              {
-                "relation": "role",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "role__capability",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "role__title",
-                "role": "summary",
-                "complete": false,
-                "full": false,
-                "format": "json"
-              },
-              {
-                "relation": "too_large",
-                "role": "summary",
-                "complete": false,
-                "full": true,
-                "format": "json"
-              }
-            ]
-          }
-        },
         "/slip/bundle?m=m-2": {
           "status": 200,
           "body": {
@@ -10725,17 +10498,226 @@
             ]
           }
         },
-        "/slip/m-2/rows/flagged?limit=2": {
+        "/slip/head": {
           "status": 200,
           "body": {
-            "rows": [
+            "id": "m-2",
+            "epoch": 2,
+            "knowledge_time": "2026-01-01T00:00:00Z",
+            "access_semantics": 2,
+            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
+            "manifest_sha256": "e4a4d07329b9dba3b66135fcab5406baa21351d59e041b99dbb902e8045aa81e",
+            "witness_check": "green",
+            "compiled": [
               {
-                "key": [
-                  "item-a",
-                  "12"
-                ]
+                "file": "bundle/schema-bundle.json",
+                "sha256": "2c1194a0977577331b063834ed2199a7165a4f23a42509c4d38044a5eaea2d4f"
+              }
+            ],
+            "snapshots": [
+              {
+                "relation": "busy",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__as_of",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "calc__capped_amount",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "capability",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "flagged",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "group_size",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "held",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "hold__item",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__amount",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "item__group",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "link",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "link__head",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "link__tail",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "linked",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "may_execute",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_propose",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_publish",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "may_read",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "may_read_full",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "may_review",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "recorded_amount",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
+              },
+              {
+                "relation": "role",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "role__capability",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "role__title",
+                "role": "summary",
+                "complete": false,
+                "full": false,
+                "format": "json"
+              },
+              {
+                "relation": "too_large",
+                "role": "summary",
+                "complete": false,
+                "full": true,
+                "format": "json"
               }
             ]
+          }
+        },
+        "/slip/m-2/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
+          "status": 501,
+          "body": {
+            "error": "question unavailable for this publication"
           }
         },
         "/slip/m-2/ask/grounds?relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
@@ -10835,12 +10817,6 @@
                 "rule_id": "flagged"
               }
             ]
-          }
-        },
-        "/slip/m-2/ask/gap?relation=held&key=%5B%22item-a%22%5D": {
-          "status": 501,
-          "body": {
-            "error": "question unavailable for this publication"
           }
         },
         "/slip/m-2/ask/grounds?relation=item__amount&key=%5B%22item-a%22%2C%2212%22%5D": {
@@ -11044,62 +11020,6 @@
             ]
           }
         },
-        "/slip/sweeps?m=m-2": {
-          "status": 200,
-          "body": {
-            "manifest_id": "m-2",
-            "sweeps": [
-              {
-                "name": "item_amount",
-                "cell": {
-                  "kind": "item",
-                  "id": "item-a",
-                  "slot": "amount"
-                },
-                "min": "0",
-                "max": "30",
-                "step": "5",
-                "cells": [
-                  {
-                    "index": 0,
-                    "value": "0",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 1,
-                    "value": "5",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 2,
-                    "value": "10",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 3,
-                    "value": "15",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 4,
-                    "value": "20",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 5,
-                    "value": "25",
-                    "status": "unavailable"
-                  },
-                  {
-                    "index": 6,
-                    "value": "30",
-                    "status": "unavailable"
-                  }
-                ]
-              }
-            ]
-          }
-        },
         "/slip/m-2/ask/sweep?sweep=item_amount&relation=flagged&key=%5B%22item-a%22%2C%2212%22%5D": {
           "status": 200,
           "body": {
@@ -11156,6 +11076,75 @@
                 "value": "30",
                 "status": "unavailable",
                 "turn": "unknown"
+              }
+            ]
+          }
+        },
+        "/slip/m-2/rows/flagged?limit=2": {
+          "status": 200,
+          "body": {
+            "rows": [
+              {
+                "key": [
+                  "item-a",
+                  "12"
+                ]
+              }
+            ]
+          }
+        },
+        "/slip/sweeps?m=m-2": {
+          "status": 200,
+          "body": {
+            "manifest_id": "m-2",
+            "sweeps": [
+              {
+                "name": "item_amount",
+                "cell": {
+                  "kind": "item",
+                  "id": "item-a",
+                  "slot": "amount"
+                },
+                "min": "0",
+                "max": "30",
+                "step": "5",
+                "cells": [
+                  {
+                    "index": 0,
+                    "value": "0",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 1,
+                    "value": "5",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 2,
+                    "value": "10",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 3,
+                    "value": "15",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 4,
+                    "value": "20",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 5,
+                    "value": "25",
+                    "status": "unavailable"
+                  },
+                  {
+                    "index": 6,
+                    "value": "30",
+                    "status": "unavailable"
+                  }
+                ]
               }
             ]
           }
