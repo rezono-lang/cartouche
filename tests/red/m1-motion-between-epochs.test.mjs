@@ -6,6 +6,7 @@ export const RED_META = {
   decision: 'decisions/0012-proof-first-plan.md',
   summary: 'Motion only where it means something: moving known at between two epochs shows what disappears in del and what appears in ins, each with its own proof link, animated only under prefers-reduced-motion: no-preference',
   waits_on: [
+    'planner:assertions',
     'm1-time-valid-at-known-at'
   ]
 };

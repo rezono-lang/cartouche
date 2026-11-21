@@ -7,19 +7,27 @@ export const RED_META = {
   priority: 2,
   summary: 'Proof map requirement 5: why unknown and why not in the map: a missing premise is a ghost row with its published reason, and the conclusion stays unknown, never no; first case the unknown income of p-bob in the healthcare allowance',
   waits_on: [
+    'planner:assertions',
     'm1-absent-never-valid-colour',
     'm1-claims-match-build',
     'm1-contrast-wcag-aa',
     'm1-forced-colors-reduced-motion',
+    'm1-green-guard-covers-harness',
     'm1-invalid-drawn-everywhere',
     'm1-mark-opens-slip',
+    'm1-monge-unknown-and-state-colours',
     'm1-motion-between-epochs',
     'm1-no-borrowed-proof-refs',
+    'm1-proof-refs-only-as-served',
+    'm1-propose-locked-until-served',
+    'm1-reads-only-served-head-fields',
     'm1-sheet-reads-gate-output',
     'm1-slip-all-witnesses',
     'm1-slip-proof-tree',
     'm1-slip-why-not-why-unknown',
     'm1-time-valid-at-known-at',
+    'm1-viewer-prerendered-and-guarded',
+    'm1-zero-compute-lint-fails-closed',
     'm2-proof-map-semantic-layout'
   ]
 };

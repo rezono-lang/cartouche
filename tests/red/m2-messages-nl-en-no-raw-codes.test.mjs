@@ -6,19 +6,27 @@ export const RED_META = {
   decision: 'decisions/0012-proof-first-plan.md',
   summary: 'Dutch and English through the Rezono MF2 messages: every visible label, reason and sentence on every sheet and the slip comes from MF2 in the chosen language, and no raw snake_case reason code is shown to users (stricter than the i18n-mf2 helper of #31)',
   waits_on: [
+    'planner:assertions',
     'm1-absent-never-valid-colour',
     'm1-claims-match-build',
     'm1-contrast-wcag-aa',
     'm1-forced-colors-reduced-motion',
+    'm1-green-guard-covers-harness',
     'm1-invalid-drawn-everywhere',
     'm1-mark-opens-slip',
+    'm1-monge-unknown-and-state-colours',
     'm1-motion-between-epochs',
     'm1-no-borrowed-proof-refs',
+    'm1-proof-refs-only-as-served',
+    'm1-propose-locked-until-served',
+    'm1-reads-only-served-head-fields',
     'm1-sheet-reads-gate-output',
     'm1-slip-all-witnesses',
     'm1-slip-proof-tree',
     'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at'
+    'm1-time-valid-at-known-at',
+    'm1-viewer-prerendered-and-guarded',
+    'm1-zero-compute-lint-fails-closed'
   ]
 };
 

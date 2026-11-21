@@ -6,6 +6,7 @@ export const RED_META = {
   decision: 'decisions/0012-proof-first-plan.md',
   summary: 'Two global controls, valid at and known at, apply to every sheet and the slip; each sheet states the valid time and the epoch it shows, and the bitemporal staircase is their detail view',
   waits_on: [
+    'planner:assertions',
     'm1-sheet-reads-gate-output'
   ]
 };

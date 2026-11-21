@@ -22,7 +22,10 @@ const tasks = files.map((file) => {
   const waitsOn = waitsMatch
     ? waitsMatch[1].split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
     : [];
-  const unresolvedWaits = waitsOn.filter((id) => files.some((f) => f.startsWith(id)));
+  // Decision 0015 §3: an entry that is not a red-test id is an external gate (`rezono-lang/rezono#N`,
+  // `devDependency:<name>`, `planner:assertions`). It stays open until a planner PR removes it.
+  const isExternalGate = (id) => !/^m\d+-[a-z0-9-]+$/.test(id);
+  const unresolvedWaits = waitsOn.filter((id) => isExternalGate(id) || files.some((f) => f.startsWith(id)));
   // Optional RED_META.priority (lower first) orders tasks within a milestone; Decision 0012 puts the proof map first in M2.
   const priorityMatch = text.match(/priority:\s*(\d+)/);
   return {

@@ -6,6 +6,7 @@ export const RED_META = {
   decision: 'decisions/0012-proof-first-plan.md',
   summary: 'The slip shows every distinct witness the reader publishes for a conclusion, not only the shortest: one proof tree per witness IRI, each with its own premises and seal check',
   waits_on: [
+    'planner:assertions',
     'm1-slip-proof-tree'
   ]
 };
