@@ -10,7 +10,7 @@
       "fixturePath": "fixtures/11-zorgtoeslag-bitemporal-gate-answers.json",
       "source": {
         "repository": "rezono-lang/rezono",
-        "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+        "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
         "pack": "examples/zorgtoeslag-slice"
       },
       "baseDisplay": "13500",
@@ -31,7 +31,7 @@
       "fixturePath": "fixtures/10-slip-reader-answers.json",
       "source": {
         "repository": "rezono-lang/rezono",
-        "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+        "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
         "pack": "tests/fixtures/slip"
       },
       "baseDisplay": "12",
@@ -52,7 +52,7 @@
       "fixturePath": "fixtures/10-slip-reader-answers.json",
       "source": {
         "repository": "rezono-lang/rezono",
-        "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+        "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
         "pack": "tests/fixtures/slip"
       },
       "baseDisplay": "12",
