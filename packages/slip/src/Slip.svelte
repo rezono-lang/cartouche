@@ -575,7 +575,7 @@
 
     {#if model && currentVerb === 's' && model.adjacentWorlds.length > 0}
       <section class="slip-adjacent-worlds" data-part="adjacent-worlds" aria-label="Adjacent worlds">
-        <h2>Adjacent Worlds (Î” = 1)</h2>
+        <h2>Adjacent Worlds (Δ = 1)</h2>
         <table>
           <thead>
             <tr>
