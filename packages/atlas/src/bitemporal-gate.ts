@@ -65,8 +65,61 @@ interface BundleRelation {
   readonly columns: readonly BundleColumn[];
 }
 
+interface HeadSnapshot {
+  readonly relation: string;
+  readonly full?: boolean;
+}
+
+interface HeadBody {
+  readonly manifest_sha256?: string;
+  readonly epoch?: number;
+  readonly knowledge_time?: string;
+  readonly witness_check?: string;
+  readonly trust_tier?: ManifestMeta['trust_tier'];
+  readonly snapshots?: readonly HeadSnapshot[];
+}
+
+interface BundleAttribute {
+  readonly id: string;
+  readonly table: string;
+}
+
 interface BundleBody {
   readonly relations: readonly BundleRelation[];
+  readonly attributes?: readonly BundleAttribute[];
+}
+
+function readRoleMeta(
+  answers: Readonly<Record<string, GateRecordedAnswer>>,
+  pack: string,
+  role: string,
+  fallbackManifest: ManifestMeta
+): {
+  readonly manifest: ManifestMeta;
+  readonly horizon: { readonly complete: boolean; readonly reason: string | null };
+} {
+  const headAnswer = answers[`/${pack}/head`];
+  if (!headAnswer || headAnswer.status !== 200 || !headAnswer.body || typeof headAnswer.body !== 'object') {
+    return {
+      manifest: { ...fallbackManifest, role },
+      horizon: { complete: true, reason: null }
+    };
+  }
+  const body = headAnswer.body as HeadBody;
+  const partial = Array.isArray(body.snapshots) && body.snapshots.some((s) => s.full === false);
+  return {
+    manifest: {
+      id: typeof body.manifest_sha256 === 'string' ? `sha256:${body.manifest_sha256}` : fallbackManifest.id,
+      epoch: typeof body.epoch === 'number' ? body.epoch : fallbackManifest.epoch,
+      knowledge_time: typeof body.knowledge_time === 'string' ? body.knowledge_time : fallbackManifest.knowledge_time,
+      role,
+      witness_check: body.witness_check === 'green' ? 'green' : fallbackManifest.witness_check,
+      trust_tier: body.trust_tier ?? fallbackManifest.trust_tier
+    },
+    horizon: partial
+      ? { complete: false, reason: 'not_read_in_full' }
+      : { complete: true, reason: null }
+  };
 }
 
 interface RelationColumnIndices {
@@ -144,6 +197,7 @@ export function buildBitemporalFixtureFromGateAnswers(
     readonly role: string;
     readonly subjectId: string;
     readonly validTime: string;
+    readonly relation?: string;
   }
 ): BitemporalFixtureInput {
   const roleAnswers = recording.reader_answers[options.role];
@@ -151,6 +205,7 @@ export function buildBitemporalFixtureFromGateAnswers(
     throw new Error(`Gate recording has no answers for role "${options.role}"`);
   }
 
+  const { manifest, horizon } = readRoleMeta(roleAnswers, options.pack, options.role, recording.manifest);
   const selected = recording.epochs.filter((ep) => ep.as_of === options.validTime);
   if (selected.length === 0) {
     throw new Error(`Gate recording has no epochs matching validTime="${options.validTime}"`);
@@ -161,19 +216,77 @@ export function buildBitemporalFixtureFromGateAnswers(
   const matrix: BitemporalCellInput[][] = [];
   const colsCache = new Map<string, RelationColumnIndices>();
 
+  if (options.relation) {
+    const bundlePath = `/${options.pack}/bundle`;
+    const bundleAnswer = roleAnswers[bundlePath];
+    const bundleBody = bundleAnswer && bundleAnswer.status === 200 && bundleAnswer.body && typeof bundleAnswer.body === 'object'
+      ? (bundleAnswer.body as BundleBody)
+      : null;
+    const isAttrTable = Boolean(
+      bundleBody && Array.isArray(bundleBody.attributes) && bundleBody.attributes.some((a) => a.table === options.relation)
+    );
+    const hasCalcRel = Boolean(
+      bundleBody && Array.isArray(bundleBody.relations) && bundleBody.relations.some((r) => r.id === options.relation)
+    );
+
+    if (isAttrTable) {
+      for (const ep of selected) {
+        const rowPath = `/${options.pack}/${ep.manifest}/rows/${options.relation}`;
+        const answer = roleAnswers[rowPath];
+        if (!answer || answer.status !== 200 || !answer.body || typeof answer.body !== 'object') continue;
+        const rows = (answer.body as GateRowsBody).rows;
+        if (!Array.isArray(rows)) continue;
+        const match = rows.find((entry) => Array.isArray(entry.key) && String(entry.key[0]) === options.subjectId);
+        if (!match) continue;
+        epochs.push(`${ep.manifest} (${ep.known})`);
+        matrix.push([{
+          state: 'known',
+          display: String(match.key[1] ?? ''),
+          proof_ref: `${ep.manifest}/${options.relation}/${JSON.stringify(match.key)}`
+        }]);
+      }
+      return {
+        manifest,
+        horizon,
+        bitemporal_grid: {
+          projection: 'orthographic',
+          valid_times: validTimes,
+          epochs,
+          matrix,
+          flat_known_tiles: true
+        }
+      };
+    }
+
+    if (!hasCalcRel) {
+      return {
+        manifest,
+        horizon,
+        bitemporal_grid: {
+          projection: 'orthographic',
+          valid_times: validTimes,
+          epochs: [],
+          matrix: [],
+          flat_known_tiles: true
+        }
+      };
+    }
+  }
+
   for (const ep of selected) {
-    let cols = colsCache.get(ep.relation);
+    const relName = options.relation ?? ep.relation;
+    let cols = colsCache.get(relName);
     if (!cols) {
-      cols = resolveRelationColumns(roleAnswers, options.pack, ep.relation);
-      colsCache.set(ep.relation, cols);
+      cols = resolveRelationColumns(roleAnswers, options.pack, relName);
+      colsCache.set(relName, cols);
     }
 
     epochs.push(`${ep.manifest} (${ep.known})`);
-    const row = findSubjectRow(roleAnswers, options.pack, ep, options.subjectId, cols.subject);
+    const row = findSubjectRow(roleAnswers, options.pack, { ...ep, relation: relName }, options.subjectId, cols.subject);
     const rawValue = String(row.key[cols.value] ?? '');
     const rawState = String(row.key[cols.state] ?? '');
     const rawReason = String(row.key[cols.reason] ?? '');
-    const proofRef = `${ep.manifest}/${ep.relation}/${JSON.stringify(row.key)}`;
+    const proofRef = `${ep.manifest}/${relName}/${JSON.stringify(row.key)}`;
 
     if (rawState === 'unknown') {
       if (!rawReason) {
@@ -215,7 +328,8 @@ export function buildBitemporalFixtureFromGateAnswers(
   }
 
   return {
-    manifest: recording.manifest,
+    manifest,
+    horizon,
     bitemporal_grid: {
       projection: 'orthographic',
       valid_times: validTimes,
