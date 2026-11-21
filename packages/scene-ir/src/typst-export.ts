@@ -196,7 +196,7 @@ function sceneBody(scene: CartoucheScene, options: TypstExportOptions): string {
     out.push(`#banner(${typstString(`${seal.trustTier}: unsealed, Propose and approval are locked`)})`);
   }
   if (!scene.horizon.complete) {
-    out.push(`#banner(${typstString(`incomplete: ${scene.horizon.reason ?? 'not_read_in_full'}`)})`);
+    out.push(`#banner(${typstString(scene.horizon.reason ? `incomplete: ${scene.horizon.reason}` : 'incomplete')})`);
   }
 
   out.push('#heading(level: 2, "Axes")');
@@ -272,13 +272,16 @@ function sceneBody(scene: CartoucheScene, options: TypstExportOptions): string {
   return out.join('\n');
 }
 
-function documentHead(first: CartoucheScene, title: string): string {
-  const seal = first.seal;
+function footerSet(scene: CartoucheScene): string {
+  const seal = scene.seal;
+  return `#set page(footer: align(center, text(size: 7pt, raw(${typstString(`${seal.manifestId} ${seal.trustTier}`)}))))`;
+}
+
+function documentHead(title: string): string {
   return [
     '// cartouche.scene/2 -> Typst (deterministic, generated)',
     `#set document(title: ${typstString(title)}, date: none)`,
-    '#set page(paper: "a4", margin: (x: 18mm, y: 20mm),',
-    `  footer: align(center, text(size: 7pt, raw(${typstString(`${seal.manifestId} ${seal.trustTier}`)}))))`,
+    '#set page(paper: "a4", margin: (x: 18mm, y: 20mm))',
     '#set text(size: 9pt)',
     PRELUDE()
   ].join('\n');
@@ -287,19 +290,22 @@ function documentHead(first: CartoucheScene, title: string): string {
 /** Emit one Typst document for a single scene. */
 export function exportTypst(scene: CartoucheScene, options: TypstExportOptions = {}): string {
   const title = options.title ?? scene.archetype;
-  return `${documentHead(scene, title)}\n${sceneBody(scene, options)}\n`;
+  return `${documentHead(title)}\n${footerSet(scene)}\n${sceneBody(scene, options)}\n`;
 }
 
-/** Emit one Typst dossier for several scenes; every scene starts on a fresh page with its own seal. */
+/**
+ * Emit one Typst dossier for several scenes. Every scene starts on a fresh page and sets its
+ * OWN page footer, so a page never shows another scene's manifest or trust tier.
+ */
 export function exportTypstDossier(
   scenes: readonly CartoucheScene[],
   options: TypstExportOptions & { readonly reasonsByScene?: readonly (Readonly<Record<string, string>> | undefined)[] } = {}
 ): string {
-  const first = scenes[0];
-  if (!first) throw new Error('Typst export: a dossier needs at least one scene.');
+  if (scenes.length === 0) throw new Error('Typst export: a dossier needs at least one scene.');
   const title = options.title ?? 'dossier';
-  const bodies = scenes.map((s, i) =>
-    sceneBody(s, { reasonByNodeId: options.reasonsByScene?.[i] ?? options.reasonByNodeId })
-  );
-  return `${documentHead(first, title)}\n${bodies.join('\n#pagebreak()\n')}\n`;
+  const parts = scenes.map((s, i) => {
+    const body = sceneBody(s, { reasonByNodeId: options.reasonsByScene?.[i] ?? options.reasonByNodeId });
+    return `${footerSet(s)}\n${body}`;
+  });
+  return `${documentHead(title)}\n${parts.join('\n#pagebreak()\n')}\n`;
 }

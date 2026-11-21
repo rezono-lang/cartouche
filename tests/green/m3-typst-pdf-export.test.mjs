@@ -161,3 +161,28 @@ test('M3: dishonest or malformed scenes are rejected, never repaired', () => {
   badSign.nodes[0] = { ...badSign.nodes[0], sign: 'constructor' };
   assert.throws(() => exportTypst(badSign), /no std-view sign/);
 });
+test('M3: a dossier sets each scene footer from that scene own seal (no seal misattribution)', () => {
+  const flow = CASES.flow;
+  const live = CASES.kring.scene;
+  const src = exportTypstDossier([flow.scene, live], { reasonsByScene: [flow.opts.reasonByNodeId, undefined] });
+  const footers = lines(src, '#set page(footer:');
+  assert.equal(footers.length, 2);
+  assert.ok(footers[0].includes(flow.scene.seal.manifestId) && footers[0].includes(flow.scene.seal.trustTier));
+  assert.ok(footers[1].includes(live.seal.manifestId) && footers[1].includes('provisional_engine'));
+  assert.ok(footers[0].includes(' sealed'));
+  assert.equal(footers[1].includes(' sealed'), false, 'live scene must not carry a sealed footer');
+  // Each footer precedes its own scene body, and the page break sits between the scenes.
+  const second = src.indexOf(footers[1]);
+  assert.ok(src.indexOf('#pagebreak()') < second);
+  assert.ok(src.indexOf(footers[0]) < src.indexOf('#pagebreak()'));
+  assert.ok(src.slice(second).includes('#banner("provisional_engine: unsealed'));
+  assert.equal(src.slice(0, src.indexOf('#pagebreak()')).includes('#banner("provisional_engine'), false);
+});
+
+test('M3: incomplete horizon banner shows only the published reason', () => {
+  const sc = structuredClone(CASES.relief.scene);
+  sc.horizon = { complete: false, reason: null };
+  assert.ok(exportTypst(sc).includes('#banner("incomplete")'));
+  sc.horizon = { complete: false, reason: 'not_read_in_full' };
+  assert.ok(exportTypst(sc).includes('#banner("incomplete: not_read_in_full")'));
+});
