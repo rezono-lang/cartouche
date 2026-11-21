@@ -87,17 +87,24 @@ test('M2: Sheet 01 renders orthographic Swisstopo 3D terrain, cliff markers, hat
     assert.ok(svg.querySelector('pattern#relief-unknown-hatch'), 'expected 45-deg hatch pattern for unknown curtain');
 
     const svgMarks = [...svg.querySelectorAll(`[${M.proof_ref}]`)];
+    const svgSigns = [...svg.querySelectorAll(`[${M.sign}]`)];
     assert.equal(svgMarks.length, fx.sweep_2d.cells.length + 1, '5 grid terraces + 1 curtain carry published proofs');
+    assert.equal(svgMarks.length, svgSigns.length, 'every svg [data-sign] must carry [data-proof-ref]');
+    for (const signEl of svgSigns) {
+      assert.ok(signEl.getAttribute(M.proof_ref), 'every drawn SVG mark must carry [data-proof-ref]');
+    }
 
-    // Cliff distance marker for A001 displays published cliff text without borrowing amountCell.proofRef
-    const cliffMark = svg.querySelector(`g[${M.key}="cliff:A001"][${M.sign}="legislator"]`);
-    assert.ok(cliffMark, 'expected cliff distance marker for A001');
+    // Fixture 04 has no sweep_2d.cliff_distances proof_ref -> 0 SVG cliff markers and no legislator sign in legend
     assert.equal(
-      cliffMark.getAttribute(M.proof_ref),
-      null,
-      'must not borrow amountCell.proofRef when fixture publishes no dedicated cliff proof_ref'
+      svg.querySelectorAll(`g[${M.key}^="cliff:"]`).length,
+      0,
+      'must emit 0 SVG cliff markers when no dedicated cliff proof_ref is published'
     );
-    assert.ok(cliffMark.textContent.includes(fx.subjects[0].cliff_distance_display));
+    assert.equal(
+      doc.querySelector(`table[${M.part}="legend"] tr[${M.sign}="legislator"]`),
+      null,
+      'legend must omit legislator when no cliff marker is drawn'
+    );
 
     // Hatched A003 unknown curtain carries proof, reason, sign, and zero ASCII digits
     const curtainSvg = svg.querySelector(`g[${M.part}="curtain"][${M.sign}="unknown"][${M.state}="unknown"]`);
@@ -200,7 +207,7 @@ test('M2: Sheet 01 collapses cleanly to 2D profile fallback and collapses A003 c
   }
 });
 
-test('M2: Sheet 01 enforces xD-Discipline Guard and epistemic honesty (rejects perspective, nominal Z, unknown without curtain, and digits in unknown reason)', () => {
+test('M2: Sheet 01 enforces xD-Discipline Guard and epistemic honesty (rejects perspective, nominal Z, unknown without curtain, and digits in unknown reason)', async () => {
   const perspectiveFx = loadFixture04();
   perspectiveFx.sweep_2d.projection = 'perspective';
   assert.throws(() => buildReliefModel(perspectiveFx), /XD_NO_PERSPECTIVE/);
@@ -236,20 +243,37 @@ test('M2: Sheet 01 enforces xD-Discipline Guard and epistemic honesty (rejects p
   violatedSubjectFx.subjects[0].state = 'violated';
   assert.throws(() => buildReliefModel(violatedSubjectFx), /Unsupported relief subject state/);
 
-  // Dedicated published cliff_distances proof_ref is used verbatim when provided
+  // Dedicated published cliff_distances entry renders SVG cliff marker with its proof and legislator in legend
   const cliffProofFx = loadFixture04();
   cliffProofFx.sweep_2d.cliff_distances = [
     { subject_id: 'A001', display: '€ 2.000 to Art. 5 cliff', proof_ref: 'cliff:art5-A001' }
   ];
   const cliffModel = buildReliefModel(cliffProofFx);
+  assert.equal(cliffModel.cliffMarkers.length, 1);
   assert.equal(cliffModel.cliffMarkers[0].proofRef, 'cliff:art5-A001');
-  assert.ok(renderReliefOrthographicSvg(cliffModel).includes('data-proof-ref="cliff:art5-A001"'));
+  const cliffSvg = renderReliefOrthographicSvg(cliffModel);
+  const { window: winC, document: docC } = parseHtml(cliffSvg);
+  try {
+    const marker = docC.querySelector(`svg g[${M.key}="cliff:A001"][${M.sign}="legislator"]`);
+    assert.ok(marker, 'expected SVG cliff marker when sweep_2d.cliff_distances is published');
+    assert.equal(marker.getAttribute(M.proof_ref), 'cliff:art5-A001');
+    assert.ok(marker.textContent.includes('€ 2.000 to Art. 5 cliff'));
+  } finally {
+    await winC.happyDOM.close();
+  }
+  assert.ok(
+    cliffModel.legendItems.some((item) => item.key === 'legislator'),
+    'legend must include legislator when a cliff marker is drawn'
+  );
 });
 
 test('M2: Sheet 01 passes exhaustive Opaque-Token Mutation Test with zero NaN or client re-ordering', async () => {
   const fx = loadFixture04();
   fx.subjects[0].amount_cell.display = 'OPAQUE_SUBJ_AMT';
   fx.subjects[0].cliff_distance_display = 'OPAQUE_CLIFF_TOKEN';
+  fx.sweep_2d.cliff_distances = [
+    { subject_id: 'A001', display: 'OPAQUE_CLIFF_TOKEN', proof_ref: 'cliff:opaque-proof' }
+  ];
   fx.sweep_2d.x_axis.stops = ['X_TOK_0', 'X_TOK_1', 'X_TOK_2', 'X_TOK_3'];
   fx.sweep_2d.y_axis.stops = ['Y_TOK_0', 'Y_TOK_1', 'Y_TOK_2', 'Y_TOK_3'];
   fx.sweep_2d.cells.forEach((c, idx) => {

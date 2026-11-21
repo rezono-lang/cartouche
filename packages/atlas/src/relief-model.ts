@@ -130,7 +130,7 @@ export interface ReliefCurtainGeometry {
 export interface ReliefCliffMarker {
   readonly subjectId: string;
   readonly display: string;
-  readonly proofRef: string | null;
+  readonly proofRef: string;
   readonly citation: string | null;
 }
 
@@ -425,42 +425,23 @@ export function buildReliefModel(
     });
   });
 
-  const cliffProofBySubject = new Map<string, string>();
+  // Only emit SVG cliff markers for entries with a dedicated published proof_ref in sweep_2d.cliff_distances.
+  // Subject cliff_distance_display without a dedicated cliff proof stays text in the subject's Table Twin row
+  // so no SVG mark is ever drawn without a proof_ref or with a borrowed amount witness.
+  const citationBySubject = new Map(subjects.map((s) => [s.id, s.citation] as const));
+  const cliffMarkers: ReliefCliffMarker[] = [];
   for (const extra of fixture.sweep_2d.cliff_distances ?? []) {
     if (!extra.proof_ref || extra.proof_ref.trim().length === 0) {
       throw new Error(`Cliff distance entry for "${extra.subject_id}" requires a non-empty proof_ref.`);
     }
-    cliffProofBySubject.set(extra.subject_id, extra.proof_ref);
-  }
-
-  // Note: subjects[*].cliff_distance_display has no dedicated proof_ref in fixture 04 (planner bump
-  // needed if a dedicated cliff witness is published); never borrow amountCell.proofRef.
-  const cliffMarkers: ReliefCliffMarker[] = [];
-  const seenCliffSubjects = new Set<string>();
-  for (const sub of subjects) {
-    if (sub.cliffDistanceDisplay) {
-      seenCliffSubjects.add(sub.id);
-      cliffMarkers.push(
-        Object.freeze({
-          subjectId: sub.id,
-          display: sub.cliffDistanceDisplay,
-          proofRef: cliffProofBySubject.get(sub.id) ?? null,
-          citation: sub.citation
-        })
-      );
-    }
-  }
-  for (const extra of fixture.sweep_2d.cliff_distances ?? []) {
-    if (!seenCliffSubjects.has(extra.subject_id)) {
-      cliffMarkers.push(
-        Object.freeze({
-          subjectId: extra.subject_id,
-          display: extra.display,
-          proofRef: extra.proof_ref,
-          citation: null
-        })
-      );
-    }
+    cliffMarkers.push(
+      Object.freeze({
+        subjectId: extra.subject_id,
+        display: extra.display,
+        proofRef: extra.proof_ref,
+        citation: citationBySubject.get(extra.subject_id) ?? null
+      })
+    );
   }
 
   const rawSlice = options.sliceYIndex ?? 1;
@@ -696,14 +677,14 @@ export function renderReliefOrthographicSvg(
     );
   }
 
-  // Cliff distance markers (emit data-proof-ref only when a dedicated cliff proof_ref is published)
+  // Cliff distance markers (every marker has a dedicated published proof_ref)
   const legGlyph = resolveSignSpec('legislator').glyph;
   for (let idx = 0; idx < model.cliffMarkers.length; idx++) {
     const marker = model.cliffMarkers[idx]!;
     const my = 48 + idx * 24;
-    const proofAttr = marker.proofRef ? ` ${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}"` : '';
     parts.push(
-      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator"${proofAttr}>`,
+      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator" ` +
+        `${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}">`,
       `<rect x="16" y="${my - 14}" width="260" height="20" rx="3" fill="${p.paperElev}" stroke="${p.proof}" stroke-width="1" />`,
       `<text x="24" y="${my}" fill="${p.proof}" font-size="11">${escapeXml(`${legGlyph} ${marker.subjectId}: ${marker.display}`)}</text>`,
       `</g>`
@@ -791,14 +772,14 @@ export function renderRelief2DProfileSvg(
     );
   }
 
-  // Cliff distance callouts (emit data-proof-ref only when a dedicated cliff proof_ref is published)
+  // Cliff distance callouts (every marker has a dedicated published proof_ref)
   const legGlyph = resolveSignSpec('legislator').glyph;
   for (let idx = 0; idx < model.cliffMarkers.length; idx++) {
     const marker = model.cliffMarkers[idx]!;
     const my = padTop + plotH + 44 + idx * 14;
-    const proofAttr = marker.proofRef ? ` ${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}"` : '';
     parts.push(
-      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator"${proofAttr}>`,
+      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator" ` +
+        `${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}">`,
       `<text x="${padLeft}" y="${my}" fill="${p.proof}" font-size="11">${escapeXml(`${legGlyph} ${marker.subjectId}: ${marker.display}`)}</text>`,
       `</g>`
     );
