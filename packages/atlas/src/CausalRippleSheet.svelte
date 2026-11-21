@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SIGNS } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
-  import { formatAtlasMessage, formatReasonLabel } from './i18n-mf2.ts';
+  import { formatAtlasMessage, formatReasonLabel, formatSignLabel, formatStateLabel, formatTrustTierLabel } from './i18n-mf2.ts';
   import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
   import { buildCausalRippleModel, renderCausalRippleSvg } from './ripple-layout.ts';
   import type { RippleFixtureWithEdges } from './ripple-layout.ts';
@@ -49,6 +49,7 @@
 </script>
 
 <section
+  lang={lang}
   data-sheet="causal-ripple"
   data-projection="2d"
   data-cartouche-theme={model.theme}
@@ -82,7 +83,7 @@
       >
         {model.scene.seal.witnessCheck}
       </span>
-      <span>{model.scene.seal.trustTier}</span>
+      <span>{formatTrustTierLabel(lang, model.scene.seal.trustTier, messages)}</span>
       <span>role={model.scene.seal.role}</span>
       <span>epoch={model.scene.seal.epoch}</span>
       <span>{model.scene.seal.knowledgeTime}</span>
@@ -114,7 +115,7 @@
       <tbody>
         {#each model.legendItems as item (item.key)}
           <tr data-sign={item.key}>
-            <td>{item.key}</td>
+            <td>{formatSignLabel(lang, item.key, messages)}</td>
             <td>{item.glyph}</td>
             <td>{item.kind}</td>
           </tr>
@@ -153,7 +154,7 @@
             <td>{n.hop}</td>
             <td>{n.gate ?? ''}</td>
             <td>{n.loadBearing === null ? '' : n.loadBearing ? 'true' : 'false'}</td>
-            <td>{n.signGlyph} {n.sign}</td>
+            <td>{n.signGlyph} {formatSignLabel(lang, n.sign, messages)}</td>
             <td
               data-part="value"
               data-state={n.state}
@@ -167,16 +168,16 @@
                 </span>
               {:else if n.state === 'absent'}
                 <span data-sign="absent">
-                  {SIGNS.absent?.glyph ?? '⦸'} absent
+                  {SIGNS.absent?.glyph ?? '⦸'} {formatStateLabel(lang, 'absent', messages)}
                 </span>
               {:else if n.state === 'invalid'}
                 <span data-sign="invalid" data-reason={n.reason ?? undefined}>
-                  {SIGNS.invalid?.glyph ?? '!'} invalid{#if n.reason} · {formatReasonLabel(lang, n.reason, messages)}{/if}
+                  {SIGNS.invalid?.glyph ?? '!'} {formatStateLabel(lang, 'invalid', messages)}{#if n.reason} · {formatReasonLabel(lang, n.reason, messages)}{/if}
                 </span>
               {:else if n.previousDisplay && n.display}
                 <del>{n.previousDisplay}</del> <ins>{n.display}</ins>
               {:else}
-                {n.stateGlyph} {n.display ?? n.state}
+                {n.stateGlyph} {n.display ?? formatStateLabel(lang, n.state, messages)}
               {/if}
             </td>
             <td>{n.proofRef}</td>

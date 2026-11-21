@@ -1,18 +1,25 @@
 <script lang="ts">
   import { DATA_MARKS, PALETTES, SIGNS, paletteCss } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
+  import { formatAtlasMessage, formatReasonLabel, formatSignLabel, formatStateLabel, formatTrustTierLabel } from './i18n-mf2.ts';
+  import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
   import { buildMongeFoldingModel } from './monge-model.ts';
   import type { MongeFixtureInput, MongeRoundState, Point2D } from './monge-model.ts';
 
   interface Props {
     fixture: MongeFixtureInput;
     theme?: PaletteName;
+    lang?: AtlasLocale;
+    messages?: Mf2MessageCatalog | null;
     foldAngleDeg?: number;
   }
 
-  let { fixture, theme = 'swisstopo', foldAngleDeg }: Props = $props();
+  let { fixture, theme = 'swisstopo', lang = 'en', messages = null, foldAngleDeg }: Props = $props();
 
   const M = DATA_MARKS;
+  let t = $derived((key: string, params?: Readonly<Record<string, string>>): string =>
+    formatAtlasMessage(lang, key, params, messages)
+  );
   let userAngle = $state<number | null>(null);
   let activeAngle = $derived(userAngle ?? foldAngleDeg ?? fixture.fold_angle_deg ?? 0);
   let resolvedTheme = $derived<PaletteName>(theme in PALETTES ? theme : 'swisstopo');
@@ -72,6 +79,7 @@
 
 <section
   class="monge-sheet"
+  lang={lang}
   aria-labelledby="monge-title"
   {...{
     [M.sheet]: 'monge-fold',
@@ -82,26 +90,26 @@
   }}
 >
   <style>{themeCss}</style>
-  <h2 id="monge-title">Orthographic Folding Atlas ({model.foldAngleDeg}°)</h2>
+  <h2 id="monge-title">{t('sheet.monge.title', { angle: String(model.foldAngleDeg) })}</h2>
 
   <div {...{ [M.part]: 'seal', [M.trust_tier]: model.scene.seal.trustTier }}>
     <span {...{ [M.part]: 'manifest-hash' }}>{model.scene.seal.manifestId}</span>
     <span {...{ [M.check]: 'witness', [M.status]: model.scene.seal.witnessCheck === 'green' ? 'green' : 'red' }}>
       {model.scene.seal.witnessCheck}
     </span>
-    <span>{model.scene.seal.trustTier}</span>
+    <span>{formatTrustTierLabel(lang, model.scene.seal.trustTier, messages)}</span>
   </div>
 
-  <div role="group" aria-label="Fold angle">
-    <button type="button" aria-pressed={model.foldAngleDeg === 0} onclick={() => (userAngle = 0)}>0° Flat</button>
-    <button type="button" aria-pressed={model.foldAngleDeg === 40} onclick={() => (userAngle = 40)}>40° Fold</button>
-    <button type="button" aria-pressed={model.foldAngleDeg === 90} onclick={() => (userAngle = 90)}>90° Prism</button>
+  <div role="group" aria-label={t('sheet.monge.fold_angle')}>
+    <button type="button" aria-pressed={model.foldAngleDeg === 0} onclick={() => (userAngle = 0)}>{t('sheet.monge.flat')}</button>
+    <button type="button" aria-pressed={model.foldAngleDeg === 40} onclick={() => (userAngle = 40)}>{t('sheet.monge.fold')}</button>
+    <button type="button" aria-pressed={model.foldAngleDeg === 90} onclick={() => (userAngle = 90)}>{t('sheet.monge.prism')}</button>
   </div>
 
   <svg
     class="monge-svg"
     role="img"
-    aria-label={`Orthographic folding sheet at ${model.foldAngleDeg} degrees`}
+    aria-label={t('sheet.monge.diagram_label', { angle: String(model.foldAngleDeg) })}
     viewBox={`${model.viewBox.minX} ${model.viewBox.minY} ${model.viewBox.width} ${model.viewBox.height}`}
     {...{
       [M.sheet]: 'monge-fold',
@@ -216,7 +224,7 @@
           fill={svc.state === 'invalid' ? 'var(--c-violated)' : 'var(--c-ink)'}
           font-size="10"
         >
-          {svc.state === 'unknown' ? `${glyph('unknown')} ${svc.reason}` : svc.state === 'invalid' ? `! ${svc.short}` : `${glyph(svc.sign)} ${svc.short}`}
+          {svc.state === 'unknown' ? `${glyph('unknown')} ${formatReasonLabel(lang, svc.reason ?? 'incomplete', messages)}` : svc.state === 'invalid' ? `! ${svc.short}` : `${glyph(svc.sign)} ${svc.short}`}
         </text>
       </g>
 
@@ -232,7 +240,7 @@
               stroke-width="0.9"
               stroke-dasharray={roundDotDash(rm.state)}
               {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
-            >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
+            >{#if rm.proofRef === null}<title>{t('sheet.common.no_proof')}</title>{/if}</circle>
             <circle
               cx={fx(rm.plane3)}
               cy={fy(rm.plane3)}
@@ -242,7 +250,7 @@
               stroke-width="0.9"
               stroke-dasharray={roundDotDash(rm.state)}
               {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
-            >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
+            >{#if rm.proofRef === null}<title>{t('sheet.common.no_proof')}</title>{/if}</circle>
           {/each}
         </g>
       {/if}
@@ -250,20 +258,20 @@
   </svg>
 
   <table {...{ [M.part]: 'twin' }}>
-    <caption>Accessible Table Twin</caption>
+    <caption>{t('sheet.common.twin')}</caption>
     <thead>
       <tr>
-        <th scope="col">Entity</th>
-        <th scope="col">Sign</th>
-        <th scope="col">State</th>
-        <th scope="col">Proof</th>
+        <th scope="col">{t('col.entity')}</th>
+        <th scope="col">{t('col.sign')}</th>
+        <th scope="col">{t('col.state')}</th>
+        <th scope="col">{t('col.proof')}</th>
       </tr>
     </thead>
     <tbody>
       {#each model.services as svc (svc.id)}
         <tr {...{ [M.key]: svc.id, [M.state]: svc.state === 'invalid' ? undefined : svc.state, [M.proof_ref]: svc.proofRef }}>
           <td>{svc.label}</td>
-          <td>{svc.sign}</td>
+          <td>{formatSignLabel(lang, svc.sign, messages)}</td>
           <td
             {...{
               [M.part]: 'value',
@@ -274,13 +282,13 @@
             }}
           >
             {#if svc.state === 'unknown'}
-              {glyph('unknown')} {svc.reason}
+              {glyph('unknown')} {formatReasonLabel(lang, svc.reason ?? 'incomplete', messages)}
             {:else if svc.state === 'absent'}
-              {glyph('absent')} absent
+              {glyph('absent')} {formatStateLabel(lang, 'absent', messages)}
             {:else if svc.state === 'invalid'}
-              <span {...{ [M.sign]: 'invalid' }}>! invalid{#if svc.reason} · {svc.reason}{/if}</span>
+              <span {...{ [M.sign]: 'invalid' }}>! {formatStateLabel(lang, 'invalid', messages)}{#if svc.reason} · {formatReasonLabel(lang, svc.reason, messages)}{/if}</span>
             {:else}
-              {svc.state}
+              {formatStateLabel(lang, svc.state, messages)}
             {/if}
           </td>
           <td>{svc.proofRef}</td>
@@ -290,13 +298,13 @@
   </table>
 
   <table {...{ [M.part]: 'legend' }}>
-    <caption>Sign Legend</caption>
+    <caption>{t('sheet.common.legend')}</caption>
     <thead>
       <tr>
-        <th scope="col">Glyph</th>
-        <th scope="col">Sign</th>
-        <th scope="col">Kind</th>
-        <th scope="col">Pattern</th>
+        <th scope="col">{t('col.glyph')}</th>
+        <th scope="col">{t('col.sign')}</th>
+        <th scope="col">{t('col.kind')}</th>
+        <th scope="col">{t('col.pattern')}</th>
       </tr>
     </thead>
     <tbody>
@@ -304,7 +312,7 @@
         {@const spec = signSpec(signName)}
         <tr {...{ [M.sign]: signName }}>
           <td><span aria-hidden="true">{spec.glyph}</span></td>
-          <td>{signName}</td>
+          <td>{formatSignLabel(lang, signName, messages)}</td>
           <td>{spec.kind}</td>
           <td>{spec.pattern}</td>
         </tr>

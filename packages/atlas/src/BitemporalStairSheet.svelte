@@ -2,6 +2,8 @@
   import { DATA_MARKS, PALETTES, SIGNS, paletteCss } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
   import type { BitemporalFixtureInput } from '../../scene-ir/src/compile-bitemporal.ts';
+  import { formatAtlasMessage, formatReasonLabel, formatSignLabel, formatStateLabel, formatTrustTierLabel } from './i18n-mf2.ts';
+  import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
   import {
     TILE_HALF_H,
     TILE_HALF_W,
@@ -13,6 +15,8 @@
   interface Props {
     fixture: BitemporalFixtureInput;
     theme?: PaletteName;
+    lang?: AtlasLocale;
+    messages?: Mf2MessageCatalog | null;
     view?: '2d' | 'orthographic';
     activeValidAt?: string;
     activeKnownAt?: string;
@@ -22,6 +26,8 @@
   let {
     fixture,
     theme = 'swisstopo',
+    lang = 'en',
+    messages = null,
     view = '2d',
     activeValidAt,
     activeKnownAt,
@@ -29,6 +35,9 @@
   }: Props = $props();
 
   const M = DATA_MARKS;
+  let t = $derived((key: string, params?: Readonly<Record<string, string>>): string =>
+    formatAtlasMessage(lang, key, params, messages)
+  );
   let current = $state<'2d' | 'orthographic' | null>(null);
   let shown = $derived(current ?? view);
   let resolvedTheme = $derived<PaletteName>(theme in PALETTES ? theme : 'swisstopo');
@@ -38,7 +47,12 @@
   let matrix = $derived(
     model.epochs.map((_, row) => model.cells.filter((c) => c.row === row))
   );
-  let axisLabel = $derived((axis: string): string => model.scene.axes.find((a) => a.axis === axis)?.label ?? axis);
+  let axisLabel = $derived((axis: string): string => {
+    const raw = model.scene.axes.find((a) => a.axis === axis)?.label ?? axis;
+    if (raw === 'Knowledge Time') return t('col.knowledge_time');
+    if (raw === 'Knowledge Epoch') return t('col.knowledge_epoch');
+    return raw;
+  });
 
   function glyph(sign: string): string {
     if (!Object.prototype.hasOwnProperty.call(SIGNS, sign)) {
@@ -55,6 +69,7 @@
 
 <section
   class="bt-sheet"
+  lang={lang}
   aria-labelledby="bt-title"
   {...{
     [M.sheet]: 'bitemporal-stair',
@@ -74,17 +89,17 @@
     <span {...{ [M.check]: 'witness', [M.status]: model.scene.seal.witnessCheck === 'green' ? 'green' : 'red' }}>
       {model.scene.seal.witnessCheck}
     </span>
-    <span>{model.scene.seal.trustTier}</span>
+    <span>{formatTrustTierLabel(lang, model.scene.seal.trustTier, messages)}</span>
   </div>
 
-  <div role="group" aria-label="Projection">
+  <div role="group" aria-label={t('sheet.bitemporal.projection')}>
     <button type="button" aria-pressed={shown === '2d'} onclick={() => (current = '2d')}>2D</button>
     <button type="button" aria-pressed={shown === 'orthographic'} onclick={() => (current = 'orthographic')}>3D</button>
   </div>
 
   {#if shown === '2d'}
     <table class="bt-matrix" {...{ [M.sheet]: 'bitemporal-stair' }}>
-      <caption>{axisLabel('x')} (columns) × {axisLabel('y')} (rows)</caption>
+      <caption>{t('sheet.bitemporal.matrix_caption', { x: axisLabel('x'), y: axisLabel('y') })}</caption>
       <thead>
         <tr>
           <th scope="col">{axisLabel('y')}</th>
@@ -107,11 +122,11 @@
                   [M.proof_ref]: c.proofRef
                 }}
               >
-                <span class="cartouche-sign" role="img" aria-label={c.state === 'invalid' ? 'invalid' : c.sign} {...{ [M.sign]: c.sign }}>
+                <span class="cartouche-sign" role="img" aria-label={c.state === 'invalid' ? formatStateLabel(lang, 'invalid', messages) : formatSignLabel(lang, c.sign, messages)} {...{ [M.sign]: c.sign }}>
                   <span aria-hidden="true">{c.state === 'invalid' ? '!' : glyph(c.sign)}</span>
                 </span>
                 {#if c.state === 'unknown' || c.state === 'not_applicable' || c.state === 'invalid'}
-                  <span>{c.reason}</span>
+                  <span>{c.reason ? formatReasonLabel(lang, c.reason, messages) : formatStateLabel(lang, c.state, messages)}</span>
                 {:else if c.previousDisplay}
                   <del>{c.previousDisplay}</del> <ins>{c.display}</ins>
                 {:else}
@@ -127,7 +142,7 @@
     <svg
       class="bt-stair"
       role="img"
-      aria-label={`${axisLabel('x')} by ${axisLabel('y')} orthographic staircase, height ${axisLabel('z')}`}
+      aria-label={t('sheet.bitemporal.stair_label', { x: axisLabel('x'), y: axisLabel('y'), z: axisLabel('z') })}
       viewBox={`${model.viewBox.minX} ${model.viewBox.minY} ${model.viewBox.width} ${model.viewBox.height}`}
       {...{ [M.sheet]: 'bitemporal-stair', [M.projection]: 'orthographic' }}
     >
@@ -211,15 +226,26 @@
   {/if}
 
   <table class="bt-twin" {...{ [M.part]: 'twin' }}>
-    <caption>Table twin</caption>
+    <caption>{t('sheet.common.twin')}</caption>
     <thead>
-      <tr>{#each model.scene.tableTwin.headers as h}<th scope="col">{h}</th>{/each}</tr>
+      <tr>
+        <th scope="col">{axisLabel('y')}</th>
+        {#each model.validTimes as vt}<th scope="col">{vt}</th>{/each}
+      </tr>
     </thead>
     <tbody>
-      {#each model.scene.tableTwin.rows as line}
+      {#each matrix as line, r}
         <tr>
-          <th scope="row">{line[0]}</th>
-          {#each line.slice(1) as text}<td>{text}</td>{/each}
+          <th scope="row">{model.epochs[r]}</th>
+          {#each line as c (c.id)}
+            <td>
+              {#if c.state === 'unknown' || c.state === 'not_applicable' || c.state === 'invalid'}
+                {c.reason ? formatReasonLabel(lang, c.reason, messages) : formatStateLabel(lang, c.state, messages)}
+              {:else}
+                {c.display}
+              {/if}
+            </td>
+          {/each}
         </tr>
       {/each}
     </tbody>
@@ -243,11 +269,11 @@
   </table>
 
   <table {...{ [M.part]: 'legend' }}>
-    <caption>Legend</caption>
-    <thead><tr><th scope="col">Sign</th><th scope="col">Meaning</th></tr></thead>
+    <caption>{t('sheet.common.legend')}</caption>
+    <thead><tr><th scope="col">{t('col.sign')}</th><th scope="col">{t('col.meaning')}</th></tr></thead>
     <tbody>
       {#each model.drawnSigns as s}
-        <tr {...{ [M.sign]: s }}><th scope="row"><span aria-hidden="true">{glyph(s)}</span></th><td>{s}</td></tr>
+        <tr {...{ [M.sign]: s }}><th scope="row"><span aria-hidden="true">{glyph(s)}</span></th><td>{formatSignLabel(lang, s, messages)}</td></tr>
       {/each}
     </tbody>
   </table>

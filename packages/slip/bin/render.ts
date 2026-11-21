@@ -547,6 +547,7 @@ async function renderFromReader(
     const out = svelteRender(component, {
       props: {
         theme,
+        lang,
         unserved: { code: `http_status_${refused.status}`, reason_message_id: refused.error },
         httpStatus: refused.status
       }
@@ -565,6 +566,7 @@ async function renderFromReader(
   const out = svelteRender(component, {
     props: {
       theme,
+      lang,
       seal,
       sealChecks: props.sealChecks,
       manifestHash: props.manifestHash,
@@ -747,6 +749,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
   const out = svelteRender(mod.default, {
     props: {
       theme,
+      lang,
       model,
       seal,
       sealChecks: [],
