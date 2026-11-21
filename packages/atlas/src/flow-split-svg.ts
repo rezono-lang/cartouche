@@ -465,14 +465,15 @@ export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): s
   lines.push(`    <text x="${PAD_X}" y="34" fill="${escapeXml(palette.ink)}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="600">stated ∥ observed</text>`);
   lines.push('  </g>');
 
-  // Horizon status (honest boundary when incomplete)
+  // Honest boundary marker on standalone SVG export (without duplicating the single HTML [data-part="horizon"] notice)
   if (!scene.horizon.complete) {
-    const reasonText = scene.horizon.reason ?? 'not_read_in_full';
+    const reasonCode = scene.horizon.reason ?? 'not_read_in_full';
+    const label = reasonCode === 'not_read_in_full' ? 'Not read in full for this role' : 'Incomplete horizon';
     lines.push(
-      `  <g ${DATA_MARKS.part}="horizon" ${DATA_MARKS.status}="warning" ${DATA_MARKS.reason}="${escapeXml(reasonText)}">`
+      `  <g ${DATA_MARKS.status}="warning" ${DATA_MARKS.reason}="${escapeXml(reasonCode)}">`
     );
     lines.push(
-      `    <text x="${model.width - PAD_X}" y="34" text-anchor="end" fill="${escapeXml(palette.caution)}" font-family="ui-monospace, monospace" font-size="12">incomplete: ${escapeXml(reasonText)}</text>`
+      `    <text x="${model.width - PAD_X}" y="34" text-anchor="end" fill="${escapeXml(palette.caution)}" font-family="ui-monospace, monospace" font-size="12">${escapeXml(label)}</text>`
     );
     lines.push('  </g>');
   }

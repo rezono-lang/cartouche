@@ -390,6 +390,13 @@
     }
     return isNl ? 'Voorstel vergrendeld: recht niet verleend door lezer' : 'Propose locked: right not granted by reader';
   }
+  function formatHorizonText(reason: string | null, locale: string): string {
+    const isNl = locale.toLowerCase().startsWith('nl');
+    if (reason === 'not_read_in_full') {
+      return isNl ? 'Niet volledig leesbaar voor uw rol' : 'Not readable in full for your role';
+    }
+    return isNl ? 'Onvolledige horizon' : 'Incomplete horizon';
+  }
 </script>
 
 <div
@@ -429,7 +436,7 @@
         data-part="horizon"
         data-reason={horizon.reason ?? undefined}
       >
-        Horizon incomplete{#if horizon.reason}: {horizon.reason}{/if}
+        {formatHorizonText(horizon.reason, lang)}
       </div>
     {/if}
 
