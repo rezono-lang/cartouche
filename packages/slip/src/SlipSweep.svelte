@@ -3,7 +3,7 @@
   import { validateSweepStops } from './slip-sweep.ts';
   import type { SweepStopInput } from './slip-sweep.ts';
 
-  // The control of one sweep, inside the line of the cell it moves (Rezono's marks, Decision 0009): one stop per
+  // The control of one sweep, inside the line of the cell it moves (Rezono's marks, Decision 0010): one stop per
   // published grid value and nothing in between. A red stop shows its checks and no value.
   let {
     stops,

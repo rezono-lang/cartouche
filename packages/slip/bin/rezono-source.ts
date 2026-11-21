@@ -1,5 +1,5 @@
 /**
- * Rezono sources consumed by @rezono/slip at build time (Decision 0009, point 2).
+ * Rezono sources consumed by @rezono/slip at build time (Decision 0010, point 2).
  *
  * Reads each file named in ../rezono-source.json at the pinned Rezono commit and refuses any other bytes.
  * Files are cached under node_modules/.cache/rezono-source/<commit>/ (outside git); a missing file is fetched

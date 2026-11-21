@@ -4,7 +4,7 @@
  * Accepts a JSON request ({ store | fixture, role, pack, lang, row?, keys?, reader?, theme?, model?, seal?, selectedStop? })
  * and returns { html, files } where `files` maps every built @rezono/slip asset to its LF-normalized SHA-256 digest.
  *
- * Reading Rezono's reader (Decision 0009): a fixture with `reader_answers` (fixtures/10-slip-reader-answers.json)
+ * Reading Rezono's reader (Decision 0010): a fixture with `reader_answers` (fixtures/10-slip-reader-answers.json)
  * holds what Rezono's reader answered, per store and role. `store` names the recorded store ("main" by default),
  * `row` is { relation, key } as in Rezono's slip tests, `keys` are Rezono's line actions ({ line, key } presses a
  * verb's key on the line with that index, { line, stop } moves its sweep control to a stop) or shortcut letters,

@@ -9,7 +9,7 @@
     "trust_tier": "sealed"
   },
   "source": {
-    "decision": "decisions/0009-slip-reads-rezono-reader.md",
+    "decision": "decisions/0010-slip-reads-rezono-reader.md",
     "repository": "rezono-lang/rezono",
     "commit": "f15c89d665e2815b02e12665203a9d48dd6abc40",
     "pack": "tests/fixtures/slip",
@@ -29,7 +29,7 @@
       "the std-access module name and enum order in the bundle; the four rule-less std-access relations shown to summary",
       "red check names at stop 6, and the green status of rezono:origins (a warning there would make green stops warning)"
     ],
-    "regenerate": "Replace with answers recorded from Rezono's local reader at the pinned commit when that runs in CI (Decision 0009, point 3)."
+    "regenerate": "Replace with answers recorded from Rezono's local reader at the pinned commit when that runs in CI (Decision 0010, point 3)."
   },
   "reader_answers": {
     "main": {

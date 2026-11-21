@@ -1,5 +1,5 @@
 {
-  "decision": "decisions/0009-slip-reads-rezono-reader.md",
+  "decision": "decisions/0010-slip-reads-rezono-reader.md",
   "description": "The Rezono sources @rezono/slip consumes at build time: read at this commit, verified by SHA-256 (LF bytes as stored in git), never copied into Cartouche.",
   "repository": "rezono-lang/rezono",
   "commit": "f15c89d665e2815b02e12665203a9d48dd6abc40",

@@ -452,9 +452,13 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
   }
   assert.deepEqual(await auditA11y(first.html), [], '09-slip-conformance home claim must have 0 WCAG 2.1 AA violations');
 
-  // Row whose grounds omit premise_position must NOT guess links by array index, while aggregate links to part=total
+  // Row whose grounds omit premise_position must NOT guess links by array index, while aggregate links to part=total.
+  // Fixture 09's group line now carries premise_position 0, as Rezono's reader gives it (decisions/0010, point 5),
+  // so the premise position is taken out here to keep testing that no link is guessed.
+  const fxNoPosition = loadFixture('09-slip-conformance.json');
+  delete fxNoPosition.slip_conformance.rows['group_size::group-a::2'].grounds_distance_1[0].premise_position;
   const groupRes = await renderSlipHarness({
-    fixture: 'fixtures/09-slip-conformance.json',
+    store: fxNoPosition,
     role: 'reader',
     pack: 'slip',
     lang: 'en',

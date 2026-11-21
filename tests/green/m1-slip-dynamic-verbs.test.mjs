@@ -46,7 +46,8 @@ test('M1 conformance [verbs-that-answer]: shows button[data-verb][data-key] stri
     await win1.happyDOM.close();
   }
 
-  // 2. flagged::item-a::12 has line 0 answered_verbs: [] and line 1 answered_verbs: ["suppose"]
+  // 2. flagged::item-a::12 has line 0 answered_verbs: [] and line 1 answered_verbs: ["depends", "suppose"]
+  //    (Rezono's reader answers reach on item__amount: fixture 09 follows it, decisions/0010 point 5)
   //    (lines are numbered by their index from 0, Rezono's marks: decisions/0010-slip-reads-rezono-reader.md)
   const plainFlagged = await render({
     fixture: FX_09,
@@ -60,7 +61,10 @@ test('M1 conformance [verbs-that-answer]: shows button[data-verb][data-key] stri
     assert.deepEqual(queryVerbs(doc2, `tr[${DATA_MARKS.line}="0"]`), []);
     assert.deepEqual(
       queryVerbs(doc2, `tr[${DATA_MARKS.line}="1"]`).map((v) => [v.verb, v.key]),
-      [['suppose', 's']]
+      [
+        ['depends', 'd'],
+        ['suppose', 's']
+      ]
     );
   } finally {
     await win2.happyDOM.close();

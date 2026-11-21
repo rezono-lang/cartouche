@@ -3,7 +3,7 @@
   import type { OpaqueDisplayCell, RawCellInput } from '../../reader-core/src/index.ts';
 
   // `fold` is the line's cell in the variant of a selected sweep stop, built from that variant's published
-  // difference (Decision 0009). The cell then shows the variant: the old value struck, the new one beside it.
+  // difference (Decision 0010). The cell then shows the variant: the old value struck, the new one beside it.
   let { cell, fold = null }: { cell: RawCellInput; fold?: RawCellInput | null } = $props();
 
   const M = DATA_MARKS;

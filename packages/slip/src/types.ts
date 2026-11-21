@@ -1,5 +1,5 @@
 /**
- * Types of the slip's view model (Decision 0009), ported from rezono-lang/rezono viewer/slip/src/types.ts at
+ * Types of the slip's view model (Decision 0010), ported from rezono-lang/rezono viewer/slip/src/types.ts at
  * f15c89d665e2815b02e12665203a9d48dd6abc40. Rezono imports its contract shapes from generated files that are not
  * committed (contracts/typescript/generated/); the few fields the model reads are declared here structurally, as the
  * reader serves them (contracts/proof.yaml, bundle.yaml, explain.yaml, manifest.yaml at that commit).
