@@ -486,12 +486,14 @@ export function buildAnswerTable(
 		): {
 			sentence?: readonly SentenceSegment[] | undefined;
 			bindings?: readonly import('./types.ts').AnswerBinding[] | undefined;
+			witnessGroups?: readonly import('./types.ts').AnswerWitnessGroup[] | undefined;
+			proofRef?: string | undefined;
 		} => {
-			const witness = (answer.witnesses ?? []).find(
+			// Cartouche (Decision 0012 §2 3b): preserve ALL distinct reader-published witnesses in exact reader order.
+			const matching = (answer.witnesses ?? []).filter(
 				(w) => w.conclusion.relation === node.relation && w.conclusion.key === node.key,
 			);
-			if (!witness) return {};
-			const rule = (bundle.rules as unknown as RuleLike[]).find((r) => r.id === witness.rule_id);
+			if (matching.length === 0) return {};
 			const directSteps = (answer.steps ?? []).filter(
 				(s) => s.conclusion.relation === node.relation && s.conclusion.key === node.key,
 			);
@@ -506,63 +508,87 @@ export function buildAnswerTable(
 					atomPosToRow.set(s.position, targetIdx);
 				}
 			}
-			const varToRow = new Map<string, number>();
-			let atomIdx = 0;
-			let aggIdx = 0;
-			for (const literal of rule?.body ?? []) {
-				if (literal.kind === 'atom') {
-					const pos = atomIdx++;
-					if (literal.polarity === 'positive') {
-						const rowIdx = atomPosToRow.get(pos);
-						if (rowIdx !== undefined) {
-							for (const term of literal.terms ?? []) {
-								if (term.kind === 'variable' && typeof term.value === 'string') {
-									const name = stripQuestionPrefix(term.value);
-									if (!varToRow.has(name)) varToRow.set(name, rowIdx);
+			const buildOne = (witness: (typeof matching)[number]) => {
+				const rule = (bundle.rules as unknown as RuleLike[]).find((r) => r.id === witness.rule_id);
+				const varToRow = new Map<string, number>();
+				let atomIdx = 0;
+				let aggIdx = 0;
+				for (const literal of rule?.body ?? []) {
+					if (literal.kind === 'atom') {
+						const pos = atomIdx++;
+						if (literal.polarity === 'positive') {
+							const rowIdx = atomPosToRow.get(pos);
+							if (rowIdx !== undefined) {
+								for (const term of literal.terms ?? []) {
+									if (term.kind === 'variable' && typeof term.value === 'string') {
+										const name = stripQuestionPrefix(term.value);
+										if (!varToRow.has(name)) varToRow.set(name, rowIdx);
+									}
 								}
 							}
 						}
-					}
-				} else if (literal.kind === 'aggregate') {
-					const pos = aggIdx++;
-					const rowIdx = aggPosToRow.get(pos);
-					if (
-						rowIdx !== undefined &&
-						literal.result?.kind === 'variable' &&
-						typeof literal.result.value === 'string'
-					) {
-						const name = stripQuestionPrefix(literal.result.value);
-						if (!varToRow.has(name)) varToRow.set(name, rowIdx);
+					} else if (literal.kind === 'aggregate') {
+						const pos = aggIdx++;
+						const rowIdx = aggPosToRow.get(pos);
+						if (
+							rowIdx !== undefined &&
+							literal.result?.kind === 'variable' &&
+							typeof literal.result.value === 'string'
+						) {
+							const name = stripQuestionPrefix(literal.result.value);
+							if (!varToRow.has(name)) varToRow.set(name, rowIdx);
+						}
 					}
 				}
-			}
-			const args: Record<string, string> = {};
-			const bindings: import('./types.ts').AnswerBinding[] = [];
-			for (const binding of witness.bindings ?? []) {
-				const name = stripQuestionPrefix(binding.variable);
-				args[name] = binding.value;
-				// Cartouche (Decision 0014): link bindings by rule premise position only, never by value matching.
-				const target = varToRow.get(name);
-				bindings.push(
-					target !== undefined
-						? { variable: name, value: binding.value, line: target }
-						: { variable: name, value: binding.value },
-				);
-			}
-			const messageId = rule?.message ?? `rule.${witness.rule_id}`;
-			const parts = fillParts(bundle.messages, lang, messageId, args);
-			const sentence = parts
-				? parts.map((part) => {
-						if (part.kind === 'var') {
-							const target = varToRow.get(part.name);
-							if (target !== undefined) return { text: part.text, line: target };
-						}
-						return { text: part.text };
-					})
-				: undefined;
+				const args: Record<string, string> = {};
+				const bindings: import('./types.ts').AnswerBinding[] = [];
+				for (const binding of witness.bindings ?? []) {
+					const name = stripQuestionPrefix(binding.variable);
+					args[name] = binding.value;
+					// Cartouche (Decision 0014): link bindings by rule premise position only, never by value matching.
+					const target = varToRow.get(name);
+					bindings.push(
+						target !== undefined
+							? { variable: name, value: binding.value, line: target }
+							: { variable: name, value: binding.value },
+					);
+				}
+				const messageId = rule?.message ?? `rule.${witness.rule_id}`;
+				let parts: readonly MessagePart[] | undefined;
+				try {
+					parts = fillParts(bundle.messages, lang, messageId, args);
+				} catch {
+					parts = undefined;
+				}
+				const sentence = parts
+					? parts.map((part) => {
+							if (part.kind === 'var') {
+								const target = varToRow.get(part.name);
+								if (target !== undefined) return { text: part.text, line: target };
+							}
+							return { text: part.text };
+						})
+					: undefined;
+				return {
+					...(witness.iri ? { iri: witness.iri } : {}),
+					...(sentence ? { sentence } : {}),
+					...(bindings.length > 0 ? { bindings } : {}),
+				};
+			};
+			const built = matching.map(buildOne);
+			const primary = built[0]!;
+			const groups: import('./types.ts').AnswerWitnessGroup[] = built
+				.filter((g): g is typeof g & { readonly iri: string } => typeof g.iri === 'string' && g.iri.length > 0)
+				.map((g) => ({
+					iri: g.iri,
+					...(g.sentence ? { sentence: g.sentence } : {}),
+					...(g.bindings ? { bindings: g.bindings } : {}),
+				}));
 			return {
-				...(sentence ? { sentence } : {}),
-				...(bindings.length > 0 ? { bindings } : {}),
+				...(primary.sentence ? { sentence: primary.sentence } : {}),
+				...(primary.bindings ? { bindings: primary.bindings } : {}),
+				...(groups.length > 0 ? { witnessGroups: groups } : {}),
+				...(primary.iri ? { proofRef: primary.iri } : {}),
 			};
 		};
 
@@ -632,6 +658,7 @@ export function buildAnswerTable(
 			}
 			const premiseLinks = buildPremiseLinks(node, alreadyLinked);
 			const isLeaf = Boolean(node.sources && node.sources.length > 0);
+			const lbStep = steps.find((s) => typeof s.load_bearing === 'boolean');
 			return {
 				line: idx,
 				depth: node.distance,
@@ -640,8 +667,11 @@ export function buildAnswerTable(
 				polarity,
 				...(conclusionDetails.sentence ? { sentence: conclusionDetails.sentence } : {}),
 				...(conclusionDetails.bindings ? { bindings: conclusionDetails.bindings } : {}),
+				...(conclusionDetails.witnessGroups ? { witnessGroups: conclusionDetails.witnessGroups } : {}),
+				...(conclusionDetails.proofRef ? { proofRef: conclusionDetails.proofRef } : {}),
 				...(premiseLinks ? { premiseLinks } : {}),
 				...(isLeaf ? { source: originInfo.origin } : {}),
+				...(lbStep !== undefined ? { loadBearing: lbStep.load_bearing } : {}),
 				state: formatted.state,
 				reason: formatted.reason,
 				cells: [

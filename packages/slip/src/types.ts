@@ -65,6 +65,7 @@ export interface Binding {
 export interface Witness {
   readonly conclusion: RowRef;
   readonly rule_id: string;
+  readonly iri?: string;
   readonly bindings?: readonly Binding[];
   readonly aggregates?: readonly unknown[];
 }
@@ -145,6 +146,7 @@ export interface GroundsStep {
   readonly how: string;
   readonly position: number;
   readonly value?: string;
+  readonly load_bearing?: boolean;
 }
 
 export interface GapPremiseLike {
@@ -349,6 +351,12 @@ export interface AnswerPremiseLink {
   readonly label: string;
 }
 
+export interface AnswerWitnessGroup {
+  readonly iri: string;
+  readonly sentence?: readonly SentenceSegment[] | undefined;
+  readonly bindings?: readonly AnswerBinding[] | undefined;
+}
+
 export interface AnswerTableRow {
   readonly depth?: number | undefined;
   readonly line?: number | undefined;
@@ -357,10 +365,13 @@ export interface AnswerTableRow {
   readonly polarity?: 'positive' | 'negative' | undefined;
   readonly sentence?: readonly SentenceSegment[] | undefined;
   readonly bindings?: readonly AnswerBinding[] | undefined;
+  readonly witnessGroups?: readonly AnswerWitnessGroup[] | undefined;
   readonly premiseLinks?: readonly AnswerPremiseLink[] | undefined;
   readonly source?: string | undefined;
   readonly state?: ValueState | undefined;
   readonly reason?: string | undefined;
+  readonly proofRef?: string | undefined;
+  readonly loadBearing?: boolean | undefined;
   readonly cells: readonly AnswerTableCell[];
 }
 

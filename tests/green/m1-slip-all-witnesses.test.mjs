@@ -6,15 +6,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'The slip shows every distinct witness the reader publishes for a conclusion, not only the shortest: one proof tree per witness IRI, each with its own premises and seal check',
-  waits_on: [
-    'm1-slip-proof-tree'
-  ]
-};
-
 // Decision 0012 §2 (3b). When the reader publishes n distinct founded witnesses for a conclusion, the slip renders
 // n proof groups in exact reader order, each headed by its canonical witness IRI (<base>witness/<64 hex>).
 // Load-bearing marks appear ONLY when the reader publishes load_bearing on steps; Cartouche never intersects witnesses.

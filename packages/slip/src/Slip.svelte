@@ -69,10 +69,16 @@
     readonly polarity?: 'positive' | 'negative' | undefined;
     readonly sentence?: readonly SentenceSegment[] | undefined;
     readonly bindings?: readonly { readonly variable: string; readonly value: string; readonly line?: number | undefined }[] | undefined;
+    readonly witnessGroups?: readonly {
+      readonly iri: string;
+      readonly sentence?: readonly SentenceSegment[] | undefined;
+      readonly bindings?: readonly { readonly variable: string; readonly value: string; readonly line?: number | undefined }[] | undefined;
+    }[] | undefined;
     readonly premiseLinks?: readonly { readonly line: number; readonly label: string }[] | undefined;
     readonly source?: string | undefined;
     readonly state?: 'known' | 'unknown' | 'not_applicable' | 'invalid' | 'absent' | undefined;
     readonly reason?: string | undefined;
+    readonly load_bearing?: boolean | undefined;
   }
 
   interface AnswerTableSpec {
