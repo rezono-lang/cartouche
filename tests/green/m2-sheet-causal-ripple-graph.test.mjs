@@ -27,11 +27,12 @@ test('M2 Sheet 04: switches to Distance Columns for 28 dependents, draws zero un
   assert.equal(model.nodes.length, FX_DENSE.nodes.length);
   assert.equal(model.edges.length, 0, 'fixture 06 publishes no edges, so zero causal edges may be fabricated');
 
-  // Compact graph (<= 12 dependents) switches to radial-rings mode
+  // Compact graph selects published radial-rings layout mode (no client-side threshold compute)
   const fxCompact = structuredClone(FX_DENSE);
   fxCompact.dependent_count = 8;
+  fxCompact.layout_mode = 'radial-rings';
   const compactModel = buildCausalRippleModel(fxCompact);
-  assert.equal(compactModel.mode, 'radial-rings', 'dependent_count <= 12 must use radial-rings');
+  assert.equal(compactModel.mode, 'radial-rings', 'published layout_mode=radial-rings must use radial-rings');
 
   const { html } = await renderSvelte(CAUSAL_RIPPLE_SHEET, { fixture: FX_DENSE });
   const { html: htmlRepeat } = await renderSvelte(CAUSAL_RIPPLE_SHEET, { fixture: FX_DENSE });
