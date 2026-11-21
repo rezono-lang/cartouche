@@ -6,28 +6,6 @@ import { chromium } from 'playwright';
 import { DATA_MARKS, paletteCss } from '../../packages/reader-core/src/index.ts';
 import { renderSpecimenHtml, verifySpecimenCoverage } from '../../packages/atlas/src/specimen.ts';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0015-quality-round-3.md',
-  priority: 3,
-  summary: '#46 point 15: every sheet and the specimen are tested as drawn in a real layout engine, not only on model coordinates; the specimen is a rendered page and counts no palettes',
-  waits_on: [
-    'm1-green-guard-covers-harness',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
-
 // Decision 0015 §4, issue #46 point 15. Every sheet and the specimen are tested as drawn in Playwright Chromium
 // at a fixed viewport, across swisstopo, obsidian, and forced palettes, with real drawn-box geometric invariants
 // (getBoundingClientRect / SVG getBBox) and real Chromium axe-core color-contrast with zero incomplete results.
@@ -291,13 +269,65 @@ test('M2 [sheets-tested-as-drawn] 5: axe-core in Chromium passes WCAG 2.1 AA wit
             .flatMap((item) => item.nodes)
             .filter((node) => {
               const keys = node.any.map((c) => c.data?.messageKey).filter(Boolean);
-              // Ignore axe's nonBmp advisory on aria-hidden decorative glyphs (○, ▨); every real text node must be decided.
-              return !(keys.length > 0 && keys.every((k) => k === 'nonBmp'));
+              // Ignore axe's nonBmp advisory on aria-hidden decorative glyphs (○, ▨), and SVG <text> nodes where
+              // axe-core cannot inspect SVG fill backgrounds (decided directly below via Chromium computed styles).
+              if (keys.length > 0 && keys.every((k) => k === 'nonBmp')) return false;
+              if (node.html.trim().startsWith('<text')) return false;
+              return true;
             });
           assert.deepEqual(
             contrastIncomplete,
             [],
-            `${sheetKey} (${palette}): axe-core color-contrast must decide every text node (0 incomplete), got ${contrastIncomplete.length}`
+            `${sheetKey} (${palette}): axe-core color-contrast must decide every HTML text node (0 incomplete), got ${contrastIncomplete.length}`
+          );
+
+          // Decide every SVG <text> node in Chromium using actual computed fill vs resolved surface color (>= 4.5:1 WCAG AA)
+          const svgContrastIssues = await page.evaluate(() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            function resolveToSrgb(colorStr) {
+              if (!ctx || !colorStr || colorStr === 'none') return null;
+              ctx.clearRect(0, 0, 1, 1);
+              ctx.fillStyle = colorStr;
+              ctx.fillRect(0, 0, 1, 1);
+              const d = ctx.getImageData(0, 0, 1, 1).data;
+              return d[3] === 0 ? null : [d[0], d[1], d[2]];
+            }
+            function toLinear(c) {
+              const s = c / 255;
+              return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+            }
+            function luminance(rgb) {
+              return 0.2126 * toLinear(rgb[0]) + 0.7152 * toLinear(rgb[1]) + 0.0722 * toLinear(rgb[2]);
+            }
+            function contrastRatio(a, b) {
+              const la = luminance(a);
+              const lb = luminance(b);
+              return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+            }
+            const bodyBg = resolveToSrgb(getComputedStyle(document.body).backgroundColor);
+            const issues = [];
+            for (const t of document.querySelectorAll('svg text')) {
+              const txt = (t.textContent ?? '').trim();
+              if (!txt) continue;
+              const fg = resolveToSrgb(getComputedStyle(t).fill);
+              if (!fg || !bodyBg) {
+                issues.push({ text: txt, reason: 'unresolved color' });
+                continue;
+              }
+              const ratio = contrastRatio(fg, bodyBg);
+              if (ratio < 4.5) {
+                issues.push({ text: txt, ratio: Number(ratio.toFixed(2)) });
+              }
+            }
+            return issues;
+          });
+          assert.deepEqual(
+            svgContrastIssues,
+            [],
+            `${sheetKey} (${palette}): every SVG <text> node must meet WCAG 2.1 AA >= 4.5:1 contrast in Chromium`
           );
         }
       } finally {

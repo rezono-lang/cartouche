@@ -246,4 +246,5 @@
   section[data-sheet="kringstand"] { font-family: var(--font-sans); }
   [data-part="manifest-hash"], code { font-family: var(--font-mono); }
   .hatched { background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px); }
+  .hatched th, .hatched td span { background: var(--c-paper); color: var(--c-ink); padding: 0 0.25rem; }
 </style>

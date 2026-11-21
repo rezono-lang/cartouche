@@ -355,6 +355,12 @@
     padding: 0.4rem 0.6rem;
     margin: 0.5rem 0;
   }
+  .relief-curtain-banner > span,
+  .relief-curtain-banner > a {
+    background: var(--c-paper);
+    color: var(--c-ink);
+    padding: 0 0.25rem;
+  }
   table {
     width: 100%;
     border-collapse: collapse;

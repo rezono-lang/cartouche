@@ -12,12 +12,10 @@ import {
 test('Specimen coverage verifies every std-view sign and every epistemic state including invalid (!)', () => {
   const report = verifySpecimenCoverage();
   assert.equal(report.ok, true);
-  assert.deepEqual(report.missingPalettes, []);
   assert.deepEqual(report.missingTokens, []);
   assert.deepEqual(report.missingSigns, []);
   assert.deepEqual(report.missingStates, []);
   assert.deepEqual(report.missingRenderedEntries, []);
-  assert.deepEqual([...report.palettes].sort(), ['forced', 'obsidian', 'swisstopo']);
 
   for (const palette of REQUIRED_PALETTES) {
     const html = renderSpecimenHtml(palette);
