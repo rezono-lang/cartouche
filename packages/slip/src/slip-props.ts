@@ -69,6 +69,12 @@ export interface SlipPropsAnswerPremiseLink {
   readonly label: string;
 }
 
+export interface SlipPropsWitnessGroup {
+  readonly iri: string;
+  readonly sentence?: readonly SlipPropsSentenceSegment[] | undefined;
+  readonly bindings?: readonly SlipPropsAnswerBinding[] | undefined;
+}
+
 export interface SlipPropsAnswerRow {
   readonly cells: readonly SlipPropsAnswerCell[];
   readonly depth?: number | undefined;
@@ -78,11 +84,13 @@ export interface SlipPropsAnswerRow {
   readonly polarity?: 'positive' | 'negative' | undefined;
   readonly sentence?: readonly SlipPropsSentenceSegment[] | undefined;
   readonly bindings?: readonly SlipPropsAnswerBinding[] | undefined;
+  readonly witnessGroups?: readonly SlipPropsWitnessGroup[] | undefined;
   readonly premiseLinks?: readonly SlipPropsAnswerPremiseLink[] | undefined;
   readonly source?: string | undefined;
   readonly state?: ValueState | undefined;
   readonly reason?: string | undefined;
   readonly proof_ref?: string | undefined;
+  readonly load_bearing?: boolean | undefined;
 }
 
 export interface SlipPropsAnswer {
@@ -260,12 +268,31 @@ function answerOf(
       ...(row.bindings
         ? { bindings: row.bindings.map((b) => (b.line === undefined ? { variable: b.variable, value: b.value } : { variable: b.variable, value: b.value, line: b.line })) }
         : {}),
+      ...(row.witnessGroups
+        ? {
+            witnessGroups: row.witnessGroups.map((g) => ({
+              iri: g.iri,
+              ...(g.sentence ? { sentence: g.sentence.map((seg) => ({ text: seg.text, line: seg.line })) } : {}),
+              ...(g.bindings
+                ? {
+                    bindings: g.bindings.map((b) =>
+                      b.line === undefined
+                        ? { variable: b.variable, value: b.value }
+                        : { variable: b.variable, value: b.value, line: b.line }
+                    )
+                  }
+                : {})
+            }))
+          }
+        : {}),
       ...(row.premiseLinks
         ? { premiseLinks: row.premiseLinks.map((p) => ({ line: p.line, label: p.label })) }
         : {}),
       ...(row.source !== undefined ? { source: row.source } : {}),
       ...(row.state !== undefined ? { state: row.state } : {}),
       ...(row.reason !== undefined ? { reason: row.reason } : {}),
+      ...(row.proofRef !== undefined ? { proof_ref: row.proofRef } : {}),
+      ...(row.loadBearing !== undefined ? { load_bearing: row.loadBearing } : {}),
       cells: row.cells.map((cell) => ({ text: cell.text, sign: drawable(cell.sign) }))
     })),
     note: notes.length > 0 ? notes.join(' ') : undefined
