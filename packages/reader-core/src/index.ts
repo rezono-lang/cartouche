@@ -4,3 +4,4 @@ export * from './figure.ts';
 export * from './palette.ts';
 export * from './data-marks.ts';
 export * from './canon.ts';
+export * from './client.ts';
