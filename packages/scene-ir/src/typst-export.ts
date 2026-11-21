@@ -45,7 +45,7 @@ export function typstString(text: string): string {
 }
 
 function glyphOf(sign: string): string {
-  const spec = SIGNS[sign];
+  const spec = Object.prototype.hasOwnProperty.call(SIGNS, sign) ? SIGNS[sign] : undefined;
   if (!spec) throw new Error(`Typst export: no std-view sign for "${sign}".`);
   return spec.glyph;
 }

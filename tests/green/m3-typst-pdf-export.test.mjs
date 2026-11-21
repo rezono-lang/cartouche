@@ -158,4 +158,6 @@ test('M3: dishonest or malformed scenes are rejected, never repaired', () => {
   const badSign = structuredClone(CASES.relief.scene);
   badSign.nodes[0] = { ...badSign.nodes[0], sign: 'made_up' };
   assert.throws(() => exportTypst(badSign), /no std-view sign/);
+  badSign.nodes[0] = { ...badSign.nodes[0], sign: 'constructor' };
+  assert.throws(() => exportTypst(badSign), /no std-view sign/);
 });
