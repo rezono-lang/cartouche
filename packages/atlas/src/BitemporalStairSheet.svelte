@@ -148,7 +148,7 @@
     >
       <defs>
         <pattern id="bt-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--c-hatch)" stroke-width="2" />
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--c-hatch)" stroke-width="1" />
         </pattern>
       </defs>
       {#each model.paintOrder as id (id)}
@@ -295,7 +295,7 @@
 <style>
   .zs { transform: scaleY(var(--z)); }
   .hollow { background: transparent; border: 1px dashed currentColor; }
-  .hatched { background: repeating-linear-gradient(45deg, transparent 0 4px, var(--c-hatch) 4px 5px); }
+  .hatched { background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px); }
   .invalid { border: 2px dashed var(--c-violated); }
   .bt-diff-del a, .bt-diff-ins a { color: inherit; }
   @media (prefers-reduced-motion: no-preference) {

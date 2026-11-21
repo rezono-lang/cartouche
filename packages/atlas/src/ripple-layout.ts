@@ -428,8 +428,8 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
   );
 
   lines.push('  <defs>');
-  lines.push('    <pattern id="cartouche-hatch-45" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">');
-  lines.push(`      <line x1="0" y1="0" x2="0" y2="8" stroke="${escapeXml(palette.hatchStroke)}" stroke-width="2" />`);
+  lines.push('    <pattern id="cartouche-hatch-45" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">');
+  lines.push('      <line x1="0" y1="0" x2="0" y2="6" stroke="var(--c-hatch)" stroke-width="1" />');
   lines.push('    </pattern>');
   lines.push('  </defs>');
 

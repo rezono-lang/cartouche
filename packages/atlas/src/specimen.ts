@@ -73,7 +73,11 @@ export function renderSpecimenHtml(theme: PaletteName = 'swisstopo'): string {
       prefix === 'trust'
         ? `${DATA_MARKS.trust_tier}="${escapeHtml(name)}"`
         : `${DATA_MARKS.sign}="${escapeHtml(name)}"`;
-    return `<tr data-entry="${escapeHtml(entry.dataEntry)}" ${markAttr}><th scope="row" style="color:${escapeHtml(color)}">${escapeHtml(entry.glyph)}</th><td>${escapeHtml(entry.dataEntry)}</td></tr>`;
+    const hatchStyle =
+      name === 'unknown'
+        ? ';background:repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px)'
+        : '';
+    return `<tr data-entry="${escapeHtml(entry.dataEntry)}" ${markAttr}><th scope="row" style="color:${escapeHtml(color)}${hatchStyle}">${escapeHtml(entry.glyph)}</th><td>${escapeHtml(entry.dataEntry)}</td></tr>`;
   }).join('');
   return `<section data-specimen-theme="${escapeHtml(theme)}" style="background-color:${escapeHtml(palette.paper)};color:${escapeHtml(palette.ink)}"><table><thead><tr><th scope="col">Glyph</th><th scope="col">Entry</th></tr></thead><tbody>${rows}</tbody></table></section>`;
 }

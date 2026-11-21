@@ -569,8 +569,8 @@ export function renderReliefOrthographicSvg(
       `role="img" aria-label="${escapeXml(ariaLabel)}" ` +
       `${DATA_MARKS.sheet}="relief-3d" ${DATA_MARKS.projection}="orthographic">`,
     `<defs>`,
-    `<pattern id="relief-unknown-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`,
-    `<line x1="0" y1="0" x2="0" y2="8" stroke="${p.hatchStroke}" stroke-width="2" />`,
+    `<pattern id="relief-unknown-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`,
+    `<line x1="0" y1="0" x2="0" y2="6" stroke="var(--c-hatch)" stroke-width="1" />`,
     `</pattern>`,
     `</defs>`,
     `<rect x="0" y="0" width="${model.width}" height="${model.height}" fill="${p.paper}" />`
@@ -695,8 +695,8 @@ export function renderRelief2DProfileSvg(
       `role="img" aria-label="${escapeXml(ariaLabel)}" ` +
       `${DATA_MARKS.sheet}="relief-3d" ${DATA_MARKS.projection}="2d">`,
     `<defs>`,
-    `<pattern id="relief-unknown-hatch-2d" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`,
-    `<line x1="0" y1="0" x2="0" y2="8" stroke="${p.hatchStroke}" stroke-width="2" />`,
+    `<pattern id="relief-unknown-hatch-2d" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`,
+    `<line x1="0" y1="0" x2="0" y2="6" stroke="var(--c-hatch)" stroke-width="1" />`,
     `</pattern>`,
     `</defs>`,
     `<rect x="0" y="0" width="${model.width}" height="${model.height}" fill="${p.paper}" />`,

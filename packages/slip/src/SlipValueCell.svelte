@@ -95,6 +95,7 @@
   </td>
 {:else}
   <td
+    style={opaque.state === 'unknown' ? 'background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px);' : undefined}
     {...{
       [M.part]: 'value',
       [M.state]: opaque.state,

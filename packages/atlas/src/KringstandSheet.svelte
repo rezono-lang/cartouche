@@ -243,5 +243,5 @@
   </table>
 </section>
 <style>
-  .hatched { background: repeating-linear-gradient(45deg, transparent 0 4px, currentColor 4px 5px); }
+  .hatched { background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px); }
 </style>

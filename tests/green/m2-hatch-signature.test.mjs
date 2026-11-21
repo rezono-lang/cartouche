@@ -7,34 +7,6 @@ import { REQUIRED_PALETTES, renderSpecimenHtml } from '../../packages/atlas/src/
 import { render as renderSlip } from '../../packages/slip/bin/render.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'The hatch for unknown is one visual signature: every unknown mark on every sheet, the slip and the specimen uses one hatch with the spacing, angle and width of the Rezono key (6, 45, 1) and the hatch token',
-  waits_on: [
-    'm1-absent-never-valid-colour',
-    'm1-claims-match-build',
-    'm1-contrast-wcag-aa',
-    'm1-forced-colors-reduced-motion',
-    'm1-green-guard-covers-harness',
-    'm1-invalid-drawn-everywhere',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-no-borrowed-proof-refs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-proof-tree',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
-
 // Decision 0012 §7. Rezono's packs/std-view/key.yaml: hatch: {color_role: status.unknown, spacing: 6, angle: 45,
 // width: 1}. Today sheets define their own patterns (cartouche-hatch-45, relief-unknown-hatch, bt-hatch, monge-hatch)
 // with different geometry. Pattern ids may stay (green tests name some); the geometry is one.
