@@ -54,6 +54,7 @@ import type {
 	MessagePart,
 	MessageResource,
 	RoleBundleResponse,
+	RowRef,
 	RowSelection,
 	SentenceSegment,
 	SignInfo,
@@ -354,14 +355,18 @@ function formatOrigin(
 	}
 	if (node.sources && node.sources.length > 0) {
 		const first = node.sources[0]!;
+		const servedSign = first.origin_sign ?? first.sign;
 		if (forProofTree) {
-			// Cartouche (Decision 0014): never guess origin signs from source.kind; use only an explicit published sign.
+			// Cartouche (Decision 0014 & 0015): never guess origin signs from source.kind; use only an explicit served origin_sign/sign.
 			return {
 				origin: formatSourceCitation(first.name, first.position),
-				...(first.sign ? { originSign: signByName(catalog, first.sign) } : {}),
+				...(servedSign ? { originSign: signByName(catalog, servedSign) } : {}),
 			};
 		}
-		return { origin: first.position ? `${first.name}:${first.position}` : first.name };
+		return {
+			origin: first.position ? `${first.name}:${first.position}` : first.name,
+			...(servedSign ? { originSign: signByName(catalog, servedSign) } : {}),
+		};
 	}
 	const witness = (answer.witnesses ?? []).find(
 		(w) => w.conclusion.relation === node.relation && w.conclusion.key === node.key,
@@ -389,10 +394,21 @@ function buildSeal(
 	lang: string,
 	stdPacks: StdPacks,
 	catalog: readonly SignInfo[],
+	answer?: ExplainAnswer,
 ) {
+	const witnessMap = new Map<string, RowRef>();
+	for (const w of answer?.witnesses ?? []) {
+		witnessMap.set(rowId(w.conclusion.relation, w.conclusion.key), w.conclusion);
+	}
+	for (const cw of answer?.calc_witnesses ?? []) {
+		witnessMap.set(rowId(cw.conclusion.relation, cw.conclusion.key), cw.conclusion);
+	}
+	const witnessConclusions = [...witnessMap.values()];
 	return {
 		manifestSha256: head.manifest_sha256,
 		witnessCheck: head.witness_check,
+		...(answer?.reader_hashes ? { readerHashes: answer.reader_hashes } : {}),
+		...(witnessConclusions.length > 0 ? { witnessConclusions } : {}),
 		manifestLabel: viewMessage(stdPacks, lang, 'cartouche.manifest'),
 		readerHashesLabel: viewMessage(stdPacks, lang, 'sign.sealed'),
 		sealSign: signByName(catalog, 'sealed'),
@@ -1237,7 +1253,7 @@ export function buildRuleSlipView(
 			id: rel.id,
 			label: labelOf(bundle, lang, rel.id),
 		})),
-		seal: buildSeal(head, lang, stdPacks, catalog),
+		seal: buildSeal(head, lang, stdPacks, catalog, answer),
 		headers: buildHeaders(lang, stdPacks),
 		legendHeaders: buildLegendHeaders(lang, stdPacks),
 		signCatalog: catalog,

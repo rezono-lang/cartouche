@@ -60,6 +60,11 @@ test('M1 [viewer-no-browser-seal]: render() refuses caller-injected model and fi
 test('M1 [viewer-no-browser-seal]: slip-props does not hard-code reader-hashes: green or fabricate rowProofRef/sweep proof refs', async () => {
   const fx10 = JSON.parse(read('fixtures/10-slip-reader-answers.json'));
   const answers = fx10.reader_answers.main.reader;
+  for (const [k, rec] of Object.entries(answers)) {
+    if (k.includes('/ask/grounds?') && rec?.body && typeof rec.body === 'object') {
+      delete rec.body.reader_hashes;
+    }
+  }
   const fetchFn = async (input) => {
     const url = new URL(String(input), 'http://localhost');
     const rec = answers[url.pathname + url.search];

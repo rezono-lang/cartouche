@@ -174,7 +174,7 @@ test('M1 [slip-proof-tree]: opening why renders table[data-answer="grounds"] wit
     const checks = new Map(
       [...seal.querySelectorAll(`[${M.check}]`)].map((el) => [el.getAttribute(M.check), el.getAttribute(M.status)])
     );
-    assert.equal(checks.has('reader-hashes'), false, 'reader-hashes must not be hard-coded');
+    assert.equal(checks.get('reader-hashes'), 'green', 'reader-hashes quotes the served check from Rezono #1451');
     assert.equal(checks.get('publisher-record'), 'green');
 
     // 7. Legend lists every [data-sign] drawn anywhere on the page

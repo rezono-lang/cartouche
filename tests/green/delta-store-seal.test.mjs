@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DeltaStore } from '../../packages/reader-core/src/index.ts';
+import { DeltaStore, manifestFromReaderHead } from '../../packages/reader-core/src/index.ts';
 
 test('Z-set DeltaStore two-layer state + 3-tier CartoucheSeal locks Propose on live provisional_engine', () => {
   const fx = JSON.parse(
@@ -30,18 +30,21 @@ test('Z-set DeltaStore two-layer state + 3-tier CartoucheSeal locks Propose on l
   // Client MUST NOT have a self-sealing method (only Rezono seals rounds, Decision 0011).
   assert.equal('sealProvisionalAsRound' in store, false, 'DeltaStore must not expose client self-sealing');
 
-  // Ingest server-sealed round m-5 snapshot -> Propose unlocks and server-sealed rows replace sealed layer.
+  // Ingest server-sealed round m-5 snapshot (via manifestFromReaderHead) -> Propose unlocks and server-sealed rows replace sealed layer.
   const sealedM5Rows = [...fx.sealed_rows, ...fx.live_provisional_delta.changes.map((c) => c.row)];
-  store.ingestSealedSnapshot(
+  const sealedM5Head = manifestFromReaderHead(
     {
-      ...fx.manifest,
-      id: 'sha256:sealed-round-m5',
+      id: 'm-5',
       epoch: 43,
+      knowledge_time: fx.manifest.knowledge_time,
+      manifest_sha256: 'a'.repeat(64),
+      witness_check: 'green',
       trust_tier: 'sealed',
-      can_propose: true
+      may_propose: true
     },
-    sealedM5Rows
+    fx.manifest.role
   );
+  store.ingestSealedSnapshot(sealedM5Head, sealedM5Rows);
   const seal3 = store.seal();
   assert.equal(seal3.trustTier, 'sealed');
   assert.equal(seal3.provisionalCount, 0);

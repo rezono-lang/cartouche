@@ -49,7 +49,14 @@ test('M1 [viewer-slip-built-from-reader]: the viewer slip is the page render() b
       "the viewer slip shows the hand-written fixture 09 manifest, not the manifest_sha256 of Rezono's recorded /slip/head"
     );
     const tiers = [...doc.querySelectorAll(`[${M.trust_tier}]`)].map((el) => el.getAttribute(M.trust_tier));
-    assert.deepEqual(tiers, [], 'the viewer slip states a trust tier that Rezono does not serve (sealed, computed by DeltaStore)');
+    if (head.trust_tier) {
+      assert.ok(
+        tiers.length > 0 && tiers.every((t) => t === head.trust_tier),
+        `the viewer slip must state the served trust_tier (${head.trust_tier})`
+      );
+    } else {
+      assert.deepEqual(tiers, [], 'the viewer slip states a trust tier that Rezono does not serve (sealed, computed by DeltaStore)');
+    }
     assert.deepEqual(sealChecks(doc), expectedChecks, 'the viewer seal lists other checks than the page render() builds');
   } finally {
     await win.happyDOM.close();

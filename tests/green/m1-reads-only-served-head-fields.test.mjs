@@ -20,11 +20,9 @@ const FX10 = 'fixtures/10-slip-reader-answers.json';
 const REQUEST = { store: 'main', role: 'reader', pack: 'slip', lang: 'en' };
 const M = DATA_MARKS;
 
-// Fields that change the seal on main: the page must stay byte-identical.
+// Fields that are NOT served by Rezono (rezono#1451 serves `trust_tier` and `may_propose` only; `seal`, `can_propose`,
+// `rights`, and `provisional_count` are unserved and must leave the page unchanged).
 const GUESSED_TIER = [
-  { trust_tier: 'sealed' },
-  { trust_tier: 'provisional_engine' },
-  { trust_tier: 'not_a_tier' },
   { seal: { trust_tier: 'sealed', can_propose: true, provisional_count: 0 } }
 ];
 

@@ -277,7 +277,7 @@ function loadPayload(request: SlipRenderRequest): SlipFixturePayload | null {
 }
 
 function sealFromManifest(manifest: ManifestMeta & { readonly provisional_count?: number }): CartoucheSeal {
-  const readerGrant = manifest.can_propose ?? manifest.rights?.can_propose;
+  const readerGrant = manifest.may_propose ?? manifest.can_propose ?? manifest.rights?.can_propose;
   const canPropose =
     readerGrant === true && manifest.witness_check === 'green' && manifest.trust_tier !== 'provisional_engine';
   const provisionalCount = manifest.provisional_count ?? 0;
@@ -294,12 +294,17 @@ function sealFromManifest(manifest: ManifestMeta & { readonly provisional_count?
 }
 
 /**
- * Derive the Slip seal strictly from the fields Rezono's reader actually serves in /head (Decision 0015 N7):
- * `id`, `epoch`, `knowledge_time`, `witness_check`. Reads no unserved/guessed fields (`trust_tier`,
- * `can_propose`, `rights`, `seal`, `provisional_count`) until rezono-lang/rezono#1451 names and serves them.
+ * Derive the Slip seal strictly from the fields Rezono's reader actually serves in /head (Decision 0015 & rezono#1451):
+ * `id`, `epoch`, `knowledge_time`, `witness_check`, `trust_tier`, `may_propose`. Reads no guessed fields
+ * (`can_propose`, `rights`, `seal`, `provisional_count`).
  */
 function sealFromReaderHead(head: HeadResponse, role: string): SlipSealInput {
   const green = head.witness_check === 'green';
+  const trustTier =
+    head.trust_tier === 'sealed' || head.trust_tier === 'provisional_checked' || head.trust_tier === 'provisional_engine'
+      ? head.trust_tier
+      : undefined;
+  const canPropose = head.may_propose === true && trustTier !== 'provisional_engine';
   const provisionalCount = 0;
   return Object.freeze({
     manifestId: head.id,
@@ -307,8 +312,9 @@ function sealFromReaderHead(head: HeadResponse, role: string): SlipSealInput {
     knowledgeTime: head.knowledge_time ?? '',
     role,
     witnessCheck: green ? 'green' : 'failed',
+    ...(trustTier ? { trustTier } : {}),
     provisionalCount,
-    canPropose: false
+    canPropose
   });
 }
 
