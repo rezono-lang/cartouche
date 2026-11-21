@@ -19,7 +19,7 @@
 
   interface SealCheckItem {
     readonly id: string;
-    readonly status: 'green' | 'warning' | 'red';
+    readonly status: 'green' | 'warning' | 'red' | 'unavailable';
     readonly label?: string;
   }
 

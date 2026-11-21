@@ -1,8 +1,9 @@
 <script lang="ts">
   import { DATA_MARKS } from '../../reader-core/src/index.ts';
-  import type { CartoucheSeal } from '../../reader-core/src/index.ts';
+  import type { CartoucheSeal, TrustTier } from '../../reader-core/src/index.ts';
 
   interface SealCheck { readonly id: string; readonly status: string; readonly label?: string }
+  type SealInput = Omit<CartoucheSeal, 'trustTier'> & { readonly trustTier?: TrustTier | undefined };
 
   // Renders exactly the checks it is given; it never derives or invents a check result.
   // `manifestHash`: the manifest's sha256 as the reader's head gives it (Rezono's seal); else the manifest id.
@@ -11,7 +12,7 @@
     checks = [],
     manifestHash = null,
     dataset = null
-  }: { seal: CartoucheSeal; checks?: readonly SealCheck[]; manifestHash?: string | null; dataset?: string | null } = $props();
+  }: { seal: SealInput; checks?: readonly SealCheck[]; manifestHash?: string | null; dataset?: string | null } = $props();
   const M = DATA_MARKS;
 </script>
 
@@ -22,7 +23,9 @@
     {#if dataset}
       <span class="slip-seal-dataset">{dataset}</span>
     {/if}
-    <span class="slip-seal-tier">{seal.trustTier}</span>
+    {#if seal.trustTier}
+      <span class="slip-seal-tier">{seal.trustTier}</span>
+    {/if}
     <span class="slip-seal-role">{seal.role}</span>
   </div>
   <ul class="slip-seal-checks" aria-label="Seal checks">

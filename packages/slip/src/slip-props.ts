@@ -117,7 +117,7 @@ export interface SlipProps {
   readonly sweeps: readonly SlipPropsSweep[];
   /** Every answer table a verb on a line can open, by `<line>:<verb>`. */
   readonly answers: Readonly<Record<string, SlipPropsAnswer>>;
-  readonly sealChecks: readonly { readonly id: string; readonly status: 'green' | 'warning' | 'red' }[];
+  readonly sealChecks: readonly { readonly id: string; readonly status: 'green' | 'warning' | 'red' | 'unavailable' }[];
   readonly manifestHash: string;
   readonly dataset?: string | undefined;
 }
@@ -238,9 +238,30 @@ export function slipPropsFromView(view: SlipView): SlipProps {
   if (view.supposedSign) drawable(view.supposedSign);
   drawable(view.seal.sealSign);
 
-  // Decision 0014: emit only checks actually published by the reader (never hard-code reader-hashes: green).
-  const sealChecks: { id: string; status: 'green' | 'warning' | 'red' }[] = [];
+  // Decision 0014 & 0015: emit only checks actually published by the reader (never hard-code reader-hashes: green).
+  const sealChecks: { id: string; status: 'green' | 'warning' | 'red' | 'unavailable' }[] = [];
   if (view.seal.witnessCheck) sealChecks.push({ id: 'publisher-record', status: view.seal.witnessCheck });
+  const servedHashes = view.seal.readerHashes;
+  if (servedHashes) {
+    const checkedByKey = new Map<string, 'green' | 'warning' | 'red' | 'unavailable'>();
+    for (const cw of servedHashes.checked_witnesses ?? []) {
+      checkedByKey.set(`${cw.conclusion.relation}\u0000${cw.conclusion.key}`, cw.status);
+    }
+    const conclusions = view.seal.witnessConclusions ?? [];
+    let anyUnchecked = false;
+    for (const w of conclusions) {
+      const st = checkedByKey.get(`${w.relation}\u0000${w.key}`);
+      if (st === undefined) anyUnchecked = true;
+      sealChecks.push({
+        id: `reader-hashes:${w.relation}:${w.key}`,
+        status: st ?? 'unavailable'
+      });
+    }
+    sealChecks.push({
+      id: 'reader-hashes',
+      status: anyUnchecked ? 'unavailable' : servedHashes.status
+    });
+  }
 
   return {
     row,

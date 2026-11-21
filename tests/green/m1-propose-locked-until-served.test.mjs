@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DATA_MARKS, DeltaStore } from '../../packages/reader-core/src/index.ts';
+import { DATA_MARKS, DeltaStore, manifestFromReaderHead } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
@@ -31,7 +31,21 @@ test('M1 [propose-locked-until-served]: DeltaStore does not grant Propose on a s
     true,
     'DeltaStore.seal() grants Propose from witness_check and trust_tier; the right to propose is not served by Rezono (#46 point 4)'
   );
-  store.ingestSealedSnapshot({ ...fx.manifest, id: 'sha256:round-m5', epoch: 43, trust_tier: 'sealed' }, fx.sealed_rows);
+  store.ingestSealedSnapshot(
+    manifestFromReaderHead(
+      {
+        id: 'm-5',
+        epoch: 43,
+        knowledge_time: fx.manifest.knowledge_time,
+        manifest_sha256: 'a'.repeat(64),
+        witness_check: 'green',
+        trust_tier: 'sealed',
+        may_propose: false
+      },
+      fx.manifest.role
+    ),
+    fx.sealed_rows
+  );
   assert.notEqual(store.seal().canPropose, true, 'a sealed snapshot does not grant Propose either');
 });
 

@@ -43,10 +43,21 @@ for (const c of CASES) {
       const checks = Object.fromEntries(
         [...seal.querySelectorAll(`[${M.check}]`)].map((el) => [el.getAttribute(M.check), el.getAttribute(M.status)])
       );
-      assert.ok(
-        checks['reader-hashes'] === undefined || checks['reader-hashes'] === 'unavailable',
-        `the seal says reader-hashes: ${checks['reader-hashes']}, a value slip-props.ts hard-codes; the reader serves no hash check (#46 point 6)`
-      );
+      const grounds = Object.entries(fx.reader_answers[c.store][c.role])
+        .find(([k]) => k.includes('/ask/grounds?'))?.[1]?.body;
+      const servedReaderHashes = grounds?.reader_hashes?.status;
+      if (servedReaderHashes) {
+        assert.equal(
+          checks['reader-hashes'],
+          servedReaderHashes,
+          `the seal reader-hashes must quote the reader's served status (${servedReaderHashes})`
+        );
+      } else {
+        assert.ok(
+          checks['reader-hashes'] === undefined || checks['reader-hashes'] === 'unavailable',
+          `the seal says reader-hashes: ${checks['reader-hashes']}, a value slip-props.ts hard-codes; the reader serves no hash check (#46 point 6)`
+        );
+      }
       assert.equal(checks['publisher-record'], head.witness_check, "publisher-record quotes the head's witness_check");
     } finally {
       await win.happyDOM.close();

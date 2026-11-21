@@ -45,6 +45,7 @@ export interface Rule {
 export interface Source {
   readonly kind?: string;
   readonly sign?: string;
+  readonly origin_sign?: string;
   readonly name: string;
   readonly position?: string;
 }
@@ -94,6 +95,19 @@ export interface CalcWitness {
 // ---- Reader answers (ported) ----
 
 export type WitnessCheckStatus = 'green' | 'warning' | 'red';
+export type ReaderHashCheckStatus = 'green' | 'warning' | 'red' | 'unavailable';
+export type ReaderTrustTier = 'sealed' | 'provisional_checked' | 'provisional_engine';
+
+export interface CheckedWitness {
+  readonly conclusion: RowRef;
+  readonly status: ReaderHashCheckStatus;
+  readonly piece_sha256?: string | undefined;
+}
+
+export interface ReaderHashes {
+  readonly status: ReaderHashCheckStatus;
+  readonly checked_witnesses?: readonly CheckedWitness[] | undefined;
+}
 
 export interface HeadResponse {
   readonly id: string;
@@ -102,6 +116,8 @@ export interface HeadResponse {
   readonly dataset?: string;
   readonly manifest_sha256: string;
   readonly witness_check?: WitnessCheckStatus;
+  readonly trust_tier?: ReaderTrustTier;
+  readonly may_propose?: boolean;
   readonly snapshots: readonly Snapshot[];
 }
 
@@ -212,6 +228,7 @@ export interface ExplainAnswer {
     readonly entries?: readonly DifferenceEntry[];
   };
   readonly series?: readonly SeriesCell[];
+  readonly reader_hashes?: ReaderHashes;
 }
 
 export type SweepStopStatus = 'green' | 'warning' | 'red' | 'not_computed' | 'unavailable';
@@ -424,6 +441,8 @@ export interface SlipLine {
 export interface SlipSeal {
   readonly manifestSha256: string;
   readonly witnessCheck?: WitnessCheckStatus | undefined;
+  readonly readerHashes?: ReaderHashes | undefined;
+  readonly witnessConclusions?: readonly RowRef[] | undefined;
   readonly manifestLabel: string;
   readonly readerHashesLabel: string;
   readonly sealSign?: SignInfo | undefined;

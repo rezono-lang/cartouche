@@ -24,6 +24,7 @@
       role?: string;
       witness_check: string;
       trust_tier: string;
+      may_propose?: boolean;
       can_propose?: boolean;
       rights?: { readonly can_propose?: boolean };
     };
@@ -67,6 +68,7 @@
       role: fixture.manifest.role ?? '',
       witness_check: fixture.manifest.witness_check === 'green' ? 'green' : 'failed',
       trust_tier: fixture.manifest.trust_tier as TrustTier,
+      ...(fixture.manifest.may_propose !== undefined ? { may_propose: fixture.manifest.may_propose } : {}),
       ...(fixture.manifest.can_propose !== undefined ? { can_propose: fixture.manifest.can_propose } : {}),
       ...(fixture.manifest.rights !== undefined ? { rights: fixture.manifest.rights } : {})
     };

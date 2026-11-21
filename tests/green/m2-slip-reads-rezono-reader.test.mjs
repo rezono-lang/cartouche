@@ -246,7 +246,7 @@ test('unserved-publication (Rezono test_unserved_publication): a served page has
     const seal = served.doc.querySelector(`[${M.part}="seal"]`);
     assert.deepEqual(
       new Set([...seal.querySelectorAll(`[${M.check}]`)].map((c) => c.getAttribute(M.check))),
-      new Set(['publisher-record'])
+      new Set(['publisher-record', 'reader-hashes', 'reader-hashes:flagged:["item-a","12"]'])
     );
     const head = load().reader_answers.main.reader['/slip/head'].body;
     assert.equal(seal.querySelector(`[${M.part}="manifest-hash"]`).textContent, head.manifest_sha256);

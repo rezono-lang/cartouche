@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DATA_MARKS, DeltaStore } from '../../packages/reader-core/src/index.ts';
+import { DATA_MARKS, DeltaStore, manifestFromReaderHead } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { auditA11y, parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
@@ -124,20 +124,38 @@ test('M4 [zero-client-decision-boundary]: DeltaStore removes client self-sealing
   assert.equal(store.seal().trustTier, 'provisional_engine');
   assert.equal(store.seal().canPropose, false);
 
-  // Only a server-sealed snapshot with trust_tier="sealed" can replace the sealed layer.
+  // Only a reader-served sealed snapshot with trust_tier="sealed" can replace the sealed layer; caller-built objects are refused.
   assert.throws(
     () => store.ingestSealedSnapshot({ ...fx.manifest, trust_tier: 'provisional_engine' }, fx.sealed_rows),
-    /trust_tier="sealed"/
+    /caller-built ManifestMeta is refused/
   );
-  store.ingestSealedSnapshot({ ...fx.manifest, id: 'sha256:round-m5', epoch: 43, trust_tier: 'sealed', can_propose: true }, fx.sealed_rows);
+  assert.throws(
+    () => store.ingestSealedSnapshot({ ...fx.manifest, id: 'sha256:round-m5', epoch: 43, trust_tier: 'sealed', can_propose: true }, fx.sealed_rows),
+    /caller-built ManifestMeta is refused/
+  );
+  const servedM5 = manifestFromReaderHead(
+    {
+      id: 'm-5',
+      epoch: 43,
+      knowledge_time: fx.manifest.knowledge_time,
+      manifest_sha256: 'a'.repeat(64),
+      witness_check: 'green',
+      trust_tier: 'sealed',
+      may_propose: true
+    },
+    fx.manifest.role
+  );
+  store.ingestSealedSnapshot(servedM5, fx.sealed_rows);
   assert.equal(store.seal().trustTier, 'sealed');
   assert.equal(store.seal().provisionalCount, 0);
   assert.equal(store.seal().canPropose, true);
 });
 
 test('M4 [zero-client-decision-boundary]: renderFromReader never hard-codes trust tier sealed when the reader /head serves none', async () => {
-  // Fixture 10's /head does not publish trust_tier or can_propose -> must NOT fabricate data-trust-tier="sealed".
-  const resDefault = await render({ fixture: FX10_PATH, store: 'main', role: 'reader', pack: 'slip', lang: 'en' });
+  // When /head omits trust_tier, renderFromReader must NOT fabricate data-trust-tier="sealed".
+  const fxOmitted = loadJson(FX10_PATH);
+  delete fxOmitted.reader_answers.main.reader['/slip/head'].body.trust_tier;
+  const resDefault = await render({ fixture: fxOmitted, store: 'main', role: 'reader', pack: 'slip', lang: 'en' });
   const parsedDefault = parseHtml(resDefault.html);
   try {
     const root = parsedDefault.document.querySelector('main [data-cartouche-theme]');
