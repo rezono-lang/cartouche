@@ -236,7 +236,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
           ? 'propose_locked_unsealed_live_stream'
           : seal && seal.witnessCheck !== 'green'
             ? 'propose_locked_witness_failed'
-            : 'propose_locked_no_right';
+            : 'propose_locked_no_reader_grant';
 
   const parts: string[] = [
     `<div class="cartouche-slip-root" ${DATA_MARKS.theme}="${escapeHtml(theme)}"` +
@@ -299,6 +299,13 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       );
     }
     parts.push('</ul></section>');
+  }
+
+  if (!model && seal && !proposeAllowed && proposeBlockedReason) {
+    parts.push(
+      `<div class="slip-propose-lock" ${DATA_MARKS.reason}="${escapeHtml(proposeBlockedReason)}">` +
+        `Propose locked: ${escapeHtml(proposeBlockedReason)}</div>`
+    );
   }
 
   if (model && model.prism5.length === 5) {
@@ -399,11 +406,18 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       const allowedLine = new Set(line.answered_verbs ?? []);
       const lineVerbs = STD_VERBS.filter((v) => allowedLine.has(v.verb) || (v.question !== undefined && allowedLine.has(v.question)));
       const buttonsHtml = lineVerbs
-        .map(
-          (spec) =>
-            `<button type="button" ${DATA_MARKS.verb}="${escapeHtml(spec.verb)}" ${DATA_MARKS.key}="${escapeHtml(spec.key)}" ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}">` +
-            `<kbd>${escapeHtml(spec.key.toUpperCase())}</kbd><span>${escapeHtml(spec.verb)}</span></button>`
-        )
+        .map((spec) => {
+          const lineLocked = spec.verb === 'propose' && !proposeAllowed;
+          const lockedAttrs = lineLocked ? ' aria-disabled="true" disabled' : '';
+          const lockedSpan =
+            lineLocked && proposeBlockedReason
+              ? `<span ${DATA_MARKS.reason}="${escapeHtml(proposeBlockedReason)}">locked</span>`
+              : '';
+          return (
+            `<button type="button" ${DATA_MARKS.verb}="${escapeHtml(spec.verb)}" ${DATA_MARKS.key}="${escapeHtml(spec.key)}" ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}"${lockedAttrs}>` +
+            `<kbd>${escapeHtml(spec.key.toUpperCase())}</kbd><span>${escapeHtml(spec.verb)}</span>${lockedSpan}</button>`
+          );
+        })
         .join('');
       const part = 'part' in line ? line.part : undefined;
       const path = 'path' in line ? line.path : undefined;

@@ -182,7 +182,7 @@
           ? 'propose_locked_unsealed_live_stream'
           : seal && seal.witnessCheck !== 'green'
             ? 'propose_locked_witness_failed'
-            : 'propose_locked_no_right'
+            : 'propose_locked_no_reader_grant'
   );
 
   let effectiveSealChecks = $derived.by((): readonly SealCheckItem[] => {
@@ -385,6 +385,12 @@
       <SlipSeal {seal} checks={effectiveSealChecks} {manifestHash} />
     {/if}
 
+    {#if !model && seal && !proposeAllowed && proposeBlockedReason}
+      <div class="slip-propose-lock" data-reason={proposeBlockedReason}>
+        Propose locked: {proposeBlockedReason}
+      </div>
+    {/if}
+
     {#if horizon && !horizon.complete}
       <div
         class="slip-horizon"
@@ -535,6 +541,9 @@
                   >
                     <kbd>{spec.key.toUpperCase()}</kbd>
                     <span>{spec.verb}</span>
+                    {#if lineLocked && proposeBlockedReason}
+                      <span data-reason={proposeBlockedReason}>locked</span>
+                    {/if}
                   </button>
                 {/each}
                 {#if sweepOpen && lineSweep}
