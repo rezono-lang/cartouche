@@ -6,6 +6,7 @@ export const RED_META = {
   decision: 'decisions/0012-proof-first-plan.md',
   summary: 'Every mark on every sheet is a link to the slip opened on its conclusion address (Rezono conclusion IRI pinned to epoch and dataset hash); every target resolves in the slip to exactly that row, and a pin that does not match is refused',
   waits_on: [
+    'planner:assertions',
     'm1-sheet-reads-gate-output'
   ]
 };

@@ -10,11 +10,11 @@ test('Z-set DeltaStore two-layer state + 3-tier CartoucheSeal locks Propose on l
   );
   const store = new DeltaStore(fx.manifest, fx.sealed_rows);
 
-  // Initially sealed -> Propose is allowed
+  // Initially sealed. Whether Propose is allowed is the reader's to serve, not DeltaStore's to compute:
+  // tests/red/m1-propose-locked-until-served (Decision 0014 §5).
   const seal1 = store.seal();
   assert.equal(seal1.trustTier, 'sealed');
   assert.equal(seal1.provisionalCount, 0);
-  assert.equal(seal1.canPropose, true);
 
   // Apply live <250ms provisional_engine delta -> Propose MUST lock!
   store.applyProvisionalStep('provisional_engine', fx.live_provisional_delta.changes);
@@ -27,7 +27,7 @@ test('Z-set DeltaStore two-layer state + 3-tier CartoucheSeal locks Propose on l
   // Client MUST NOT have a self-sealing method (only Rezono seals rounds, Decision 0011).
   assert.equal('sealProvisionalAsRound' in store, false, 'DeltaStore must not expose client self-sealing');
 
-  // Ingest server-sealed round m-5 snapshot -> Propose unlocks and server-sealed rows replace sealed layer.
+  // Ingest server-sealed round m-5 snapshot -> server-sealed rows replace the sealed layer.
   const sealedM5Rows = [...fx.sealed_rows, ...fx.live_provisional_delta.changes.map((c) => c.row)];
   store.ingestSealedSnapshot(
     {
@@ -41,6 +41,5 @@ test('Z-set DeltaStore two-layer state + 3-tier CartoucheSeal locks Propose on l
   const seal3 = store.seal();
   assert.equal(seal3.trustTier, 'sealed');
   assert.equal(seal3.provisionalCount, 0);
-  assert.equal(seal3.canPropose, true);
   assert.equal(store.rows().some((r) => r.row.key === 'step:worker-07' && r.layer === 'sealed'), true);
 });

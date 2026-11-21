@@ -152,18 +152,13 @@ test('M1 [slip-proof-tree]: opening why renders table[data-answer="grounds"] wit
       );
     }
 
-    // 5. Leaves are base fact sources: carry an origin_* sign with glyph and published @ source; no leaf is derived
+    // 5. Leaves are base fact sources: published @ source; no leaf is derived. Their origin sign is the reader's to
+    // serve: the assertion that a leaf carries one moved, reversed, to tests/red/m1-origin-signs-and-bindings-from-reader
+    // (Decision 0014 §5): Cartouche chose it from the kind text "synthetic".
     const leafRows = rows.filter((r) => Number(r.getAttribute(M.depth)) === 1);
     assert.equal(leafRows.length, 3);
     for (const leaf of leafRows) {
-      const signEls = [...leaf.querySelectorAll(`[${M.sign}]`)];
-      const signs = signEls.map((s) => s.getAttribute(M.sign));
-      const originEl = signEls.find((s) => ORIGIN_SIGNS.has(s.getAttribute(M.sign)));
-      assert.ok(
-        originEl,
-        `leaf row ${leaf.getAttribute(M.relation)} must carry an origin_* sign, got ${JSON.stringify(signs)}`
-      );
-      assert.ok(originEl.textContent.trim().length > 0, 'origin sign must render its glyph');
+      const signs = [...leaf.querySelectorAll(`[${M.sign}]`)].map((s) => s.getAttribute(M.sign));
       assert.equal(signs.includes('derived'), false, 'no leaf row may be derived');
       assert.ok(
         leaf.textContent.includes('@tests/fixtures/slip/README.md#facts/rows.yaml'),
@@ -177,7 +172,8 @@ test('M1 [slip-proof-tree]: opening why renders table[data-answer="grounds"] wit
     const checks = new Map(
       [...seal.querySelectorAll(`[${M.check}]`)].map((el) => [el.getAttribute(M.check), el.getAttribute(M.status)])
     );
-    assert.equal(checks.get('reader-hashes'), 'green');
+    // reader-hashes is not served by the reader; its expectation moved to tests/red/m1-seal-checks-only-as-served
+    // (Decision 0014 §5).
     assert.equal(checks.get('publisher-record'), 'green');
 
     // 7. Legend lists every [data-sign] drawn anywhere on the page

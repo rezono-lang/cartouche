@@ -6,8 +6,9 @@ export const RED_META = {
   decision: 'decisions/0012-proof-first-plan.md',
   summary: 'Why not and why unknown in the slip: a missing premise is a ghost row with its published reason, the conclusion stays unknown (never no), and a premise the role may not read says not readable for your role, with n premises hidden only as the reader publishes it (proof map requirements 5 and 6)',
   waits_on: [
-    'm1-slip-proof-tree',
-    'm1-sheet-reads-gate-output'
+    'planner:assertions',
+    'm1-sheet-reads-gate-output',
+    'm1-slip-proof-tree'
   ]
 };
 

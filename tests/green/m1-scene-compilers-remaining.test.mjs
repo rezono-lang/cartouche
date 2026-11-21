@@ -61,14 +61,13 @@ test('M1 Sheet 03 (kringstand): compiles fixture 03 into valid CartoucheScene v2
   assert.equal(/\d/.test(renderOpaqueText(unknownNode.cell)), false);
   assert.ok(renderOpaqueText(unknownNode.cell).includes('telemetry_timeout'));
 
-  // Sealed-only snapshot unlocks Propose
+  // Sealed-only snapshot (whether it unlocks Propose is the reader's to serve: tests/red/m1-propose-locked-until-served)
   const sealedScene = compileKringstandScene(fx, { includeProvisional: false });
   assert.deepEqual(validateSceneShape(sealedScene, SCENE_CONTRACT), []);
   assert.deepEqual(checkGeometricInvariants(sealedScene), []);
   assert.equal(sealedScene.nodes.length, 8);
   assert.equal(sealedScene.seal.trustTier, 'sealed');
   assert.equal(sealedScene.seal.provisionalCount, 0);
-  assert.equal(sealedScene.seal.canPropose, true);
 
   // Determinism
   assert.equal(canonicalJson(liveScene), canonicalJson(compileKringstandScene(fx)));
@@ -121,7 +120,6 @@ test('M1 Sheet 04 (causal-ripple): compiles fixture 06 into valid CartoucheScene
   assert.deepEqual(checkGeometricInvariants(scene), []);
   assert.deepEqual(scene.horizon, { complete: false, reason: 'depth_limit_hop_2' });
   assert.equal(scene.seal.trustTier, 'provisional_checked');
-  assert.equal(scene.seal.canPropose, true);
   assert.deepEqual(
     scene.nodes.map((n) => n.id),
     fx.nodes.map((n) => n.id)

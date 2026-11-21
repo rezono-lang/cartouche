@@ -132,10 +132,10 @@ test('M4 [zero-client-decision-boundary]: DeltaStore removes client self-sealing
   store.ingestSealedSnapshot({ ...fx.manifest, id: 'sha256:round-m5', epoch: 43, trust_tier: 'sealed' }, fx.sealed_rows);
   assert.equal(store.seal().trustTier, 'sealed');
   assert.equal(store.seal().provisionalCount, 0);
-  assert.equal(store.seal().canPropose, true);
+  // Whether Propose unlocks is the reader's to serve: tests/red/m1-propose-locked-until-served (Decision 0014 §5).
 });
 
-test('M4 [zero-client-decision-boundary]: renderFromReader reads trustTier and canPropose from reader /head, never hard-coding sealed', async () => {
+test('M4 [zero-client-decision-boundary]: renderFromReader never hard-codes trust tier sealed when the reader /head serves none', async () => {
   // Fixture 10's /head does not publish trust_tier or can_propose -> must NOT fabricate data-trust-tier="sealed".
   const resDefault = await render({ fixture: FX10_PATH, store: 'main', role: 'reader', pack: 'slip', lang: 'en' });
   const parsedDefault = parseHtml(resDefault.html);
@@ -149,37 +149,9 @@ test('M4 [zero-client-decision-boundary]: renderFromReader reads trustTier and c
     await parsedDefault.window.happyDOM.close();
   }
 
-  // When reader /head publishes trust_tier="provisional_engine", rendered seal carries provisional_engine.
-  const fxProv = loadJson(FX10_PATH);
-  fxProv.reader_answers.main.reader['/slip/head'].body.trust_tier = 'provisional_engine';
-  fxProv.reader_answers.main.reader['/slip/head'].body.can_propose = true;
-  const resProv = await render({ fixture: fxProv, store: 'main', role: 'reader', pack: 'slip', lang: 'en' });
-  const parsedProv = parseHtml(resProv.html);
-  try {
-    assert.equal(parsedProv.document.querySelector(`[${M.part}="seal"]`).getAttribute(M.trust_tier), 'provisional_engine');
-  } finally {
-    await parsedProv.window.happyDOM.close();
-  }
-
-  // When reader /head publishes trust_tier="sealed" and rights.can_propose=true, rendered seal carries sealed.
-  const fxSealed = loadJson(FX10_PATH);
-  fxSealed.reader_answers.main.reader['/slip/head'].body.trust_tier = 'sealed';
-  fxSealed.reader_answers.main.reader['/slip/head'].body.rights = { can_propose: true };
-  const resSealed = await render({ fixture: fxSealed, store: 'main', role: 'reader', pack: 'slip', lang: 'en' });
-  const parsedSealed = parseHtml(resSealed.html);
-  try {
-    assert.equal(parsedSealed.document.querySelector(`[${M.part}="seal"]`).getAttribute(M.trust_tier), 'sealed');
-  } finally {
-    await parsedSealed.window.happyDOM.close();
-  }
-
-  // Unknown trust_tier from reader /head is rejected.
-  const fxBadTier = loadJson(FX10_PATH);
-  fxBadTier.reader_answers.main.reader['/slip/head'].body.trust_tier = 'invented_tier';
-  await assert.rejects(
-    () => render({ fixture: fxBadTier, store: 'main', role: 'reader', pack: 'slip', lang: 'en' }),
-    /unknown trust_tier/
-  );
+  // Rezono's /slip/head serves no trust_tier, can_propose or rights (rezono-lang/rezono#1451). The assertions that a
+  // guessed trust_tier on the head changes the seal or is refused moved, reversed, to
+  // tests/red/m1-reads-only-served-head-fields: the page reads no field Rezono does not serve (Decision 0014 §5).
 });
 
 test('M4 [zero-client-decision-boundary]: no client role===summary projection and no caller-injected seal/sealChecks overrides', async () => {
