@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 export const RED_META = {
   milestone: 'M2',
   decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'No hairballs: every exploration view opens as a table, and a node-link graph shows only the distance-1 neighbours of one focused conclusion, each a link to its own slip',
+  summary: 'No hairballs: every exploration view opens as a table or as an ego graph of one question or key; the proof map grows only by explicit why, depends on and affects expansions or a selected witness, and groups by kind with published counts',
   waits_on: [
     'm1-absent-never-valid-colour',
     'm1-claims-match-build',
@@ -22,16 +22,18 @@ export const RED_META = {
   ]
 };
 
-// Decision 0012 §8, avoiding what users dislike in RDFox and Stardog explorers.
+// Decision 0012 §8 and §3a (proof map requirement 9), avoiding what users dislike in RDFox and Stardog explorers.
+// Amended for the proof map: the map is a graph, but it starts small and grows only on request.
 
-test('M2 [table-first-no-hairball]: table first; a graph only for distance-1 neighbours', () => {
+test('M2 [table-first-no-hairball]: table first or an ego graph; the map grows only on request', () => {
   assert.fail(
     [
       'RED TASK (Decision 0012). Acceptance, each point an assertion of the promoted test:',
       '1. The key page, the slip answers and the question desk open on a table (table first in reading order, with th headers).',
-      '2. Any view that draws connectors between nodes draws them only between the focused conclusion and its distance-1 neighbours as the reader answers them (grounds depth 1 or reach ring 1); a farther node appears only after it is focused itself.',
-      '3. Each neighbour is a link to its slip (m1-mark-opens-slip) and to its own focus.',
-      '4. Layered views that are tables in disguise (distance columns of sheet 04) are allowed and draw no connectors beyond ring 1.'
+      '2. The proof map opens as an ego graph: the focused question or key and its distance-1 neighbours as the reader answers them. A farther node appears only after an explicit expansion (why, depends on, affects) or as part of a selected witness (m2-proof-map-proof-in-place).',
+      '3. Each node is a link to its slip (m1-mark-opens-slip) and to its own focus.',
+      '4. Above the group threshold of the decision, rows of one kind collapse into one chip with the count the reader publishes; Cartouche counts nothing itself.',
+      '5. Layered views that are tables in disguise (distance columns of sheet 04) are allowed.'
     ].join('\n')
   );
 });

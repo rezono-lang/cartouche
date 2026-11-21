@@ -23,16 +23,22 @@ const tasks = files.map((file) => {
     ? waitsMatch[1].split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
     : [];
   const unresolvedWaits = waitsOn.filter((id) => files.some((f) => f.startsWith(id)));
+  // Optional RED_META.priority (lower first) orders tasks within a milestone; Decision 0012 puts the proof map first in M2.
+  const priorityMatch = text.match(/priority:\s*(\d+)/);
   return {
     id: file.replace(/\.test\.mjs$/, ''),
     file: `tests/red/${file}`,
     milestone: get('milestone'),
+    priority: priorityMatch ? Number(priorityMatch[1]) : 100,
     decision: get('decision'),
     summary: get('summary'),
     status: unresolvedWaits.length === 0 ? 'ready' : 'waits',
     waits_on: unresolvedWaits
   };
 });
+
+const milestoneNumber = (t) => Number((t.milestone.match(/\d+/) ?? ['99'])[0]);
+tasks.sort((a, b) => milestoneNumber(a) - milestoneNumber(b) || a.priority - b.priority || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
 if (asJson) {
   console.log(JSON.stringify({ total: tasks.length, ready: tasks.filter((t) => t.status === 'ready').length, tasks }, null, 2));

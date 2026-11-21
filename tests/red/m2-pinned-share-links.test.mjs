@@ -29,8 +29,8 @@ test('M2 [pinned-share-links]: a shared link carries the pinned address and resp
   assert.fail(
     [
       'RED TASK (Decision 0012). Acceptance, each point an assertion of the promoted test:',
-      '1. Share on a slip copies a link that carries the pinned conclusion IRI and the time controls, nothing else (no role, no session, no personal data in the URL).',
-      '2. Opened by another role, the link shows that role part of the conclusion; a role that may not read it gets the same answer as for an unknown address (no leak that it exists).',
+      '1. Share on a slip or the proof map copies a link that carries the pinned conclusion IRI, the time controls (valid at, known at, epoch), the selection and, on the map, the role lens. No session and no personal data in the URL.',
+      '2. Opened by another role, the link shows that role part of the conclusion. A role lens in the link never grants more than the reader allows the recipient: a recipient who may not view that lens sees their own role and a notice. A role that may not read the conclusion gets the same answer as for an unknown address (no leak that it exists).',
       '3. For a withdrawn epoch or row the link shows the 410 page with the withdrawal reason, decider and date as the reader serves them, and zero tr[data-line].',
       '4. For a superseded epoch the page shows the pinned (old) result and says which newer manifest superseded it, from the reader headers.'
     ].join('\n')
