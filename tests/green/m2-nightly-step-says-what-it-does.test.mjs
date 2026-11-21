@@ -4,28 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0015-quality-round-3.md',
-  priority: 3,
-  summary: '#46 point 12: the nightly job says what it does: no step claims to regenerate fixture 10 unless it runs the recorder, and no step passes REZONO_LIVE_DIR, which nothing reads',
-  waits_on: [
-    'm1-green-guard-covers-harness',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
-
 // Decision 0015 §4, issue #46 point 12. In .github/workflows/nightly-live.yml one step is named as if it regenerates
 // fixture 10, but it only hashes the pinned Rezono files and runs fast-check, and it passes REZONO_LIVE_DIR, which no
 // script reads (checked on main at 8a72c0f). Recording and comparing the reader's answers happens in
