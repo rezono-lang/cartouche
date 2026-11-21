@@ -3,12 +3,18 @@
   import { validateSweepStops } from './slip-sweep.ts';
   import type { SweepStopInput } from './slip-sweep.ts';
 
+  // The control of one sweep, inside the line of the cell it moves (Rezono's marks, Decision 0009): one stop per
+  // published grid value and nothing in between. A red stop shows its checks and no value.
   let {
     stops,
+    name = null,
+    note = null,
     activeIndex = null,
     onSelect
   }: {
     stops: readonly SweepStopInput[];
+    name?: string | null;
+    note?: string | null;
     activeIndex?: number | null;
     onSelect?: (index: number) => void;
   } = $props();
@@ -18,8 +24,8 @@
 </script>
 
 {#if valid.length > 0}
-  <section class="slip-sweep" aria-label="Sweep stops">
-    <h2>Sweep Stops</h2>
+  <div class="slip-sweep" role="group" aria-label={name ? `Sweep ${name}: published stops` : 'Sweep stops'}>
+    {#if note}<span class="slip-sweep-note">{note}</span>{/if}
     <div class="slip-sweep-strip">
       {#each valid as stop (stop.index)}
         <button
@@ -42,5 +48,5 @@
         </button>
       {/each}
     </div>
-  </section>
+  </div>
 {/if}

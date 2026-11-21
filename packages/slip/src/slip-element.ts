@@ -55,7 +55,8 @@ export interface ElementGroundLine {
   readonly polarity: 'positive' | 'negative';
   readonly depth: number;
   readonly premise_position?: number | undefined;
-  readonly sign: string;
+  readonly sign?: string | undefined;
+  readonly label?: string | undefined;
   readonly cell: RawCellInput;
   readonly answered_verbs?: readonly string[] | undefined;
   readonly sweep_name?: string | undefined;
@@ -64,14 +65,26 @@ export interface ElementGroundLine {
 export interface ElementCalcStep {
   readonly path: string;
   readonly depth: number;
-  readonly sign: string;
+  readonly sign?: string | undefined;
   readonly cell: RawCellInput;
   readonly kind?: 'step' | 'constant' | undefined;
+  readonly relation?: string | undefined;
+  readonly key?: readonly string[] | undefined;
+  readonly polarity?: 'positive' | 'negative' | undefined;
+  readonly label?: string | undefined;
+  readonly answered_verbs?: readonly string[] | undefined;
+}
+
+/** The sentence as the build filled it with Rezono's fill.ts (Decision 0009): text, and the line a variable links to. */
+export interface ElementSentenceSegment {
+  readonly text: string;
+  readonly line?: number | undefined;
 }
 
 export interface ElementConformanceRow {
   readonly kind: 'rule' | 'calc';
   readonly rule_id: string;
+  readonly sentence?: readonly ElementSentenceSegment[] | undefined;
   readonly sentence_template?: string | undefined;
   readonly bindings?: readonly ElementSentenceBinding[] | undefined;
   readonly grounds_distance_1?: readonly ElementGroundLine[] | undefined;
@@ -317,57 +330,53 @@ export function renderSlipElementHtml(state: SlipElementState): string {
     parts.push('</nav>');
   }
 
-  if (conformanceRow && conformanceRow.kind === 'rule') {
-    const validatedGrounds = (conformanceRow.grounds_distance_1 ?? []).map((line) => ({
-      line,
-      opaque: asOpaqueCell(line.cell)
-    }));
+  if (conformanceRow) {
+    // One line renderer for the premises of a rule row and the steps of a calculated row; a line's index from 0
+    // is its data-line (Rezono's marks, Decision 0009). The sentence comes filled from the build.
+    const isCalc = conformanceRow.kind === 'calc';
+    const resultOpaque = isCalc && conformanceRow.result_cell ? asOpaqueCell(conformanceRow.result_cell) : null;
+    const lines: readonly (ElementGroundLine | ElementCalcStep)[] = isCalc
+      ? (conformanceRow.steps ?? []).filter((s) => s.kind !== 'constant')
+      : (conformanceRow.grounds_distance_1 ?? []);
+    const validated = lines.map((line) => ({ line, opaque: asOpaqueCell(line.cell) }));
 
-    const template = conformanceRow.sentence_template ?? conformanceRow.rule_id;
-    const bindings = conformanceRow.bindings ?? [];
-    const tokens = template.split(/(\{\$[a-zA-Z0-9_]+\})/g);
-    parts.push(`<div class="slip-sentence" ${DATA_MARKS.part}="sentence">`);
-    for (const tok of tokens) {
-      if (!tok) continue;
-      const m = /^\{\$([a-zA-Z0-9_]+)\}$/.exec(tok);
-      const binding = m ? bindings.find((b) => b.name === m[1]) : undefined;
-      if (binding) {
-        let targetIdx = -1;
-        if (binding.aggregate === true) {
-          targetIdx = validatedGrounds.findIndex((g) => g.line.part === 'total');
-        } else if (binding.premise_position !== undefined) {
-          targetIdx = validatedGrounds.findIndex(
-            (g) => g.line.premise_position === binding.premise_position
-          );
-        }
-        const matched = targetIdx >= 0 ? validatedGrounds[targetIdx] : undefined;
-        if (matched) {
-          const lineNum = targetIdx + 1;
+    const sentence = conformanceRow.sentence ?? [];
+    if (sentence.length > 0) {
+      parts.push(`<div class="slip-sentence" ${DATA_MARKS.part}="sentence">`);
+      for (const seg of sentence) {
+        const target = seg.line !== undefined ? validated[seg.line] : undefined;
+        if (seg.line !== undefined && target) {
           parts.push(
-            `<a href="#slip-line-${lineNum}" ${DATA_MARKS.line}="${lineNum}" ` +
-              `${DATA_MARKS.proof_ref}="${escapeHtml(matched.opaque.proofRef)}">${escapeHtml(binding.display)}</a>`
+            `<a href="#slip-line-${seg.line}" ${DATA_MARKS.line}="${seg.line}" ` +
+              `${DATA_MARKS.proof_ref}="${escapeHtml(target.opaque.proofRef)}">${escapeHtml(seg.text)}</a>`
           );
-          continue;
+        } else {
+          parts.push(`<span>${escapeHtml(seg.text)}</span>`);
         }
-        parts.push(`<span>${escapeHtml(binding.display)}</span>`);
-        continue;
       }
-      parts.push(`<span>${escapeHtml(tok)}</span>`);
+      parts.push('</div>');
     }
-    parts.push('</div>');
 
     parts.push(
-      `<table class="slip-table" ${DATA_MARKS.sheet}="slip" aria-label="Rule proof slip">`,
-      `<thead><tr><th scope="col">Line</th><th scope="col">Sign</th><th scope="col">Relation</th><th scope="col">Value</th><th scope="col">Actions</th></tr></thead><tbody>`
+      `<table class="slip-table" ${DATA_MARKS.sheet}="slip" aria-label="${isCalc ? 'Calculation proof slip' : 'Rule proof slip'}">`,
+      `<thead><tr><th scope="col">Line</th><th scope="col">Sign</th><th scope="col">${isCalc ? 'Step' : 'Relation'}</th><th scope="col">Value</th><th scope="col">Actions</th></tr></thead><tbody>`
     );
-    for (let idx = 0; idx < validatedGrounds.length; idx++) {
-      const entry = validatedGrounds[idx]!;
+    if (resultOpaque) {
+      if (resultOpaque.state !== 'known') trackSign(resultOpaque.state);
+      parts.push(
+        `<tr ${DATA_MARKS.proof_ref}="${escapeHtml(resultOpaque.proofRef)}">` +
+          `<td></td><td></td><td>${escapeHtml(conformanceRow.rule_id)}</td>` +
+          `${renderOpaqueCellTd(resultOpaque)}<td></td></tr>`
+      );
+    }
+    for (let idx = 0; idx < validated.length; idx++) {
+      const entry = validated[idx]!;
       const line = entry.line;
       const opaque = entry.opaque;
-      const lineNum = idx + 1;
-      trackSign(line.sign);
+      if (line.sign) trackSign(line.sign);
       if (opaque.state !== 'known') trackSign(opaque.state);
-      const partAttr = line.part ? ` ${DATA_MARKS.part}="${escapeHtml(line.part)}"` : '';
+      const attr = (name: string, value: string | undefined): string =>
+        value === undefined ? '' : ` ${name}="${escapeHtml(value)}"`;
       const allowedLine = new Set(line.answered_verbs ?? []);
       const lineVerbs = STD_VERBS.filter((v) => allowedLine.has(v.verb) || allowedLine.has(v.question));
       const buttonsHtml = lineVerbs
@@ -377,42 +386,19 @@ export function renderSlipElementHtml(state: SlipElementState): string {
             `<kbd>${escapeHtml(spec.key.toUpperCase())}</kbd><span>${escapeHtml(spec.verb)}</span></button>`
         )
         .join('');
+      const part = 'part' in line ? line.part : undefined;
+      const path = 'path' in line ? line.path : undefined;
       parts.push(
-        `<tr id="slip-line-${lineNum}" ${DATA_MARKS.line}="${lineNum}"${partAttr} ` +
-          `${DATA_MARKS.relation}="${escapeHtml(line.relation)}" ${DATA_MARKS.key}="${escapeHtml(canonicalJson(line.key))}" ` +
-          `${DATA_MARKS.polarity}="${escapeHtml(line.polarity)}" ${DATA_MARKS.depth}="${line.depth}" ` +
-          `${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}">` +
-          `<td>${lineNum}</td><td>${renderSignSpan(line.sign, opaque.proofRef)}</td>` +
-          `<td>${escapeHtml(line.relation)}</td>${renderOpaqueCellTd(opaque)}<td>${buttonsHtml}</td></tr>`
-      );
-    }
-    parts.push('</tbody></table>');
-  } else if (conformanceRow && conformanceRow.kind === 'calc') {
-    const resultOpaque = conformanceRow.result_cell ? asOpaqueCell(conformanceRow.result_cell) : null;
-    const steps = (conformanceRow.steps ?? [])
-      .filter((s) => s.kind !== 'constant')
-      .map((step) => ({ step, opaque: asOpaqueCell(step.cell) }));
-
-    parts.push(
-      `<table class="slip-table" ${DATA_MARKS.sheet}="slip" aria-label="Calculation proof slip">`,
-      `<thead><tr><th scope="col">Step</th><th scope="col">Sign</th><th scope="col">Value</th></tr></thead><tbody>`
-    );
-    if (resultOpaque) {
-      if (resultOpaque.state !== 'known') trackSign(resultOpaque.state);
-      parts.push(
-        `<tr ${DATA_MARKS.proof_ref}="${escapeHtml(resultOpaque.proofRef)}">` +
-          `<td>${escapeHtml(conformanceRow.sentence_template ?? conformanceRow.rule_id)}</td><td></td>` +
-          `${renderOpaqueCellTd(resultOpaque)}</tr>`
-      );
-    }
-    for (const entry of steps) {
-      trackSign(entry.step.sign);
-      if (entry.opaque.state !== 'known') trackSign(entry.opaque.state);
-      parts.push(
-        `<tr ${DATA_MARKS.path}="${escapeHtml(entry.step.path)}" ${DATA_MARKS.depth}="${entry.step.depth}" ` +
-          `${DATA_MARKS.proof_ref}="${escapeHtml(entry.opaque.proofRef)}">` +
-          `<td>${escapeHtml(entry.step.path)}</td><td>${renderSignSpan(entry.step.sign, entry.opaque.proofRef)}</td>` +
-          `${renderOpaqueCellTd(entry.opaque)}</tr>`
+        `<tr id="slip-line-${idx}" ${DATA_MARKS.line}="${idx}"` +
+          attr(DATA_MARKS.part, part) +
+          attr(DATA_MARKS.relation, line.relation) +
+          attr(DATA_MARKS.key, line.key ? canonicalJson(line.key) : undefined) +
+          attr(DATA_MARKS.polarity, line.polarity) +
+          ` ${DATA_MARKS.depth}="${line.depth}"` +
+          attr(DATA_MARKS.path, path) +
+          ` ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}">` +
+          `<td>${idx}</td><td>${line.sign ? renderSignSpan(line.sign, opaque.proofRef) : ''}</td>` +
+          `<td>${escapeHtml(line.label ?? line.relation ?? path ?? '')}</td>${renderOpaqueCellTd(opaque)}<td>${buttonsHtml}</td></tr>`
       );
     }
     parts.push('</tbody></table>');
@@ -421,10 +407,10 @@ export function renderSlipElementHtml(state: SlipElementState): string {
     parts.push(
       `<table class="slip-table" ${DATA_MARKS.sheet}="slip" aria-label="Subject proof slip">`,
       `<thead><tr><th scope="col">Line</th><th scope="col">Sign</th><th scope="col">Subject</th><th scope="col">Proof</th></tr></thead>`,
-      `<tbody><tr id="slip-line-1" ${DATA_MARKS.line}="1" ${DATA_MARKS.relation}="subject" ` +
+      `<tbody><tr id="slip-line-0" ${DATA_MARKS.line}="0" ${DATA_MARKS.relation}="subject" ` +
         `${DATA_MARKS.key}="${escapeHtml(canonicalJson([model.subjectId]))}" ${DATA_MARKS.polarity}="positive" ` +
         `${DATA_MARKS.depth}="0" ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">` +
-        `<td>1</td><td>${renderSignSpan('derived', model.proofRef)}</td>` +
+        `<td>0</td><td>${renderSignSpan('derived', model.proofRef)}</td>` +
         `<td>${escapeHtml(model.subjectId)}</td>` +
         `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="known" ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">${escapeHtml(model.proofRef)}</td>` +
         `</tr></tbody></table>`

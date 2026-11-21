@@ -79,10 +79,11 @@ test('Contract 2 (data-* DOM & SVG Marks): syncs with DATA_MARKS + std-view sign
   assert.ok(errs.some((e) => e.includes('sign values mismatch')));
 });
 
-test('Contract 3 (Five Minimal Server Projections): validates all 9 golden fixtures and blocks invalid payloads', () => {
+test('Contract 3 (Five Minimal Server Projections): validates all 10 golden fixtures and blocks invalid payloads', () => {
   const projContract = loadJson(ROOT, 'contracts/server-projections.schema.json');
   const fixtureFiles = fs.readdirSync(path.join(ROOT, 'fixtures')).filter((f) => f.endsWith('.json')).sort();
-  assert.equal(fixtureFiles.length, 9);
+  // 10: Rezono's reader answers for the slip (decisions/0009-slip-reads-rezono-reader.md).
+  assert.equal(fixtureFiles.length, 10);
   for (const file of fixtureFiles) {
     const fx = loadJson(ROOT, `fixtures/${file}`);
     assert.deepEqual(validateFixtureProjection(fx, projContract), [], `Fixture ${file} failed schema validation`);

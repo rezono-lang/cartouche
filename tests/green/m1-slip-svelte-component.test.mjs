@@ -431,7 +431,8 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
   try {
     const sentenceLinks = [...doc.querySelectorAll(`[${DATA_MARKS.part}="sentence"] a[${DATA_MARKS.line}]`)];
     assert.equal(sentenceLinks.length, 2, 'home claim sentence must bind {$i} and {$a} via explicit premise_position');
-    assert.deepEqual(sentenceLinks.map((a) => a.getAttribute(DATA_MARKS.line)), ['2', '2']);
+    // Lines are numbered by their index from 0 (Rezono's marks, decisions/0009-slip-reads-rezono-reader.md).
+    assert.deepEqual(sentenceLinks.map((a) => a.getAttribute(DATA_MARKS.line)), ['1', '1']);
 
     const lines = [...doc.querySelectorAll(`table[${DATA_MARKS.sheet}="slip"] tr[${DATA_MARKS.line}]`)];
     assert.equal(lines.length, 2);
@@ -451,9 +452,13 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
   }
   assert.deepEqual(await auditA11y(first.html), [], '09-slip-conformance home claim must have 0 WCAG 2.1 AA violations');
 
-  // Row whose grounds omit premise_position must NOT guess links by array index, while aggregate links to part=total
+  // Row whose grounds omit premise_position must NOT guess links by array index, while aggregate links to part=total.
+  // Fixture 09's group line now carries premise_position 0, as Rezono's reader gives it (decisions/0009, point 5),
+  // so the premise position is taken out here to keep testing that no link is guessed.
+  const fxNoPosition = loadFixture('09-slip-conformance.json');
+  delete fxNoPosition.slip_conformance.rows['group_size::group-a::2'].grounds_distance_1[0].premise_position;
   const groupRes = await renderSlipHarness({
-    fixture: 'fixtures/09-slip-conformance.json',
+    store: fxNoPosition,
     role: 'reader',
     pack: 'slip',
     lang: 'en',
@@ -464,7 +469,7 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
     const links = [...docG.querySelectorAll(`[${DATA_MARKS.part}="sentence"] a[${DATA_MARKS.line}]`)];
     assert.deepEqual(
       links.map((a) => ({ line: a.getAttribute(DATA_MARKS.line), text: a.textContent })),
-      [{ line: '2', text: '2' }],
+      [{ line: '1', text: '2' }],
       'only aggregate/explicit premise_position bindings should emit a[data-line] links'
     );
   } finally {

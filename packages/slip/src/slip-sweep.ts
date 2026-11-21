@@ -4,12 +4,20 @@
  * decides whether a published fold may be drawn. It never derives a value.
  */
 
+import type { RawCellInput } from '../../reader-core/src/index.ts';
+
 export type SweepStopStatus = 'green' | 'warning' | 'red' | 'not_computed' | 'unavailable';
 export type SweepStopTurn = 'turns' | 'same' | 'unknown';
 
 export interface SweepStopCheckInput {
   readonly id: string;
-  readonly status: 'green' | 'warning' | 'red';
+  readonly status: 'green' | 'warning' | 'red' | 'unavailable';
+}
+
+/** The new cell of one line in the stop's variant, from its published difference (Decision 0009). */
+export interface SweepStopFold {
+  readonly line: number;
+  readonly cell: RawCellInput;
 }
 
 export interface SweepStopInput {
@@ -18,12 +26,14 @@ export interface SweepStopInput {
   readonly status: SweepStopStatus;
   readonly turn: SweepStopTurn | null;
   readonly fold_display: string | null;
-  readonly checks?: readonly SweepStopCheckInput[];
+  readonly checks?: readonly SweepStopCheckInput[] | undefined;
+  /** Every line the stop's variant changes; absent on a hand-written stop, where only fold_display names the swept line's. */
+  readonly folds?: readonly SweepStopFold[] | undefined;
 }
 
 const STATUSES: readonly string[] = ['green', 'warning', 'red', 'not_computed', 'unavailable'];
 const TURNS: readonly string[] = ['turns', 'same', 'unknown'];
-const CHECK_STATUSES: readonly string[] = ['green', 'warning', 'red'];
+const CHECK_STATUSES: readonly string[] = ['green', 'warning', 'red', 'unavailable'];
 
 /** Validates a published stop strip and returns it unchanged in published order. */
 export function validateSweepStops(stops: readonly SweepStopInput[]): readonly SweepStopInput[] {
@@ -34,7 +44,7 @@ export function validateSweepStops(stops: readonly SweepStopInput[]): readonly S
     seen.add(stop.index);
     if (!STATUSES.includes(stop.status)) throw new Error(`unknown sweep stop status: ${String(stop.status)}`);
     if (stop.turn !== null && !TURNS.includes(stop.turn)) throw new Error(`unknown sweep stop turn: ${String(stop.turn)}`);
-    if (stop.status !== 'green' && stop.status !== 'warning' && stop.fold_display !== null) {
+    if (stop.status !== 'green' && stop.status !== 'warning' && (stop.fold_display !== null || (stop.folds ?? []).length > 0)) {
       throw new Error(`sweep stop ${stop.index} (${stop.status}) must not carry a fold`);
     }
     const checks = stop.checks ?? [];

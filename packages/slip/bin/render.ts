@@ -3,6 +3,14 @@
  * Deterministic @rezono/slip render harness (Decision 0006).
  * Accepts a JSON request ({ store | fixture, role, pack, lang, row?, keys?, reader?, theme?, model?, seal?, selectedStop? })
  * and returns { html, files } where `files` maps every built @rezono/slip asset to its LF-normalized SHA-256 digest.
+ *
+ * Reading Rezono's reader (Decision 0009): a fixture with `reader_answers` (fixtures/10-slip-reader-answers.json)
+ * holds what Rezono's reader answered, per store and role. `store` names the recorded store ("main" by default),
+ * `row` is { relation, key } as in Rezono's slip tests, `keys` are Rezono's line actions ({ line, key } presses a
+ * verb's key on the line with that index, { line, stop } moves its sweep control to a stop) or shortcut letters,
+ * and `reader` may be the path of a module whose default export wraps the reader's handler (Rezono's tests use
+ * one to answer one more question). The view model (src/model.ts, ported from Rezono) runs here, at build time;
+ * the page gets only its result.
  */
 
 import crypto from 'node:crypto';
@@ -19,7 +27,12 @@ import { createSlipModel, selectSlipVerb } from '../src/slip-controller.ts';
 import type { AdjacentWorldHop, MissingLever, PrismSpectrum, SlipModel, VerbKey } from '../src/slip-controller.ts';
 import { resolveSlipShortcut } from '../src/slip-element.ts';
 import type { SealCheckItem, UnservedInfo } from '../src/slip-element.ts';
-import { buildAnswerTable, mergeLineAnsweredVerbs, resolveReaderExtraVerbs } from '../src/slip-verbs.ts';
+import { buildAnswerTable, mergeLineAnsweredVerbs, resolveLineVerbs, resolveReaderExtraVerbs } from '../src/slip-verbs.ts';
+import { loadSlip } from '../src/model.ts';
+import { slipPropsFromView } from '../src/slip-props.ts';
+import type { SlipProps, SlipPropsSweep } from '../src/slip-props.ts';
+import type { MessageResource, ReaderHandler, RowSelection } from '../src/types.ts';
+import { rezonoMessageFiller, rezonoStdPacks } from './rezono-source.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SLIP_SRC_DIR = path.resolve(HERE, '..', 'src');
@@ -43,6 +56,7 @@ interface SlipGroundLine {
   readonly sign: string;
   readonly cell: RawCellInput;
   readonly answered_verbs?: readonly string[];
+  /** Fixture 09 only: the sweep whose cell this line holds (the reader path finds it from the bundle). */
   readonly sweep_name?: string;
 }
 
@@ -57,6 +71,7 @@ interface CalcStepLine {
 interface ConformanceRowPayload {
   readonly kind: 'rule' | 'calc';
   readonly rule_id: string;
+  readonly sentence?: readonly { readonly text: string; readonly line?: number | undefined }[];
   readonly sentence_template?: string;
   readonly bindings?: readonly SentenceBinding[];
   readonly grounds_distance_1?: readonly SlipGroundLine[];
@@ -108,6 +123,20 @@ interface SlipFixturePayload {
     readonly adjacent_worlds_delta1: readonly AdjacentWorldHop[];
   };
   readonly slip_conformance?: SlipConformancePayload;
+  /** What Rezono's reader answered: store -> role -> request path -> { status, body }. */
+  readonly reader_answers?: Readonly<Record<string, Readonly<Record<string, Readonly<Record<string, RecordedAnswer>>>>>>;
+}
+
+interface RecordedAnswer {
+  readonly status: number;
+  readonly body: unknown;
+}
+
+/** A key pressed on the line with this index, or that line's sweep control moved to a stop (Rezono's slip tests). */
+export interface SlipLineAction {
+  readonly line: number;
+  readonly key?: string;
+  readonly stop?: number;
 }
 
 export interface AnswerTableRow {
@@ -132,14 +161,14 @@ export interface ReaderCapabilityConfig {
 
 export interface SlipRenderRequest {
   readonly fixture?: string | SlipFixturePayload;
-  readonly store?: SlipFixturePayload;
+  readonly store?: SlipFixturePayload | string;
   readonly role?: string;
   readonly pack?: string;
   readonly lang?: string;
   readonly theme?: PaletteName;
-  readonly row?: string;
-  readonly keys?: readonly string[];
-  readonly reader?: ReaderCapabilityConfig;
+  readonly row?: string | RowSelection;
+  readonly keys?: readonly (string | SlipLineAction)[];
+  readonly reader?: ReaderCapabilityConfig | string;
   readonly activeVerb?: VerbKey;
   readonly selectedStop?: number | null;
   readonly seal?: CartoucheSeal | null;
@@ -226,7 +255,7 @@ function buildFilesHashMap(compiledSlipCode: string): Readonly<Record<string, st
 }
 
 function loadPayload(request: SlipRenderRequest): SlipFixturePayload | null {
-  if (request.store) return request.store;
+  if (request.store && typeof request.store !== 'string') return request.store;
   if (!request.fixture) return null;
   if (typeof request.fixture !== 'string') return request.fixture;
 
@@ -258,6 +287,230 @@ function sealFromManifest(manifest: ManifestMeta, roleOverride?: string): Cartou
   });
 }
 
+/** The recorded answers of one store and role as a reader handler; a request that was not recorded is an error. */
+function recordedReader(answers: Readonly<Record<string, RecordedAnswer>>): ReaderHandler {
+  return async (request: Request) => {
+    const url = new URL(request.url);
+    const recorded = answers[url.pathname + url.search];
+    if (!recorded) throw new Error(`reader answers: ${url.pathname + url.search} was not recorded`);
+    return Response.json(recorded.body, { status: recorded.status });
+  };
+}
+
+/** Fixture 09's messages as MF2 resources, for Rezono's message filler (no `{$x}` substitution anywhere else). */
+function mf2Resources(messages: Readonly<Record<string, Readonly<Record<string, string>>>> | undefined): MessageResource[] {
+  return Object.entries(messages ?? {}).map(([lang, entries]) => ({
+    lang,
+    resource: `@locale ${lang}\n---\n${Object.entries(entries)
+      .map(([id, pattern]) => `${id} = ${pattern}`)
+      .join('\n')}\n`
+  }));
+}
+
+/** Fixture 09's sentence, filled by Rezono's fill.ts; a variable links to the line its binding names. */
+async function fixtureSentence(
+  row: ConformanceRowPayload,
+  messages: SlipConformancePayload['messages'],
+  lang: string
+): Promise<readonly { text: string; line?: number }[]> {
+  if (row.kind !== 'rule') return [];
+  const filler = await rezonoMessageFiller();
+  const args: Record<string, string> = {};
+  for (const binding of row.bindings ?? []) args[binding.name] = binding.display;
+  const resources = mf2Resources(messages);
+  const parts = filler.fillParts(resources, lang, row.rule_id, args) ?? filler.fillParts(resources, 'en', row.rule_id, args);
+  if (parts === undefined) return [{ text: row.rule_id }];
+  const grounds = row.grounds_distance_1 ?? [];
+  return parts.map((part) => {
+    if (part.kind !== 'var') return { text: part.text };
+    const binding = (row.bindings ?? []).find((b) => b.name === part.name);
+    let line = -1;
+    if (binding?.aggregate === true) line = grounds.findIndex((g) => g.part === 'total');
+    else if (binding?.premise_position !== undefined) {
+      line = grounds.findIndex((g) => g.premise_position === binding.premise_position);
+    }
+    return line >= 0 ? { text: part.text, line } : { text: part.text };
+  });
+}
+
+/** Fixture 09's stops on the line that holds the swept cell, each with that line's fold from fold_display. */
+function fixtureSweeps(
+  grounds: readonly SlipGroundLine[],
+  sweeps: SlipConformancePayload['sweeps'],
+  role: string
+): SlipPropsSweep[] {
+  const out: SlipPropsSweep[] = [];
+  grounds.forEach((line, idx) => {
+    const sweep = line.sweep_name ? sweeps?.[line.sweep_name] : undefined;
+    if (!sweep || !line.sweep_name) return;
+    const name = line.sweep_name;
+    const stops = (role === 'summary' ? sweep.stops_summary : sweep.stops_reader) ?? [];
+    out.push({
+      line: idx,
+      name,
+      unavailable: stops.length > 0 && stops.every((stop) => stop.status === 'unavailable'),
+      stops: stops.map((stop) => ({
+        ...stop,
+        folds:
+          stop.fold_display === null
+            ? []
+            : [{ line: idx, cell: { state: 'known', display: stop.fold_display, proof_ref: `sweep:${name}#${stop.index}` } }]
+      }))
+    });
+  });
+  return out;
+}
+
+interface LineActionResult {
+  readonly activeVerb: VerbKey | null;
+  readonly openSweepLine: number | null;
+  readonly selectedStop: number | null;
+  readonly openAnswer: string | null;
+}
+
+/** Rezono's line actions against the lines, sweeps and answers built for the page. */
+function applyLineActions(
+  keys: readonly (string | SlipLineAction)[],
+  lines: readonly { readonly answered_verbs?: readonly string[] | undefined }[],
+  sweeps: readonly SlipPropsSweep[],
+  answers: Readonly<Record<string, unknown>>,
+  proposeAllowed: boolean,
+  start: LineActionResult
+): LineActionResult {
+  let { activeVerb, openSweepLine, selectedStop, openAnswer } = start;
+  const press = (lineIdx: number, key: string): void => {
+    const spec = resolveLineVerbs(lines[lineIdx]?.answered_verbs).find((v) => v.key === key.toLowerCase());
+    if (!spec || (spec.verb === 'propose' && !proposeAllowed)) return;
+    activeVerb = spec.key;
+    if (spec.verb === 'suppose' && sweeps.some((sw) => sw.line === lineIdx)) {
+      openSweepLine = openSweepLine === lineIdx ? null : lineIdx;
+      selectedStop = null;
+      return;
+    }
+    const answerKey = `${lineIdx}:${spec.verb}`;
+    if (answers[answerKey]) openAnswer = openAnswer === answerKey ? null : answerKey;
+  };
+  for (const action of keys) {
+    if (typeof action === 'string') {
+      const lineIdx = lines.findIndex((line) =>
+        resolveLineVerbs(line.answered_verbs).some((v) => v.key === action.toLowerCase())
+      );
+      if (lineIdx >= 0) press(lineIdx, action);
+      continue;
+    }
+    if (!Number.isInteger(action.line) || !lines[action.line]) throw new Error(`No line with index ${action.line}`);
+    if (action.key !== undefined) press(action.line, action.key);
+    if (action.stop !== undefined) {
+      const sweep = openSweepLine === action.line ? sweeps.find((sw) => sw.line === action.line) : undefined;
+      if (!sweep || !sweep.stops.some((stop) => stop.index === action.stop)) {
+        throw new Error(`No stop ${action.stop} on line ${action.line}`);
+      }
+      selectedStop = action.stop;
+    }
+  }
+  return { activeVerb, openSweepLine, selectedStop, openAnswer };
+}
+
+/** Rezono's reader -> the ported view model (build time) -> the props of the one Slip.svelte. */
+async function renderFromReader(
+  request: SlipRenderRequest,
+  payload: SlipFixturePayload,
+  component: Component<Record<string, unknown>>,
+  files: Readonly<Record<string, string>>
+): Promise<SlipRenderResponse> {
+  const storeName = typeof request.store === 'string' ? request.store : 'main';
+  const role = request.role ?? 'reader';
+  const recorded = payload.reader_answers?.[storeName]?.[role];
+  if (!recorded) throw new Error(`reader answers: no store "${storeName}" for role "${role}"`);
+  const theme: PaletteName = request.theme ?? 'swisstopo';
+  const lang = request.lang ?? 'en';
+  const pack = request.pack ?? 'slip';
+
+  let handle: ReaderHandler = recordedReader(recorded);
+  if (typeof request.reader === 'string') {
+    const wrapper = (await import(pathToFileURL(path.resolve(request.reader)).href)) as {
+      default?: (next: ReaderHandler) => ReaderHandler;
+    };
+    if (typeof wrapper.default !== 'function') {
+      throw new Error(`Reader wrapper ${request.reader} does not have a default export function`);
+    }
+    handle = wrapper.default(handle);
+  }
+  // The model stops when the reader refuses the head, the bundle or the proof of the row ("Unable to read ...").
+  // That refusal is the reader not serving the publication: the page then shows no line (Rezono, The seal).
+  const refusals: { status: number; error: string | null }[] = [];
+  const fetchFn = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+    const req = input instanceof Request ? input : new Request(new URL(String(input), 'http://localhost'), init);
+    const res = await handle(req);
+    if (!res.ok) {
+      const body = (await res.clone().json().catch(() => null)) as { error?: unknown } | null;
+      refusals.push({ status: res.status, error: typeof body?.error === 'string' ? body.error : null });
+    }
+    return res;
+  };
+
+  const row = typeof request.row === 'object' ? request.row : undefined;
+  let props: SlipProps;
+  try {
+    const view = await loadSlip(fetchFn, { pack, lang, row }, await rezonoStdPacks(), await rezonoMessageFiller());
+    props = slipPropsFromView(view);
+  } catch (err) {
+    const refused = refusals.at(-1);
+    if (!(err instanceof Error) || !err.message.startsWith('Unable to read') || refused === undefined) throw err;
+    const out = svelteRender(component, {
+      props: {
+        theme,
+        unserved: { code: `http_status_${refused.status}`, reason_message_id: refused.error },
+        httpStatus: refused.status
+      }
+    });
+    return { html: out.body ?? '', files };
+  }
+
+  const head = (recorded['/' + encodeURIComponent(pack) + '/head']?.body ?? null) as {
+    id: string;
+    epoch: number;
+    knowledge_time?: string;
+    witness_check?: string;
+  } | null;
+  if (!head) throw new Error('reader answers: no head');
+  const green = head.witness_check === 'green';
+  const seal: CartoucheSeal = Object.freeze({
+    manifestId: head.id,
+    epoch: head.epoch,
+    knowledgeTime: head.knowledge_time ?? '',
+    role,
+    witnessCheck: green ? 'green' : 'failed',
+    trustTier: 'sealed',
+    provisionalCount: 0,
+    canPropose: green
+  });
+  const lines = props.row.grounds_distance_1 ?? props.row.steps ?? [];
+  const actions = applyLineActions(request.keys ?? [], lines, props.sweeps, props.answers, seal.canPropose, {
+    activeVerb: null,
+    openSweepLine: null,
+    selectedStop: request.selectedStop ?? null,
+    openAnswer: null
+  });
+  const out = svelteRender(component, {
+    props: {
+      theme,
+      seal,
+      sealChecks: props.sealChecks,
+      manifestHash: props.manifestHash,
+      conformanceRow: props.row,
+      answers: props.answers,
+      openAnswer: actions.openAnswer,
+      sweeps: props.sweeps,
+      openSweepLine: actions.openSweepLine,
+      selectedStopIndex: actions.selectedStop,
+      signsLeftOut: props.signsLeftOut,
+      ...(actions.activeVerb ? { activeVerb: actions.activeVerb } : {})
+    }
+  });
+  return { html: out.body ?? '', files };
+}
+
 export async function render(request: SlipRenderRequest): Promise<SlipRenderResponse> {
   const slipPath = path.join(SLIP_SRC_DIR, 'Slip.svelte');
   const bundle = compileSvelteFile(slipPath);
@@ -267,11 +520,13 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
   };
 
   const payload = loadPayload(request);
+  if (payload?.reader_answers) return renderFromReader(request, payload, mod.default, files);
   const lang = request.lang ?? 'en';
   const theme: PaletteName = request.theme ?? 'swisstopo';
+  const capability: ReaderCapabilityConfig | undefined = typeof request.reader === 'object' ? request.reader : undefined;
 
   const unserved: UnservedInfo | null =
-    request.reader?.refuse ??
+    capability?.refuse ??
     payload?.unserved ??
     (payload?.manifest && payload.manifest.witness_check === 'failed'
       ? {
@@ -317,15 +572,17 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
   const openedQuestions = new Set<string>();
 
   let conformanceRow: ConformanceRowPayload | null = null;
-  let sweepStops: readonly SweepStopPayload[] = [];
-  const addedVerbs = resolveReaderExtraVerbs(request.reader);
+  let sweeps: SlipPropsSweep[] = [];
+  let openSweepLine: number | null = null;
+  let selectedStop: number | null = request.selectedStop ?? null;
+  const addedVerbs = resolveReaderExtraVerbs(capability);
 
   if (payload?.slip_conformance) {
     const conf = payload.slip_conformance;
     const homeKey = conf.home_claim
       ? `${conf.home_claim.relation}::${conf.home_claim.key.join('::')}`
       : undefined;
-    const rowId = request.row ?? homeKey;
+    const rowId = typeof request.row === 'string' ? request.row : homeKey;
     const rawRow = rowId && conf.rows ? conf.rows[rowId] : undefined;
 
     if (rawRow) {
@@ -341,6 +598,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
 
       conformanceRow = {
         ...rawRow,
+        sentence: await fixtureSentence(rawRow, conf.messages, lang),
         sentence_template: template,
         ...(mergedGrounds ? { grounds_distance_1: mergedGrounds } : {})
       };
@@ -351,28 +609,40 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
       }
       for (const v of addedVerbs) availableLineVerbs.add(v);
 
+      const role = request.role ?? payload.manifest?.role ?? 'reader';
+      sweeps = fixtureSweeps(mergedGrounds ?? [], conf.sweeps, role);
+      // `suppose` opens the sweep control of a line; it opens no answer table (Rezono's slip).
       for (const rawKey of request.keys ?? []) {
+        if (typeof rawKey !== 'string') continue;
         const res = resolveSlipShortcut(rawKey, {
           proposeAllowed: seal?.canPropose ?? false,
           availableVerbs: [...availableLineVerbs]
         });
-        if (res.status === 'select') {
-          activeVerb = res.spec.key;
+        if (res.status !== 'select') continue;
+        activeVerb = res.spec.key;
+        if (res.spec.verb === 'suppose') {
+          const first = sweeps[0];
+          if (first) openSweepLine = openSweepLine === null ? first.line : null;
+        } else {
           openedQuestions.add(res.spec.question);
         }
       }
-
-      if (openedQuestions.has('sweep') && conf.sweeps) {
-        const sweepLine = mergedGrounds?.find((g) => g.sweep_name !== undefined);
-        const sweepData = sweepLine?.sweep_name ? conf.sweeps[sweepLine.sweep_name] : undefined;
-        if (sweepData) {
-          const role = request.role ?? payload.manifest?.role ?? 'reader';
-          sweepStops = role === 'summary' ? (sweepData.stops_summary ?? []) : (sweepData.stops_reader ?? []);
-        }
+      const lineActions = (request.keys ?? []).filter((k): k is SlipLineAction => typeof k !== 'string');
+      if (lineActions.length > 0) {
+        const done = applyLineActions(lineActions, mergedGrounds ?? rawRow.steps ?? [], sweeps, {}, seal?.canPropose ?? false, {
+          activeVerb,
+          openSweepLine,
+          selectedStop,
+          openAnswer: null
+        });
+        openSweepLine = done.openSweepLine;
+        selectedStop = done.selectedStop;
+        if (done.activeVerb) activeVerb = done.activeVerb;
       }
     }
   } else if (model) {
     for (const rawKey of request.keys ?? []) {
+      if (typeof rawKey !== 'string') continue;
       const res = resolveSlipShortcut(rawKey, {
         proposeAllowed: model.proposeAllowed,
         proposeBlockedReason: model.proposeBlockedReason
@@ -387,7 +657,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
   const openAnswers: AnswerTableSpec[] = [];
   for (const spec of STD_VERBS) {
     if (openedQuestions.has(spec.question)) {
-      openAnswers.push(buildAnswerTable(spec, conformanceRow, request.reader));
+      openAnswers.push(buildAnswerTable(spec, conformanceRow, capability));
     }
   }
 
@@ -401,8 +671,9 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
       activeVerb,
       conformanceRow,
       openAnswers,
-      sweepStops,
-      selectedStopIndex: request.selectedStop ?? null
+      sweeps,
+      openSweepLine,
+      selectedStopIndex: selectedStop
     }
   });
 
