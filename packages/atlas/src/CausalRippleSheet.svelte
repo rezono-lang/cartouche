@@ -143,7 +143,7 @@
           <tr
             data-key={n.id}
             data-sign={n.sign}
-            data-state={n.state}
+            data-state={n.state === 'invalid' ? undefined : n.state}
             data-gate={n.gate ?? undefined}
             data-load-bearing={n.loadBearing === null ? undefined : n.loadBearing ? 'true' : 'false'}
             data-proof-ref={n.proofRef}
@@ -168,6 +168,10 @@
               {:else if n.state === 'absent'}
                 <span data-sign="absent">
                   {SIGNS.absent?.glyph ?? '⦸'} absent
+                </span>
+              {:else if n.state === 'invalid'}
+                <span data-sign="invalid" data-reason={n.reason ?? undefined}>
+                  {SIGNS.invalid?.glyph ?? '!'} invalid{#if n.reason} · {formatReasonLabel(lang, n.reason, messages)}{/if}
                 </span>
               {:else if n.previousDisplay && n.display}
                 <del>{n.previousDisplay}</del> <ins>{n.display}</ins>

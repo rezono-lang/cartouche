@@ -558,6 +558,15 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
         `        <text x="${n.x + 10}" y="${n.y + 64}" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(absentGlyph)} absent</text>`
       );
       lines.push('      </g>');
+    } else if (n.state === 'invalid') {
+      const reason = n.reason ?? '';
+      lines.push(
+        `      <g ${DATA_MARKS.sign}="invalid" ${DATA_MARKS.state}="invalid" ${DATA_MARKS.proof_ref}="${escapeXml(n.proofRef)}" ${DATA_MARKS.reason}="${escapeXml(reason)}">`
+      );
+      lines.push(
+        `        <text x="${n.x + 10}" y="${n.y + 64}" fill="${escapeXml(palette.violated)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(n.stateGlyph)} invalid${reason ? ` · ${escapeXml(reason)}` : ''}</text>`
+      );
+      lines.push('      </g>');
     } else {
       const transition =
         n.previousDisplay && n.display
@@ -571,7 +580,7 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
     lines.push(
       `      <text x="${n.x + 10}" y="${n.y + 22}" fill="${escapeXml(palette.ink)}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">${escapeXml(n.signGlyph)} ${escapeXml(n.label)}</text>`
     );
-    if (n.gate !== null) {
+    if (n.gate !== null && n.state !== 'invalid') {
       const metaLabel = n.redundancyMargin !== null ? `${n.gate} · margin=${n.redundancyMargin}` : n.gate;
       lines.push(
         `      <text x="${n.x + 10}" y="${n.y + 39}" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(metaLabel)}</text>`

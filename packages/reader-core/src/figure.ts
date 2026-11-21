@@ -27,7 +27,7 @@ export function renderFigure(cell: OpaqueDisplayCell): RenderedFigure {
   if (cell.state === 'unknown') attrs['data-sign'] = 'unknown';
   else if (cell.state === 'absent') attrs['data-sign'] = 'absent';
   else if (cell.state === 'not_applicable') attrs['data-sign'] = 'not_applicable';
-  else if (cell.state === 'invalid') attrs['data-sign'] = 'violated';
+  else if (cell.state === 'invalid') attrs['data-sign'] = 'invalid';
   else if (folded) attrs['data-sign'] = 'changed';
 
   return Object.freeze({

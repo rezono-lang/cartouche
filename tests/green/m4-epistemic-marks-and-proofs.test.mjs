@@ -130,7 +130,7 @@ test('M4 §1 (Sheet 05 Unknown & Invalid): unknown draws flat hatched band with 
         }
         const invG = svg.querySelector(`g[${M.state}="invalid"]`);
         assert.ok(invG, '3D view must render invalid (!) cell');
-        assert.equal(invG.getAttribute(M.sign), 'violated');
+        assert.equal(invG.getAttribute(M.sign), 'invalid');
         assert.equal(invG.getAttribute(M.reason), 'check_failed');
         assert.equal(invG.innerHTML.includes('--z:'), false, 'invalid mark must carry no fabricated height');
         assert.ok(invG.textContent.includes('!'));
@@ -138,11 +138,11 @@ test('M4 §1 (Sheet 05 Unknown & Invalid): unknown draws flat hatched band with 
         const invTd = doc.querySelector(`td[${M.part}="value"][${M.state}="invalid"]`);
         assert.ok(invTd, '2D matrix must render invalid (!) cell');
         assert.equal(invTd.getAttribute(M.reason), 'check_failed');
-        assert.ok(invTd.querySelector(`[${M.sign}="violated"]`));
+        assert.ok(invTd.querySelector(`[${M.sign}="invalid"]`));
         assert.ok(invTd.textContent.includes('!'));
       }
-      // Legend lists 'violated' for the invalid cell
-      assert.ok(doc.querySelector(`table[${M.part}="legend"] tr[${M.sign}="violated"]`));
+      // Legend lists 'invalid' for the invalid cell
+      assert.ok(doc.querySelector(`table[${M.part}="legend"] tr[${M.sign}="invalid"]`));
     } finally {
       await win.happyDOM.close();
     }
@@ -198,7 +198,7 @@ test('M4 §1 (renderFigure): emits only canonical std-view contract SIGNS (never
     { cell: asOpaqueCell({ state: 'unknown', display: null, reason: 'missing_doc', proof_ref: 'p:1' }), expectedSign: 'unknown' },
     { cell: asOpaqueCell({ state: 'absent', display: null, proof_ref: 'p:2', completeness_witness_ref: 'sweep:1' }), expectedSign: 'absent' },
     { cell: asOpaqueCell({ state: 'not_applicable', display: null, reason: 'future_period', proof_ref: 'p:3' }), expectedSign: 'not_applicable' },
-    { cell: asOpaqueCell({ state: 'invalid', display: null, reason: 'check_failed', proof_ref: 'p:4' }), expectedSign: 'violated' },
+    { cell: asOpaqueCell({ state: 'invalid', display: null, reason: 'check_failed', proof_ref: 'p:4' }), expectedSign: 'invalid' },
     { cell: asOpaqueCell({ state: 'known', display: 'NEW', previous_display: 'OLD', proof_ref: 'p:5' }), expectedSign: 'changed' }
   ];
 

@@ -11,7 +11,7 @@
   "source": {
     "decision": "decisions/0009-slip-reads-rezono-reader.md",
     "repository": "rezono-lang/rezono",
-    "commit": "f15c89d665e2815b02e12665203a9d48dd6abc40",
+    "commit": "467de7f9e597d2b91b3005167fced453e35fc7ab",
     "pack": "tests/fixtures/slip",
     "stores": {
       "main": "tests/slip/slip_support.py publish_main",

@@ -112,7 +112,8 @@
     "violated": { "kind": "state", "glyph": "✕", "pattern": "cross-stroke", "token": "violated" },
     "unknown": { "kind": "state", "glyph": "▨", "pattern": "diagonal-hatch-45", "token": "hatchStroke" },
     "not_applicable": { "kind": "state", "glyph": "–", "pattern": "hollow-void", "token": "inkFaint" },
-    "absent": { "kind": "state", "glyph": "⦸", "pattern": "dashed-hollow-strike", "token": "inkSoft" }
+    "absent": { "kind": "state", "glyph": "⦸", "pattern": "dashed-hollow-strike", "token": "inkSoft" },
+    "invalid": { "kind": "state", "glyph": "!", "pattern": "exclamation-border", "token": "violated" }
   },
   "verbs": [
     { "verb": "why", "key": "w", "question": "grounds" },

@@ -102,7 +102,8 @@ export const SIGNS: Readonly<Record<string, SignSpec>> = Object.freeze({
   violated: Object.freeze({ kind: 'state', glyph: '✕', pattern: 'cross-stroke', token: 'violated' }),
   unknown: Object.freeze({ kind: 'state', glyph: '▨', pattern: 'diagonal-hatch-45', token: 'hatchStroke' }),
   not_applicable: Object.freeze({ kind: 'state', glyph: '–', pattern: 'hollow-void', token: 'inkFaint' }),
-  absent: Object.freeze({ kind: 'state', glyph: '⦸', pattern: 'dashed-hollow-strike', token: 'inkSoft' })
+  absent: Object.freeze({ kind: 'state', glyph: '⦸', pattern: 'dashed-hollow-strike', token: 'inkSoft' }),
+  invalid: Object.freeze({ kind: 'state', glyph: '!', pattern: 'exclamation-border', token: 'violated' })
 });
 
 export interface StdVerbSpec {

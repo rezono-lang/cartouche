@@ -114,7 +114,8 @@
         "violated",
         "unknown",
         "not_applicable",
-        "absent"
+        "absent",
+        "invalid"
       ]
     },
     "state": {

@@ -39,7 +39,7 @@
   }
 
   function signNameOf(state: string): string {
-    return state === 'invalid' ? 'violated' : state;
+    return state;
   }
 
   function glyphOf(state: string): string {

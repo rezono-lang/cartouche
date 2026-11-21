@@ -166,7 +166,7 @@ function hasOwnSign(key: string): boolean {
 }
 
 function stateSignKey(state: FlowNodeState): string {
-  return state === 'invalid' ? 'violated' : state;
+  return state;
 }
 
 function strokeForState(state: FlowNodeState, palette: PaletteTokens): string {
@@ -198,7 +198,7 @@ export function buildFlowSplitModel(
       label: n.label,
       zone: n.zone,
       sign: n.sign,
-      state: n.state === 'invalid' ? 'violated' : n.state,
+      state: n.state,
       ...(n.reason !== undefined ? { reason: n.reason } : {}),
       proof_ref: n.proof_ref,
       ...(n.completeness_witness_ref !== undefined ? { completeness_witness_ref: n.completeness_witness_ref } : {})
@@ -588,7 +588,7 @@ export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): s
     } else if (n.state === 'invalid') {
       const reason = n.reason!;
       lines.push(
-        `      <g ${DATA_MARKS.sign}="violated" ${DATA_MARKS.state}="invalid" ${DATA_MARKS.reason}="${escapeXml(reason)}">`
+        `      <g ${DATA_MARKS.sign}="invalid" ${DATA_MARKS.state}="invalid" ${DATA_MARKS.reason}="${escapeXml(reason)}">`
       );
       lines.push(
         `        <text x="${n.x + 10}" y="${n.y + 56}" fill="${escapeXml(palette.violated)}" font-family="ui-monospace, monospace" font-size="10" font-weight="700">! invalid · ${escapeXml(reason)}</text>`
