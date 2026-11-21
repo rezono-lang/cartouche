@@ -11,7 +11,18 @@
   // Renders the refusal exactly as published. Without a body, the only honest reason is the HTTP status.
   let { unserved = null, httpStatus = null }: { unserved?: Unserved | null; httpStatus?: number | null } = $props();
   const M = DATA_MARKS;
-  let code = $derived(unserved ? unserved.code : 'http_status_' + String(httpStatus));
+  let code = $derived.by((): string => {
+    if (unserved) {
+      if (!unserved.code || unserved.code.trim().length === 0) {
+        throw new Error('Unserved payload requires a non-empty published code.');
+      }
+      return unserved.code;
+    }
+    if (httpStatus === null || httpStatus === undefined) {
+      throw new Error('Unserved view requires either a published refusal payload or an HTTP status.');
+    }
+    return 'http_status_' + String(httpStatus);
+  });
 </script>
 
 <div class="slip-unserved" role="alert" {...{ [M.part]: 'unserved', [M.state]: 'invalid', [M.reason]: code }}>
