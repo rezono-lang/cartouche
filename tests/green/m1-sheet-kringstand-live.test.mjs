@@ -11,50 +11,54 @@ const M = DATA_MARKS;
 const ROOT = `[${M.sheet}="kringstand"]`;
 const PROPOSE = 'button[data-verb="propose"], button[data-verb="p"]';
 const LANES = ['needed', 'waiting', 'ready', 'done', 'stuck', 'absent'];
-const BOARD = 'table[aria-label="Board lanes"]';
+// Structural anchors only: lane headers carry data-key alone, items carry data-relation (= lane),
+// chronometer rows carry data-layer without data-relation, unknown rows live in the unknown band.
+const LANE_ROWS = `${ROOT} tr[${M.key}]:not([${M.relation}]):not([${M.layer}])`;
+const BOARD_ITEMS = `${ROOT} tr[${M.relation}]`;
+const ROUND_ROWS = `${ROOT} tr[${M.layer}]:not([${M.relation}])`;
+const UNKNOWN_BAND = `[${M.part}="unknown-band"]`;
+const UNKNOWN_CELLS = `${UNKNOWN_BAND} td[${M.state}="unknown"]`;
 
 async function mount(fx) {
   const { html } = await renderSvelte(SHEET, { fixture: fx });
   return { html, ...parseHtml(html) };
 }
-const cards = (doc) => doc.querySelectorAll(`${BOARD} [${M.proof_ref}], [${M.part}="unknown-band"] [${M.state}="unknown"]`);
+const marks = (doc) => [...doc.querySelectorAll(`${BOARD_ITEMS} td[${M.proof_ref}], ${UNKNOWN_CELLS}`)];
+const roundRows = (doc) => [...doc.querySelectorAll(ROUND_ROWS)].filter((n) => !n.closest(UNKNOWN_BAND));
 
 test('M1: Sheet 03 renders board lanes, separate unknown band, round chronometer, and locks [P] on live delta', async () => {
   const { html, window: win, document: doc } = await mount(fixture);
   try {
-    const lanes = [...doc.querySelectorAll(`${BOARD} tbody tr[${M.key}]`)].map((n) => n.getAttribute(M.key));
-    assert.deepEqual(lanes, LANES);
+    assert.deepEqual([...doc.querySelectorAll(LANE_ROWS)].filter((n) => !n.closest(`table[${M.part}="twin"]`)).map((n) => n.getAttribute(M.key)), LANES);
 
-    const band = doc.querySelector(`[${M.part}="unknown-band"]`);
+    const band = doc.querySelector(UNKNOWN_BAND);
     assert.ok(band);
-    const unk = band.querySelectorAll(`[${M.state}="unknown"]`);
+    const unk = band.querySelectorAll(`td[${M.state}="unknown"]`);
     assert.equal(unk.length, 1);
-    assert.equal(doc.querySelectorAll(`${BOARD} [${M.state}="unknown"]`).length, 0);
+    assert.equal(doc.querySelectorAll(`${BOARD_ITEMS} td[${M.state}="unknown"]`).length, 0);
     assert.equal(/[0-9]/.test(band.textContent), false);
     assert.ok(unk[0].querySelector(`[${M.sign}="unknown"]`).textContent.includes('▨'));
     assert.equal(unk[0].getAttribute(M.reason), 'telemetry_timeout');
     assert.equal(unk[0].getAttribute(M.proof_ref), 'round:m-4#unk-1');
 
-    const absent = doc.querySelector(`${BOARD} [${M.state}="absent"]`);
+    const absent = doc.querySelector(`${BOARD_ITEMS} td[${M.state}="absent"]`);
     assert.equal(absent.getAttribute(M.completeness_ref), 'sweep:complete-m4');
 
     const total = fixture.sealed_rows.length + fixture.live_provisional_delta.changes.length;
-    assert.equal(cards(doc).length, total);
-    for (const c of cards(doc)) assert.ok(c.getAttribute(M.proof_ref));
+    assert.equal(marks(doc).length, total);
+    for (const c of marks(doc)) assert.ok(c.getAttribute(M.proof_ref));
 
-    const rounds = [...doc.querySelectorAll(`table[aria-label="Round chronometer"] tr[${M.key}]`)];
-    assert.deepEqual(rounds.map((r) => r.getAttribute(M.layer)), ['sealed', 'sealed', 'sealed', 'sealed', 'provisional']);
+    assert.deepEqual(roundRows(doc).map((r) => r.getAttribute(M.layer)), ['sealed', 'sealed', 'sealed', 'sealed', 'provisional']);
 
     assert.equal(doc.querySelector(ROOT).getAttribute(M.trust_tier), 'provisional_engine');
     const seal = doc.querySelector(`[${M.part}="seal"]`);
     assert.equal(seal.getAttribute(M.trust_tier), 'provisional_engine');
     assert.equal(seal.querySelector(`[${M.part}="manifest-hash"]`).textContent, fixture.manifest.id);
-    assert.ok(seal.querySelector(`[${M.check}]`));
+    assert.equal(seal.querySelector(`[${M.check}]`).getAttribute(M.status), 'green');
     assert.ok(doc.querySelector(PROPOSE).hasAttribute('disabled'));
     assert.ok(doc.querySelector('form button[type="submit"]').hasAttribute('disabled'));
     assert.equal(doc.querySelectorAll('button[data-verb][data-key]').length, 6);
 
-    // Legend covers every drawn sign; twin has a header and a row per fixture row.
     const drawn = new Set([...doc.querySelectorAll(`[${M.sign}]`)].filter((n) => !n.closest(`table[${M.part}="legend"]`)).map((n) => n.getAttribute(M.sign)));
     const legend = new Set([...doc.querySelectorAll(`table[${M.part}="legend"] tr[${M.sign}]`)].map((n) => n.getAttribute(M.sign)));
     assert.deepEqual([...drawn].sort(), [...legend].sort());
@@ -74,7 +78,7 @@ test('M1: Sheet 03 unlocks [P] and approve only when sealed and green', async ()
     assert.equal(doc.querySelector(PROPOSE).hasAttribute('disabled'), false);
     assert.equal(doc.querySelector('form button[type="submit"]').hasAttribute('disabled'), false);
     assert.equal(doc.querySelector(ROOT).getAttribute(M.trust_tier), 'sealed');
-    assert.equal(doc.querySelectorAll(`table[aria-label="Round chronometer"] tr[${M.key}]`).length, 4);
+    assert.equal(roundRows(doc).length, 4);
   } finally {
     await win.happyDOM.close();
   }
@@ -97,17 +101,23 @@ test('M1: Sheet 03 drops no row: stuck lane renders, live unknown rows go to the
   const { html, window: win, document: doc } = await mount(fx);
   try {
     const total = fx.sealed_rows.length + fx.live_provisional_delta.changes.length;
-    assert.equal(cards(doc).length, total);
-    assert.equal(doc.querySelectorAll(`${BOARD} tr[${M.key}="stuck"] [${M.proof_ref}]`).length, 1);
-    const band = doc.querySelector(`[${M.part}="unknown-band"]`);
-    assert.equal(band.querySelectorAll(`[${M.state}="unknown"]`).length, 3);
+    assert.equal(marks(doc).length, total);
+    assert.equal(doc.querySelectorAll(`${BOARD_ITEMS}[${M.relation}="stuck"] td[${M.proof_ref}]`).length, 1);
+    const band = doc.querySelector(UNKNOWN_BAND);
+    assert.equal(band.querySelectorAll(`td[${M.state}="unknown"]`).length, 3);
     assert.equal(/[0-9]/.test(band.textContent), false);
-    const liveUnk = band.querySelector(`[${M.layer}="provisional"] [${M.proof_ref}="stream:u3"]`);
-    assert.ok(liveUnk);
-    assert.equal(liveUnk.closest(`[${M.layer}="provisional"]`).getAttribute(M.trust_tier), 'provisional_engine');
-    assert.equal(doc.querySelectorAll(`${BOARD} [${M.state}="unknown"]`).length, 0);
+    const liveRow = band.querySelector(`tr[${M.layer}="provisional"] td[${M.proof_ref}="stream:u3"]`);
+    assert.ok(liveRow);
+    assert.equal(liveRow.querySelector(`[${M.trust_tier}]`).getAttribute(M.trust_tier), 'provisional_engine');
+    assert.equal(doc.querySelectorAll(`${BOARD_ITEMS} td[${M.state}="unknown"]`).length, 0);
   } finally {
     await win.happyDOM.close();
   }
   assert.deepEqual(await auditA11y(html), []);
+});
+
+test('M1: Sheet 03 rejects an unknown row without a published reason (no fabricated reason)', async () => {
+  const fx = structuredClone(fixture);
+  delete fx.sealed_rows.find((r) => r.state === 'unknown').reason;
+  await assert.rejects(() => mount(fx), /without published reason/);
 });

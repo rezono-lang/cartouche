@@ -54,13 +54,33 @@
   function liveIn(lane: string): Row[] {
     return liveRows.filter((r) => r.lane === lane && !isUnknown(r));
   }
+  function unknownReason(r: Row): string {
+    if (!r.reason) throw new Error('unknown row without published reason: ' + r.key);
+    return r.reason;
+  }
   function glyph(s: string): string {
     return SIGNS[s]?.glyph ?? SIGNS.derived.glyph;
   }
 </script>
 
-{#snippet cardInner(r)}
-  <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span> {r.label}
+{#snippet itemRow(r, layer)}
+  <tr {...{ [M.key]: r.key, [M.relation]: r.lane, [M.layer]: layer }}>
+    <td {...{ [M.state]: r.state, [M.reason]: r.reason, [M.proof_ref]: r.proof_ref, [M.completeness_ref]: r.completeness_witness_ref }}>
+      <div {...{ [M.trust_tier]: layer === 'sealed' ? 'sealed' : tier }}>
+        <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span> {r.label}
+      </div>
+    </td>
+  </tr>
+{/snippet}
+
+{#snippet unknownRow(r, layer)}
+  <tr {...{ [M.key]: r.key, [M.layer]: layer }}>
+    <td {...{ [M.state]: 'unknown', [M.reason]: unknownReason(r), [M.proof_ref]: r.proof_ref }}>
+      <div {...{ [M.trust_tier]: layer === 'sealed' ? 'sealed' : tier }}>
+        <span aria-hidden="true" {...{ [M.sign]: 'unknown' }}>{glyph('unknown')}</span> <span>{r.reason}</span>
+      </div>
+    </td>
+  </tr>
 {/snippet}
 
 <section
@@ -71,7 +91,7 @@
 
   <div {...{ [M.part]: 'seal', [M.trust_tier]: tier }}>
     <span {...{ [M.part]: 'manifest-hash' }}>{fixture.manifest.id}</span>
-    <span {...{ [M.check]: 'witness', [M.reason]: fixture.manifest.witness_check }}>{fixture.manifest.witness_check}</span>
+    <span {...{ [M.check]: 'witness', [M.status]: fixture.manifest.witness_check }}>{fixture.manifest.witness_check}</span>
     <strong>{tier}</strong>
     {#if live}<span data-live-latency-ms={live.latency_ms}> live {live.latency_ms} ms</span>{/if}
   </div>
@@ -86,55 +106,32 @@
       {/each}
       {#if live}
         <!-- A live round has no certificate; its proof is the first stream change. -->
-        <tr {...{ [M.key]: live.round_id, [M.layer]: 'provisional', [M.trust_tier]: live.trust_tier, [M.proof_ref]: liveRows[0]?.proof_ref ?? live.round_id }}>
-          <th scope="row">{live.round_id}</th><td>{live.trust_tier}</td>
+        <tr {...{ [M.key]: live.round_id, [M.layer]: 'provisional', [M.proof_ref]: liveRows[0]?.proof_ref ?? live.round_id }}>
+          <th scope="row">{live.round_id}</th><td><div {...{ [M.trust_tier]: live.trust_tier }}>{live.trust_tier}</div></td>
         </tr>
       {/if}
     </tbody>
   </table>
 
   <table aria-label="Board lanes">
-    <thead><tr><th scope="col">Lane</th><th scope="col">Items</th></tr></thead>
-    <tbody>
-      {#each BOARD_LANES as lane}
-        <tr {...{ [M.key]: lane }}>
-          <th scope="row">{lane}</th>
-          <td>
-            <div {...{ [M.layer]: 'sealed' }}>
-              {#each sealedIn(lane) as r}
-                <div {...{ [M.state]: r.state, [M.reason]: r.reason, [M.proof_ref]: r.proof_ref, [M.completeness_ref]: r.completeness_witness_ref }}>
-                  {@render cardInner(r)}
-                </div>
-              {/each}
-            </div>
-            <div {...{ [M.layer]: 'provisional', [M.trust_tier]: tier }}>
-              {#each liveIn(lane) as r}
-                <div {...{ [M.state]: r.state, [M.reason]: r.reason, [M.proof_ref]: r.proof_ref, [M.completeness_ref]: r.completeness_witness_ref }}>
-                  {@render cardInner(r)}
-                </div>
-              {/each}
-            </div>
-          </td>
-        </tr>
-      {/each}
-    </tbody>
+    <thead><tr><th scope="col">Lane</th></tr></thead>
+    {#each BOARD_LANES as lane}
+      <tbody>
+        <tr {...{ [M.key]: lane }}><th scope="rowgroup">{lane}</th></tr>
+        {#each sealedIn(lane) as r}{@render itemRow(r, 'sealed')}{/each}
+        {#each liveIn(lane) as r}{@render itemRow(r, 'provisional')}{/each}
+      </tbody>
+    {/each}
   </table>
 
-  <div class="hatched" aria-label="unknown" role="group" {...{ [M.part]: 'unknown-band' }}>
-    <div {...{ [M.layer]: 'sealed' }}>
-      {#each unknownSealed as r}
-        <div {...{ [M.state]: 'unknown', [M.reason]: r.reason ?? 'unspecified', [M.proof_ref]: r.proof_ref }}>
-          <span aria-hidden="true" {...{ [M.sign]: 'unknown' }}>{glyph('unknown')}</span> <span>{r.reason ?? ''}</span>
-        </div>
-      {/each}
-    </div>
-    <div {...{ [M.layer]: 'provisional', [M.trust_tier]: tier }}>
-      {#each unknownLive as r}
-        <div {...{ [M.state]: 'unknown', [M.reason]: r.reason ?? 'unspecified', [M.proof_ref]: r.proof_ref }}>
-          <span aria-hidden="true" {...{ [M.sign]: 'unknown' }}>{glyph('unknown')}</span> <span>{r.reason ?? ''}</span>
-        </div>
-      {/each}
-    </div>
+  <div class="hatched" {...{ [M.part]: 'unknown-band' }}>
+    <table aria-label="unknown">
+      <thead><tr><th scope="col">unknown</th></tr></thead>
+      <tbody>
+        {#each unknownSealed as r}{@render unknownRow(r, 'sealed')}{/each}
+        {#each unknownLive as r}{@render unknownRow(r, 'provisional')}{/each}
+      </tbody>
+    </table>
   </div>
 
   <form aria-label="Proof drawer" onsubmit={(e) => e.preventDefault()}>
@@ -168,19 +165,18 @@
     <thead><tr><th scope="col">Item</th><th scope="col">Lane</th><th scope="col">State</th><th scope="col">Tier</th></tr></thead>
     <tbody>
       {#each fixture.sealed_rows as r}
-        <tr {...{ [M.key]: r.key, [M.layer]: 'sealed' }}>
+        <tr {...{ [M.key]: r.key }}>
           <th scope="row">{r.label}</th><td>{r.lane}</td><td>{r.state}</td><td>sealed</td>
         </tr>
       {/each}
       {#each liveRows as r}
-        <tr {...{ [M.key]: r.key, [M.layer]: 'provisional' }}>
+        <tr {...{ [M.key]: r.key }}>
           <th scope="row">{r.label}</th><td>{r.lane}</td><td>{r.state}</td><td>{tier}</td>
         </tr>
       {/each}
     </tbody>
   </table>
 </section>
-
 <style>
   .hatched { background: repeating-linear-gradient(45deg, transparent 0 4px, currentColor 4px 5px); }
 </style>
