@@ -16,11 +16,16 @@ const FX_DENSE = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), 'fixtures', '06-keycloak-dense-28.json'), 'utf8')
 );
 
-test('M2 Sheet 04: switches to Distance Columns for 28 dependents, renders OR-shields, AND cliffs, fold diff, legend, twin, seal, and 0 axe violations', async () => {
+test('M2 Sheet 04: switches to Distance Columns for 28 dependents, draws zero unpublished edges, renders OR-shields, AND cliffs, fold diff, legend, twin, seal, and 0 axe violations', async () => {
   const model = buildCausalRippleModel(FX_DENSE);
-  assert.equal(model.mode, 'distance-columns', `dependent_count=${FX_DENSE.dependent_count} > ${DISTANCE_COLUMN_THRESHOLD} must use distance-columns`);
+  assert.equal(
+    model.mode,
+    'distance-columns',
+    `dependent_count=${FX_DENSE.dependent_count} > ${DISTANCE_COLUMN_THRESHOLD} must use distance-columns`
+  );
   assert.equal(model.columns.length, 3, 'fixture 06 spans hops 0, 1, 2');
   assert.equal(model.nodes.length, FX_DENSE.nodes.length);
+  assert.equal(model.edges.length, 0, 'fixture 06 publishes no edges, so zero causal edges may be fabricated');
 
   // Compact graph (<= 12 dependents) switches to radial-rings mode
   const fxCompact = structuredClone(FX_DENSE);
@@ -47,10 +52,15 @@ test('M2 Sheet 04: switches to Distance Columns for 28 dependents, renders OR-sh
     const horizon = doc.querySelector(`[${DATA_MARKS.part}="horizon"][${DATA_MARKS.reason}="depth_limit_hop_2"]`);
     assert.ok(horizon, 'expected incomplete horizon indicator with data-reason="depth_limit_hop_2"');
 
-    // Distance columns present in SVG
-    const colGroup = doc.querySelector(`svg [${DATA_MARKS.relation}="distance-columns"]`);
-    assert.ok(colGroup, 'expected distance-columns group in SVG');
-    assert.equal(colGroup.querySelectorAll(`[${DATA_MARKS.key}]`).length, 3, 'expected 3 hop columns');
+    // Three hop columns present in SVG and zero fabricated [data-relation] elements
+    assert.ok(doc.querySelector(`svg [${DATA_MARKS.key}="hop-0"]`), 'expected hop-0 column');
+    assert.ok(doc.querySelector(`svg [${DATA_MARKS.key}="hop-1"]`), 'expected hop-1 column');
+    assert.ok(doc.querySelector(`svg [${DATA_MARKS.key}="hop-2"]`), 'expected hop-2 column');
+    assert.equal(
+      doc.querySelectorAll(`svg [${DATA_MARKS.relation}]`).length,
+      0,
+      'fixture 06 has no published edges, so svg [data-relation] count must be 0'
+    );
 
     // OR-shield node (g-quorum: gate=OR, load_bearing=false)
     const orShield = doc.querySelector(
@@ -58,10 +68,6 @@ test('M2 Sheet 04: switches to Distance Columns for 28 dependents, renders OR-sh
     );
     assert.ok(orShield, 'expected OR-shield node g-quorum with data-gate="OR" and data-load-bearing="false"');
     assert.equal(orShield.getAttribute(DATA_MARKS.proof_ref), 'p:quorum');
-    assert.ok(
-      doc.querySelectorAll(`svg [${DATA_MARKS.relation}="or-shield"]`).length >= 1,
-      'expected at least one OR-shield damped shockwave link'
-    );
 
     // AND load-bearing cliff node (g-rpo: gate=AND, load_bearing=true, violated)
     const andCliff = doc.querySelector(
@@ -69,10 +75,6 @@ test('M2 Sheet 04: switches to Distance Columns for 28 dependents, renders OR-sh
     );
     assert.ok(andCliff, 'expected AND cliff node g-rpo with data-gate="AND", data-load-bearing="true", data-state="violated"');
     assert.equal(andCliff.getAttribute(DATA_MARKS.proof_ref), 'p:rpo');
-    assert.ok(
-      doc.querySelectorAll(`svg [${DATA_MARKS.relation}="and-cliff"][${DATA_MARKS.load_bearing}="true"]`).length >= 1,
-      'expected at least one AND-cliff amplified shockwave link'
-    );
 
     // Fold diff (<del>valid</del> <ins>violated</ins>) in Table Twin for g-rpo
     const rpoRow = doc.querySelector(`table[${DATA_MARKS.part}="twin"] tr[${DATA_MARKS.key}="g-rpo"]`);
@@ -126,7 +128,7 @@ test('M2 Sheet 04: switches to Distance Columns for 28 dependents, renders OR-sh
   assert.deepEqual(violations, [], `WCAG 2.1 AA violations on fixture 06: ${JSON.stringify(violations, null, 2)}`);
 });
 
-test('M2 Sheet 04: 4-valued unknown (zero digits) and absent (completeness_witness_ref) propagate honestly and reject invalid inputs', async () => {
+test('M2 Sheet 04: 4-valued unknown/absent, published edges with own proofs, omitted cut_set, PixiJS draw plan, and strict rejections', async () => {
   const fx4Val = structuredClone(FX_DENSE);
   fx4Val.nodes.push(
     {
@@ -137,7 +139,6 @@ test('M2 Sheet 04: 4-valued unknown (zero digits) and absent (completeness_witne
       state: 'unknown',
       reason: 'probe_unreachable',
       display: null,
-      cut_set: { load_bearing: false, redundancy_margin: 0, gate: 'FACT' },
       proof_ref: 'p:fog'
     },
     {
@@ -151,6 +152,10 @@ test('M2 Sheet 04: 4-valued unknown (zero digits) and absent (completeness_witne
       completeness_witness_ref: 'sweep:full-12'
     }
   );
+  fx4Val.edges = [
+    { id: 'edge-shield', from: 'svc-keycloak', to: 'g-quorum', kind: 'standard', proof_ref: 'p:edge-shield' },
+    { id: 'edge-cliff', from: 'obs-tls', to: 'g-rpo', kind: 'standard', proof_ref: 'p:edge-cliff' }
+  ];
 
   const { html } = await renderSvelte(CAUSAL_RIPPLE_SHEET, { fixture: fx4Val });
   const { window: win, document: doc } = parseHtml(html);
@@ -161,7 +166,15 @@ test('M2 Sheet 04: 4-valued unknown (zero digits) and absent (completeness_witne
     assert.ok(unkSvg.textContent.includes(SIGNS.unknown.glyph));
     assert.equal(/[0-9]/.test(unkSvg.textContent), false, 'unknown SVG mark must contain zero ASCII digits');
 
-    const unkTd = doc.querySelector(`table[${DATA_MARKS.part}="twin"] td[${DATA_MARKS.part}="value"][${DATA_MARKS.state}="unknown"]`);
+    // Node without cut_set omits data-gate and data-load-bearing (no fabricated FACT/false)
+    const fogNode = doc.querySelector(`svg [${DATA_MARKS.key}="node-fog"]`);
+    assert.ok(fogNode, 'expected node-fog in SVG');
+    assert.equal(fogNode.getAttribute(DATA_MARKS.gate), null, 'omitted cut_set must not fabricate data-gate');
+    assert.equal(fogNode.getAttribute(DATA_MARKS.load_bearing), null, 'omitted cut_set must not fabricate data-load-bearing');
+
+    const unkTd = doc.querySelector(
+      `table[${DATA_MARKS.part}="twin"] td[${DATA_MARKS.part}="value"][${DATA_MARKS.state}="unknown"]`
+    );
     assert.ok(unkTd, 'expected unknown Table Twin value cell');
     assert.equal(unkTd.getAttribute(DATA_MARKS.reason), 'probe_unreachable');
     assert.equal(/[0-9]/.test(unkTd.textContent), false, 'unknown Table Twin cell must contain zero ASCII digits');
@@ -170,12 +183,26 @@ test('M2 Sheet 04: 4-valued unknown (zero digits) and absent (completeness_witne
     assert.ok(absNode, 'expected absent node in SVG');
     assert.equal(absNode.getAttribute(DATA_MARKS.completeness_ref), 'sweep:full-12');
     assert.ok(absNode.textContent.includes(SIGNS.absent.glyph));
+
+    // Published edges carry their own published proof_ref
+    const shieldEdge = doc.querySelector(`svg [${DATA_MARKS.key}="edge-shield"][${DATA_MARKS.relation}="or-shield"]`);
+    assert.ok(shieldEdge, 'expected published OR-shield edge');
+    assert.equal(shieldEdge.getAttribute(DATA_MARKS.proof_ref), 'p:edge-shield');
+
+    const cliffEdge = doc.querySelector(`svg [${DATA_MARKS.key}="edge-cliff"][${DATA_MARKS.relation}="and-cliff"]`);
+    assert.ok(cliffEdge, 'expected published AND-cliff edge');
+    assert.equal(cliffEdge.getAttribute(DATA_MARKS.proof_ref), 'p:edge-cliff');
   } finally {
     await win.happyDOM.close();
   }
 
   const violations = await auditA11y(html);
   assert.deepEqual(violations, [], `WCAG 2.1 AA violations on 4-valued ripple: ${JSON.stringify(violations, null, 2)}`);
+
+  // Reject published non-drift edge with missing proof_ref (never borrow dst.proofRef)
+  const fxEdgeNoProof = structuredClone(fx4Val);
+  delete fxEdgeNoProof.edges[0].proof_ref;
+  assert.throws(() => exportCausalRippleSvg(fxEdgeNoProof), /proof_ref/);
 
   // Reject unreasoned unknown
   const fxBadUnk = structuredClone(fx4Val);
@@ -187,20 +214,28 @@ test('M2 Sheet 04: 4-valued unknown (zero digits) and absent (completeness_witne
   delete fxBadAbs.nodes[6].completeness_witness_ref;
   assert.throws(() => exportCausalRippleSvg(fxBadAbs), /EPI_ABSENT_NO_SWEEP|completeness_witness_ref/);
 
-  // Reject missing proof_ref
+  // Reject missing node proof_ref
   const fxNoProof = structuredClone(FX_DENSE);
   fxNoProof.nodes[0].proof_ref = '';
   assert.throws(() => exportCausalRippleSvg(fxNoProof), /EPI_MISSING_PROOF|proof_ref/);
 
-  // Reject unrecognized state
+  // Reject unrecognized state & prototype keys (constructor / toString)
   const fxBadState = structuredClone(FX_DENSE);
-  fxBadState.nodes[0].state = 'mystery';
+  fxBadState.nodes[0].state = 'constructor';
   assert.throws(() => exportCausalRippleSvg(fxBadState), /unrecognized state/);
 
+  const fxBadSign = structuredClone(FX_DENSE);
+  fxBadSign.nodes[0].sign = 'toString';
+  assert.throws(() => exportCausalRippleSvg(fxBadSign), /unrecognized sign/);
+
   // Headless PixiJS v8 draw plan is deterministic and needs zero WebGL
-  const planA = buildPixiDrawPlan(buildCausalRippleModel(FX_DENSE));
-  const planB = buildPixiDrawPlan(buildCausalRippleModel(FX_DENSE));
+  const planA = buildPixiDrawPlan(buildCausalRippleModel(fx4Val));
+  const planB = buildPixiDrawPlan(buildCausalRippleModel(fx4Val));
   assert.deepEqual(planA, planB, 'PixiJS draw plan must be deterministic');
-  assert.ok(planA.commands.some((c) => c.kind === 'curve'), 'PixiJS draw plan must emit shockwave curves');
+  assert.equal(
+    planA.commands.filter((c) => c.kind === 'curve').length,
+    2,
+    'PixiJS draw plan must emit curves only for published edges'
+  );
   assert.ok(planA.commands.some((c) => c.kind === 'rect' && c.fill === null), 'PixiJS draw plan must emit OR-shield / AND-cliff rings');
 });

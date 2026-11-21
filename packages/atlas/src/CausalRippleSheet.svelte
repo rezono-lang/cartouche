@@ -1,12 +1,12 @@
 <script lang="ts">
   import { SIGNS } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
-  import type { CausalRippleFixtureInput } from '../../scene-ir/src/compile-causal-ripple.ts';
   import { buildCausalRippleModel, renderCausalRippleSvg } from './ripple-layout.ts';
+  import type { RippleFixtureWithEdges } from './ripple-layout.ts';
   import { mountCausalRipplePixi } from './ripple-pixi.ts';
 
   interface Props {
-    fixture: CausalRippleFixtureInput;
+    fixture: RippleFixtureWithEdges;
     theme?: PaletteName;
     title?: string;
   }
@@ -130,15 +130,15 @@
             data-key={n.id}
             data-sign={n.sign}
             data-state={n.state}
-            data-gate={n.gate}
-            data-load-bearing={n.loadBearing ? 'true' : 'false'}
+            data-gate={n.gate ?? undefined}
+            data-load-bearing={n.loadBearing === null ? undefined : n.loadBearing ? 'true' : 'false'}
             data-proof-ref={n.proofRef}
             data-completeness-ref={n.completenessWitnessRef ?? undefined}
           >
             <td>{n.label}</td>
             <td>{n.hop}</td>
-            <td>{n.gate}</td>
-            <td>{n.loadBearing ? 'true' : 'false'}</td>
+            <td>{n.gate ?? ''}</td>
+            <td>{n.loadBearing === null ? '' : n.loadBearing ? 'true' : 'false'}</td>
             <td>{n.signGlyph} {n.sign}</td>
             <td
               data-part="value"

@@ -6,13 +6,25 @@
 import { DATA_MARKS, PALETTES, SIGNS } from '../../reader-core/src/index.ts';
 import type { EpistemicSign, EpistemicState, PaletteName, PaletteTokens, SignSpec } from '../../reader-core/src/index.ts';
 import { compileCausalRippleScene } from '../../scene-ir/src/compile-causal-ripple.ts';
-import type { CausalRippleFixtureInput, CausalRippleNodeInput } from '../../scene-ir/src/compile-causal-ripple.ts';
+import type {
+  CausalRippleEdgeInput,
+  CausalRippleFixtureInput,
+  CausalRippleNodeInput
+} from '../../scene-ir/src/compile-causal-ripple.ts';
 import { checkGeometricInvariants } from '../../scene-ir/src/geometry-invariants.ts';
 import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 
 export type RippleLayoutMode = 'distance-columns' | 'radial-rings';
 export type RippleGate = 'FACT' | 'AND' | 'OR';
 export type RippleNodeState = EpistemicState | 'valid' | 'changed' | 'violated';
+
+export interface PublishedRippleEdgeInput extends CausalRippleEdgeInput {
+  readonly proof_ref?: string;
+}
+
+export interface RippleFixtureWithEdges extends Omit<CausalRippleFixtureInput, 'edges'> {
+  readonly edges?: readonly PublishedRippleEdgeInput[];
+}
 
 export interface RippleColumnLayout {
   readonly hop: number;
@@ -31,8 +43,8 @@ export interface RippleNodeLayout {
   readonly signGlyph: string;
   readonly state: RippleNodeState;
   readonly stateGlyph: string;
-  readonly gate: RippleGate;
-  readonly loadBearing: boolean;
+  readonly gate: RippleGate | null;
+  readonly loadBearing: boolean | null;
   readonly redundancyMargin: number | null;
   readonly display: string | null;
   readonly previousDisplay: string | null;
@@ -102,6 +114,10 @@ const COL_W = NODE_W + COL_PAD * 2;
 const COL_GAP_X = 56;
 const FOOTER_H = 64;
 
+function hasOwnSign(key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(SIGNS, key);
+}
+
 function requireNonEmpty(text: string | undefined | null, label: string): string {
   if (typeof text !== 'string' || text.trim().length === 0) {
     throw new Error(`CausalRipple epistemic invariant violation: missing ${label}.`);
@@ -127,10 +143,10 @@ function strokeForState(state: RippleNodeState, palette: PaletteTokens): string 
 }
 
 function validateNode(node: CausalRippleNodeInput): void {
-  if (!SIGNS[node.sign]) {
+  if (!hasOwnSign(node.sign)) {
     throw new Error(`CausalRipple epistemic invariant violation: unrecognized sign "${String(node.sign)}" on node "${node.id}".`);
   }
-  if (!SIGNS[node.state]) {
+  if (!hasOwnSign(node.state)) {
     throw new Error(`CausalRipple epistemic invariant violation: unrecognized state "${String(node.state)}" on node "${node.id}".`);
   }
   requireNonEmpty(node.proof_ref, `proof_ref on node "${node.id}"`);
@@ -145,9 +161,10 @@ function validateNode(node: CausalRippleNodeInput): void {
 /**
  * Pure, deterministic headless layout compiler for Sheet 04 (Causal Ripple / Adaptive Distance Columns).
  * Reuses compileCausalRippleScene and enforces checkGeometricInvariants.
+ * Never fabricates unpublished edges, proofs, gates, or epistemic reasons.
  */
 export function buildCausalRippleModel(
-  fixture: CausalRippleFixtureInput,
+  fixture: RippleFixtureWithEdges,
   options: CausalRippleRenderOptions = {}
 ): CausalRippleModel {
   const theme: PaletteName = options.theme ?? 'swisstopo';
@@ -221,9 +238,6 @@ export function buildCausalRippleModel(
         const ny = colTopY + COL_HEADER_H + COL_PAD + rowIdx * (NODE_H + NODE_GAP_Y);
         const signSpec = SIGNS[raw.sign]!;
         const stateSpec = SIGNS[raw.state]!;
-        const gate: RippleGate = raw.cut_set?.gate ?? 'FACT';
-        const loadBearing = raw.cut_set?.load_bearing ?? false;
-        const redundancyMargin = raw.cut_set?.redundancy_margin ?? null;
 
         const layoutNode: RippleNodeLayout = {
           id: raw.id,
@@ -234,9 +248,9 @@ export function buildCausalRippleModel(
           signGlyph: signSpec.glyph,
           state: raw.state,
           stateGlyph: stateSpec.glyph,
-          gate,
-          loadBearing,
-          redundancyMargin,
+          gate: raw.cut_set ? raw.cut_set.gate : null,
+          loadBearing: raw.cut_set ? raw.cut_set.load_bearing : null,
+          redundancyMargin: raw.cut_set ? raw.cut_set.redundancy_margin : null,
           display: raw.display ?? null,
           previousDisplay: raw.previous_display ?? null,
           reason: raw.reason ?? null,
@@ -280,9 +294,6 @@ export function buildCausalRippleModel(
         const ny = startY + rowIdx * (NODE_H + NODE_GAP_Y);
         const signSpec = SIGNS[raw.sign]!;
         const stateSpec = SIGNS[raw.state]!;
-        const gate: RippleGate = raw.cut_set?.gate ?? 'FACT';
-        const loadBearing = raw.cut_set?.load_bearing ?? false;
-        const redundancyMargin = raw.cut_set?.redundancy_margin ?? null;
 
         const layoutNode: RippleNodeLayout = {
           id: raw.id,
@@ -293,9 +304,9 @@ export function buildCausalRippleModel(
           signGlyph: signSpec.glyph,
           state: raw.state,
           stateGlyph: stateSpec.glyph,
-          gate,
-          loadBearing,
-          redundancyMargin,
+          gate: raw.cut_set ? raw.cut_set.gate : null,
+          loadBearing: raw.cut_set ? raw.cut_set.load_bearing : null,
+          redundancyMargin: raw.cut_set ? raw.cut_set.redundancy_margin : null,
           display: raw.display ?? null,
           previousDisplay: raw.previous_display ?? null,
           reason: raw.reason ?? null,
@@ -312,7 +323,7 @@ export function buildCausalRippleModel(
     }
   }
 
-  // Build shockwave edges (explicit fixture.edges when provided, else hop-to-hop causal ripple links)
+  // Render ONLY published edges; never fabricate unpublished causal connectors or borrow node proofs.
   const edges: RippleEdgeLayout[] = [];
   if (fixture.edges && fixture.edges.length > 0) {
     for (const rawEdge of fixture.edges) {
@@ -323,6 +334,8 @@ export function buildCausalRippleModel(
       if (rawEdge.kind === 'drift') {
         const statedRef = requireNonEmpty(rawEdge.stated_proof_ref, `stated_proof_ref on drift edge "${rawEdge.id}"`);
         const observedRef = requireNonEmpty(rawEdge.observed_proof_ref, `observed_proof_ref on drift edge "${rawEdge.id}"`);
+        const primaryProof =
+          rawEdge.proof_ref && rawEdge.proof_ref.trim().length > 0 ? rawEdge.proof_ref : statedRef;
         edges.push({
           id: rawEdge.id,
           from: rawEdge.from,
@@ -330,7 +343,7 @@ export function buildCausalRippleModel(
           kind: 'drift',
           absorbedByOrShield: false,
           cliffPropagation: true,
-          proofRef: statedRef,
+          proofRef: primaryProof,
           statedProofRef: statedRef,
           observedProofRef: observedRef,
           label: rawEdge.label ?? 'DRIFT',
@@ -340,8 +353,9 @@ export function buildCausalRippleModel(
           y2: dst.y + Math.trunc(dst.h / 2)
         });
       } else {
-        const absorbedByOrShield = dst.gate === 'OR' && !dst.loadBearing;
-        const cliffPropagation = dst.gate === 'AND' && dst.loadBearing;
+        const edgeProof = requireNonEmpty(rawEdge.proof_ref, `proof_ref on edge "${rawEdge.id}"`);
+        const absorbedByOrShield = dst.gate === 'OR' && dst.loadBearing === false;
+        const cliffPropagation = dst.gate === 'AND' && dst.loadBearing === true;
         edges.push({
           id: rawEdge.id,
           from: rawEdge.from,
@@ -349,7 +363,7 @@ export function buildCausalRippleModel(
           kind: 'ripple',
           absorbedByOrShield,
           cliffPropagation,
-          proofRef: dst.proofRef,
+          proofRef: edgeProof,
           statedProofRef: null,
           observedProofRef: null,
           label: rawEdge.label ?? '',
@@ -360,41 +374,12 @@ export function buildCausalRippleModel(
         });
       }
     }
-  } else {
-    for (let hIdx = 0; hIdx < hopOrder.length - 1; hIdx++) {
-      const prevHop = hopOrder[hIdx]!;
-      const nextHop = hopOrder[hIdx + 1]!;
-      const prevNodes = nodes.filter((n) => n.hop === prevHop);
-      const nextNodes = nodes.filter((n) => n.hop === nextHop);
-      for (const src of prevNodes) {
-        for (const dst of nextNodes) {
-          const absorbedByOrShield = dst.gate === 'OR' && !dst.loadBearing;
-          const cliffPropagation = dst.gate === 'AND' && dst.loadBearing;
-          edges.push({
-            id: `ripple:${src.id}->${dst.id}`,
-            from: src.id,
-            to: dst.id,
-            kind: 'ripple',
-            absorbedByOrShield,
-            cliffPropagation,
-            proofRef: dst.proofRef,
-            statedProofRef: null,
-            observedProofRef: null,
-            label: '',
-            x1: src.x + src.w,
-            y1: src.y + Math.trunc(src.h / 2),
-            x2: dst.x,
-            y2: dst.y + Math.trunc(dst.h / 2)
-          });
-        }
-      }
-    }
   }
 
   const legendItems: RippleLegendItem[] = [];
   for (const key of scene.usedSigns) {
-    const spec = SIGNS[key];
-    if (!spec) continue;
+    if (!hasOwnSign(key)) continue;
+    const spec = SIGNS[key]!;
     legendItems.push({
       key,
       glyph: spec.glyph,
@@ -463,8 +448,8 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
     lines.push('  </g>');
   }
 
-  // Distance columns / hop rings
-  lines.push(`  <g ${DATA_MARKS.relation}="${escapeXml(model.mode)}">`);
+  // Distance columns / hop rings (purely structural; no fabricated data-relation)
+  lines.push('  <g>');
   for (const col of model.columns) {
     lines.push(`    <g ${DATA_MARKS.key}="hop-${col.hop}">`);
     lines.push(
@@ -477,45 +462,47 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
   }
   lines.push('  </g>');
 
-  // Shockwave edges (OR-shield damped vs AND-cliff amplified vs drift)
+  // Published edges only
   const driftGlyph = SIGNS.drift?.glyph ?? '══';
-  lines.push('  <g>');
-  for (const e of model.edges) {
-    if (e.kind === 'drift') {
-      const statedRef = e.statedProofRef!;
-      const observedRef = e.observedProofRef!;
-      lines.push(
-        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="drift" ${DATA_MARKS.sign}="drift" ${DATA_MARKS.state}="violated" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
-      );
-      lines.push(
-        `      <path d="${edgeCurveD(e, -4)}" fill="none" stroke="${escapeXml(palette.proof)}" stroke-width="2" stroke-dasharray="6 3" ${DATA_MARKS.proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" />`
-      );
-      lines.push(
-        `      <path d="${edgeCurveD(e, 4)}" fill="none" stroke="${escapeXml(palette.violated)}" stroke-width="2.5" ${DATA_MARKS.proof_ref}="${escapeXml(observedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}" />`
-      );
-      lines.push(
-        `      <text x="${Math.trunc((e.x1 + e.x2) / 2)}" y="${Math.trunc((e.y1 + e.y2) / 2) - 6}" text-anchor="middle" fill="${escapeXml(palette.violated)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(driftGlyph)} ${escapeXml(e.label)}</text>`
-      );
-      lines.push('    </g>');
-    } else {
-      const stroke = e.cliffPropagation
-        ? palette.violated
-        : e.absorbedByOrShield
-          ? palette.valid
-          : palette.ruleStrong;
-      const dash = e.absorbedByOrShield ? ' stroke-dasharray="4 4"' : '';
-      const widthAttr = e.cliffPropagation ? '2.5' : '1.5';
-      const rel = e.absorbedByOrShield ? 'or-shield' : e.cliffPropagation ? 'and-cliff' : 'ripple';
-      lines.push(
-        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="${rel}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.load_bearing}="${e.cliffPropagation ? 'true' : 'false'}">`
-      );
-      lines.push(
-        `      <path d="${edgeCurveD(e, 0)}" fill="none" stroke="${escapeXml(stroke)}" stroke-width="${widthAttr}"${dash} />`
-      );
-      lines.push('    </g>');
+  if (model.edges.length > 0) {
+    lines.push('  <g>');
+    for (const e of model.edges) {
+      if (e.kind === 'drift') {
+        const statedRef = e.statedProofRef!;
+        const observedRef = e.observedProofRef!;
+        lines.push(
+          `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="drift" ${DATA_MARKS.sign}="drift" ${DATA_MARKS.state}="violated" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
+        );
+        lines.push(
+          `      <path d="${edgeCurveD(e, -4)}" fill="none" stroke="${escapeXml(palette.proof)}" stroke-width="2" stroke-dasharray="6 3" ${DATA_MARKS.proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" />`
+        );
+        lines.push(
+          `      <path d="${edgeCurveD(e, 4)}" fill="none" stroke="${escapeXml(palette.violated)}" stroke-width="2.5" ${DATA_MARKS.proof_ref}="${escapeXml(observedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}" />`
+        );
+        lines.push(
+          `      <text x="${Math.trunc((e.x1 + e.x2) / 2)}" y="${Math.trunc((e.y1 + e.y2) / 2) - 6}" text-anchor="middle" fill="${escapeXml(palette.violated)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(driftGlyph)} ${escapeXml(e.label)}</text>`
+        );
+        lines.push('    </g>');
+      } else {
+        const stroke = e.cliffPropagation
+          ? palette.violated
+          : e.absorbedByOrShield
+            ? palette.valid
+            : palette.ruleStrong;
+        const dash = e.absorbedByOrShield ? ' stroke-dasharray="4 4"' : '';
+        const widthAttr = e.cliffPropagation ? '2.5' : '1.5';
+        const rel = e.absorbedByOrShield ? 'or-shield' : e.cliffPropagation ? 'and-cliff' : 'ripple';
+        lines.push(
+          `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="${rel}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.load_bearing}="${e.cliffPropagation ? 'true' : 'false'}">`
+        );
+        lines.push(
+          `      <path d="${edgeCurveD(e, 0)}" fill="none" stroke="${escapeXml(stroke)}" stroke-width="${widthAttr}"${dash} />`
+        );
+        lines.push('    </g>');
+      }
     }
+    lines.push('  </g>');
   }
-  lines.push('  </g>');
 
   // Nodes
   const unknownGlyph = SIGNS.unknown?.glyph ?? '▨';
@@ -527,19 +514,20 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
       ? ` ${DATA_MARKS.completeness_ref}="${escapeXml(n.completenessWitnessRef)}"`
       : '';
     const reasonAttr = n.reason ? ` ${DATA_MARKS.reason}="${escapeXml(n.reason)}"` : '';
-    const lbAttr = n.loadBearing ? 'true' : 'false';
+    const gateAttr = n.gate !== null ? ` ${DATA_MARKS.gate}="${escapeXml(n.gate)}"` : '';
+    const lbAttr = n.loadBearing !== null ? ` ${DATA_MARKS.load_bearing}="${n.loadBearing ? 'true' : 'false'}"` : '';
     const dashAttr = n.state === 'absent' ? ' stroke-dasharray="5 4"' : '';
 
     lines.push(
-      `    <g ${DATA_MARKS.key}="${escapeXml(n.id)}" ${DATA_MARKS.sign}="${escapeXml(n.sign)}" ${DATA_MARKS.state}="${escapeXml(n.state)}" ${DATA_MARKS.gate}="${escapeXml(n.gate)}" ${DATA_MARKS.load_bearing}="${lbAttr}" ${DATA_MARKS.proof_ref}="${escapeXml(n.proofRef)}"${compAttr}${reasonAttr}>`
+      `    <g ${DATA_MARKS.key}="${escapeXml(n.id)}" ${DATA_MARKS.sign}="${escapeXml(n.sign)}" ${DATA_MARKS.state}="${escapeXml(n.state)}"${gateAttr}${lbAttr} ${DATA_MARKS.proof_ref}="${escapeXml(n.proofRef)}"${compAttr}${reasonAttr}>`
     );
 
-    // Outer shield or cliff ring
-    if (n.gate === 'OR' && !n.loadBearing) {
+    // Outer shield or cliff ring (only when cut_set is published)
+    if (n.gate === 'OR' && n.loadBearing === false) {
       lines.push(
         `      <rect x="${n.x - 4}" y="${n.y - 4}" width="${n.w + 8}" height="${n.h + 8}" rx="8" fill="none" stroke="${escapeXml(palette.valid)}" stroke-width="2" stroke-dasharray="6 3" />`
       );
-    } else if (n.gate === 'AND' && n.loadBearing) {
+    } else if (n.gate === 'AND' && n.loadBearing === true) {
       lines.push(
         `      <rect x="${n.x - 4}" y="${n.y - 4}" width="${n.w + 8}" height="${n.h + 8}" rx="4" fill="none" stroke="${escapeXml(palette.violated)}" stroke-width="2.5" />`
       );
@@ -582,10 +570,12 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
     lines.push(
       `      <text x="${n.x + 10}" y="${n.y + 22}" fill="${escapeXml(palette.ink)}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">${escapeXml(n.signGlyph)} ${escapeXml(n.label)}</text>`
     );
-    const metaLabel = n.redundancyMargin !== null ? `${n.gate} · margin=${n.redundancyMargin}` : n.gate;
-    lines.push(
-      `      <text x="${n.x + 10}" y="${n.y + 39}" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(metaLabel)}</text>`
-    );
+    if (n.gate !== null) {
+      const metaLabel = n.redundancyMargin !== null ? `${n.gate} · margin=${n.redundancyMargin}` : n.gate;
+      lines.push(
+        `      <text x="${n.x + 10}" y="${n.y + 39}" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(metaLabel)}</text>`
+      );
+    }
     lines.push('    </g>');
   }
   lines.push('  </g>');
@@ -617,7 +607,7 @@ export function renderCausalRippleSvg(model: CausalRippleModel, ariaLabel?: stri
 }
 
 export function exportCausalRippleSvg(
-  fixture: CausalRippleFixtureInput,
+  fixture: RippleFixtureWithEdges,
   options: CausalRippleRenderOptions = {}
 ): string {
   const model = buildCausalRippleModel(fixture, options);

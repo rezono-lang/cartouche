@@ -176,7 +176,7 @@ export function buildPixiDrawPlan(model: CausalRippleModel): PixiDrawPlan {
   }
 
   for (const n of model.nodes) {
-    if (n.gate === 'OR' && !n.loadBearing) {
+    if (n.gate === 'OR' && n.loadBearing === false) {
       commands.push({
         kind: 'rect',
         x: n.x - 4,
@@ -188,7 +188,7 @@ export function buildPixiDrawPlan(model: CausalRippleModel): PixiDrawPlan {
         stroke: colors.valid,
         strokeWidth: 2
       });
-    } else if (n.gate === 'AND' && n.loadBearing) {
+    } else if (n.gate === 'AND' && n.loadBearing === true) {
       commands.push({
         kind: 'rect',
         x: n.x - 4,
