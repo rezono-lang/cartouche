@@ -185,7 +185,7 @@ function renderSignSpan(signName: string, proofRef: string, reason?: string | nu
 const DIGIT_RE = /[0-9]/;
 
 function stateSignName(state: string): string {
-  return state === 'invalid' ? 'violated' : state;
+  return state;
 }
 
 function renderOpaqueCellTd(opaque: OpaqueDisplayCell): string {

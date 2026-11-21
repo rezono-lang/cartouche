@@ -73,7 +73,7 @@
   function signOf(r: Row): string {
     if (isUnknown(r)) return 'unknown';
     if (r.state === 'absent') return 'absent';
-    if (r.state === 'invalid') return 'violated';
+    if (r.state === 'invalid') return 'invalid';
     return r.sign;
   }
   function rowReason(r: Row): string | undefined {
@@ -106,7 +106,7 @@
   <tr {...{ [M.key]: r.key, [M.relation]: r.lane, [M.layer]: layer }}>
     <td {...{ [M.state]: r.state, [M.reason]: rowReason(r), [M.proof_ref]: r.proof_ref, [M.completeness_ref]: r.completeness_witness_ref }}>
       <div {...{ [M.trust_tier]: layer === 'sealed' ? 'sealed' : tier }}>
-        <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span>{#if r.state === 'invalid'} <span aria-hidden="true">!</span>{/if} {r.label}{#if r.state === 'invalid'} <span>({rowReason(r)})</span>{/if}
+        <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span> {r.label}{#if r.state === 'invalid'} <span>({rowReason(r)})</span>{/if}
       </div>
     </td>
   </tr>

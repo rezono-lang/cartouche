@@ -14,7 +14,7 @@ export function compileFlowSplitScene(fixture: {
   horizon: { complete: boolean; reason: string | null };
   nodes: readonly {
     id: string; label: string; zone: string; sign: 'origin_decision' | 'origin_design' | 'origin_observation' | 'derived';
-    state: 'valid' | 'changed' | 'violated' | 'absent' | 'unknown';
+    state: 'valid' | 'changed' | 'violated' | 'absent' | 'unknown' | 'invalid';
     reason?: string; proof_ref: string; completeness_witness_ref?: string;
   }[];
   edges: readonly {
@@ -73,8 +73,8 @@ export function compileFlowSplitScene(fixture: {
 export function compileReliefScene(fixture: {
   manifest: ManifestMeta;
   subjects: readonly {
-    id: string; state: 'valid' | 'unknown';
-    amount_cell: { state: 'known' | 'unknown'; display?: string | null; reason?: string; proof_ref: string };
+    id: string; state: 'valid' | 'unknown' | 'invalid';
+    amount_cell: { state: 'known' | 'unknown' | 'invalid'; display?: string | null; reason?: string; proof_ref: string };
     citation: string;
   }[];
   sweep_2d: {
@@ -137,7 +137,7 @@ export function compileMongeScene(fixture: {
   projection: 'orthographic';
   services: readonly {
     id: string; label: string; sign: 'origin_decision' | 'origin_design';
-    x: number; y: number; state: 'valid' | 'violated' | 'absent' | 'unknown';
+    x: number; y: number; state: 'valid' | 'violated' | 'absent' | 'unknown' | 'invalid';
     proof_ref: string; completeness_witness_ref?: string;
   }[];
   drift_arcs: readonly { id: string; from: string; to: string; label: string; stated_proof_ref: string; observed_proof_ref: string }[];

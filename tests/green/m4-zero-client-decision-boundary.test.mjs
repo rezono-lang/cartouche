@@ -71,14 +71,14 @@ test('M4 [zero-client-decision-boundary]: Kringstand live round never borrows a 
     assert.equal(liveRound.hasAttribute(M.proof_ref), false, 'live round must not borrow a change proof_ref');
     assert.ok(liveRound.textContent.includes('no proof'), 'live round shows explicit no proof');
 
-    // Invalid (!) cell renders cleanly with data-state="invalid", published reason, violated sign in legend, and !.
+    // Invalid (!) cell renders cleanly with data-state="invalid", published reason, invalid sign in legend, and !.
     const invCell = doc.querySelector(`tr[${M.key}="step:schema-check"] td[${M.state}="invalid"]`);
     assert.ok(invCell);
     assert.equal(invCell.getAttribute(M.reason), 'check_failed');
     assert.equal(invCell.getAttribute(M.proof_ref), 'round:m-4#inv-1');
     assert.ok(invCell.textContent.includes('!'));
-    assert.ok(invCell.querySelector(`[${M.sign}="violated"]`));
-    assert.ok(doc.querySelector(`table[${M.part}="legend"] tr[${M.sign}="violated"]`));
+    assert.ok(invCell.querySelector(`[${M.sign}="invalid"]`));
+    assert.ok(doc.querySelector(`table[${M.part}="legend"] tr[${M.sign}="invalid"]`));
   } finally {
     await win.happyDOM.close();
   }

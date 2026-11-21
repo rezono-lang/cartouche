@@ -243,7 +243,7 @@
       ordered.push(signName);
     };
 
-    const stateSign = (state: string): string => (state === 'invalid' ? 'violated' : state);
+    const stateSign = (state: string): string => state;
     if (conformanceRow) {
       if (conformanceRow.kind === 'calc' && conformanceRow.result_cell && conformanceRow.result_cell.state !== 'known') {
         addSign(stateSign(conformanceRow.result_cell.state));

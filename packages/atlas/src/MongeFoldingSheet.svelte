@@ -180,7 +180,7 @@
       <g
         {...{
           [M.key]: svc.id,
-          [M.sign]: svc.sign,
+          [M.sign]: svc.state === 'invalid' ? 'invalid' : svc.sign,
           [M.state]: svc.state,
           [M.reason]: svc.reason ?? undefined,
           [M.proof_ref]: svc.proofRef,
@@ -257,7 +257,7 @@
     </thead>
     <tbody>
       {#each model.services as svc (svc.id)}
-        <tr {...{ [M.key]: svc.id, [M.state]: svc.state, [M.proof_ref]: svc.proofRef }}>
+        <tr {...{ [M.key]: svc.id, [M.state]: svc.state === 'invalid' ? undefined : svc.state, [M.proof_ref]: svc.proofRef }}>
           <td>{svc.label}</td>
           <td>{svc.sign}</td>
           <td
@@ -274,7 +274,7 @@
             {:else if svc.state === 'absent'}
               {glyph('absent')} absent
             {:else if svc.state === 'invalid'}
-              <span {...{ [M.sign]: 'violated' }}>! invalid{#if svc.reason} · {svc.reason}{/if}</span>
+              <span {...{ [M.sign]: 'invalid' }}>! invalid{#if svc.reason} · {svc.reason}{/if}</span>
             {:else}
               {svc.state}
             {/if}

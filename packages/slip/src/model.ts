@@ -217,7 +217,7 @@ function signByName(catalog: readonly SignInfo[], name: string): SignInfo | unde
 
 function stateSign(catalog: readonly SignInfo[], state: ValueState): SignInfo | undefined {
 	if (state === 'known') return undefined;
-	if (state === 'invalid') return signByName(catalog, 'violated');
+	if (state === 'invalid') return signByName(catalog, 'invalid');
 	return signByName(catalog, state);
 }
 

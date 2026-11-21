@@ -68,7 +68,7 @@ export interface ReliefCliffDistanceInput {
 
 export interface ReliefSubjectInput {
   readonly id: string;
-  readonly state: 'valid' | 'changed' | 'violated' | 'unknown' | 'absent';
+  readonly state: 'valid' | 'changed' | 'violated' | 'unknown' | 'absent' | 'invalid';
   readonly amount_cell: RawCellInput;
   readonly x_axis_cell?: RawCellInput;
   readonly y_axis_cell?: RawCellInput;
@@ -298,14 +298,14 @@ export function buildReliefModel(
   });
 
   const compilerSubjects = validatedSubjectCells.map(({ sub, amountCell }) => {
-    if (sub.state !== 'valid' && sub.state !== 'unknown') {
+    if (sub.state !== 'valid' && sub.state !== 'unknown' && sub.state !== 'invalid') {
       throw new Error(
-        `Unsupported relief subject state "${sub.state}" for "${sub.id}" (only "valid" and "unknown" are representable without state collapse).`
+        `Unsupported relief subject state "${sub.state}" for "${sub.id}" (only "valid", "unknown", and "invalid" are representable without state collapse).`
       );
     }
-    if (amountCell.state !== 'known' && amountCell.state !== 'unknown') {
+    if (amountCell.state !== 'known' && amountCell.state !== 'unknown' && amountCell.state !== 'invalid') {
       throw new Error(
-        `Unsupported relief amount_cell state "${amountCell.state}" for "${sub.id}" (only "known" and "unknown" are representable without state collapse).`
+        `Unsupported relief amount_cell state "${amountCell.state}" for "${sub.id}" (only "known", "unknown", and "invalid" are representable without state collapse).`
       );
     }
     return {
@@ -319,11 +319,18 @@ export function buildReliefModel(
               ...(amountCell.reason !== null ? { reason: amountCell.reason } : {}),
               proof_ref: amountCell.proofRef
             }
-          : {
-              state: 'known' as const,
-              display: amountCell.display,
-              proof_ref: amountCell.proofRef
-            },
+          : amountCell.state === 'invalid'
+            ? {
+                state: 'invalid' as const,
+                display: null,
+                ...(amountCell.reason !== null ? { reason: amountCell.reason } : {}),
+                proof_ref: amountCell.proofRef
+              }
+            : {
+                state: 'known' as const,
+                display: amountCell.display,
+                proof_ref: amountCell.proofRef
+              },
       citation: sub.citation
     };
   });
@@ -524,7 +531,7 @@ export function buildReliefModel(
 
   if (gridCells.length > 0 || subjects.length > 0) addSign('derived');
   if (cliffMarkers.length > 0) addSign('origin_vendor');
-  const stateSign = (state: string): string => (state === 'invalid' ? 'violated' : state);
+  const stateSign = (state: string): string => state;
   for (const sub of subjects) {
     if (sub.amountCell.state !== 'known') addSign(stateSign(sub.amountCell.state));
   }

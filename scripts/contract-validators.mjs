@@ -158,7 +158,7 @@ export function validateStdViewTokensContract(tokensContract, pkgExports, specim
   }
 
   // Cross-check Specimen oracle glyphs against frozen std-view signs
-  const cellOnlyStates = new Set(['known', 'invalid']);
+  const cellOnlyStates = new Set(['known']);
   for (const entry of specimenEntries ?? []) {
     if (entry.kind === 'trust_tier') continue;
     const signName = entry.dataEntry.split(':')[1];

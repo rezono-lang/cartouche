@@ -6,19 +6,9 @@ import { DATA_MARKS as M } from '../../packages/reader-core/src/index.ts';
 import { SPECIMEN_ENTRIES } from '../../packages/atlas/src/index.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Invalid (!) is a sign of the key, listed in the specimen, and drawn on every sheet with its published reason and zero digits, never as violated and never by throwing; needs invalid in Rezono std-view key first (issue #23 §1)',
-  waits_on: []
-};
-
-// Decision 0012 §2 (6c), issue #23 §1: BitemporalStairSheet throws on invalid and the specimen omits it.
-// Since #28 the key equals Rezono's packs/std-view/key.yaml, which has no invalid sign, and since #30 invalid is
-// drawn with the violated sign (✕); the relief sheet still throws on it. Invalid (state code 3 in Rezono contracts/value.yaml: the input contradicts the schema) is not a
-// violated check. The owner's key has "! invalid". Closing this test therefore starts in Rezono: add the invalid
-// sign to packs/std-view/key.yaml (open the issue there), then a planner bumps contracts/std-view.v2.tokens.json and
-// contracts/data-marks.json under Decision 0007, so the two keys stay one.
+// Decision 0012 §2 (6c), issue #23 §1: `invalid` (`!`) is a sign of Rezono's packs/std-view/key.yaml and Cartouche's
+// frozen key, listed in SPECIMEN_ENTRIES, and drawn on every sheet with its published reason and zero digits, never
+// as `violated` and never by throwing.
 
 const ROOT = process.cwd();
 const fx = (name) => JSON.parse(fs.readFileSync(path.join(ROOT, 'fixtures', name), 'utf8'));

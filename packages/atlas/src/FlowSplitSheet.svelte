@@ -107,7 +107,7 @@
           <tr
             data-key={n.id}
             data-sign={n.sign}
-            data-state={n.state}
+            data-state={n.state === 'invalid' ? undefined : n.state}
             data-layer={n.layer}
             data-proof-ref={n.proofRef}
             data-completeness-ref={n.completenessWitnessRef ?? undefined}
@@ -132,7 +132,7 @@
                   {SIGNS.absent?.glyph ?? '⦸'} absent
                 </span>
               {:else if n.state === 'invalid'}
-                <span data-sign="violated" data-reason={n.reason ?? undefined}>
+                <span data-sign="invalid" data-reason={n.reason ?? undefined}>
                   ! invalid{#if n.reason} · {n.reason}{/if}
                 </span>
               {:else}

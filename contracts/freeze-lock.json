@@ -7,12 +7,12 @@
     "contracts/cartouche-scene.v2.schema.json": {
       "contract_id": "cartouche.scene-ir/2",
       "decision": "decisions/0002-cartouche-scene-ir-and-xd-discipline.md",
-      "sha256": "7b4b0a980e997bc201e0587c4c2f8b2616ee2d9bdbe491dd8628084a146f7208"
+      "sha256": "fdaeeffc916f49b13e4738b08a69f3269e6ed6e080fbc13c9c9ae1e82152fbf6"
     },
     "contracts/data-marks.json": {
       "contract_id": "cartouche.data-marks/1",
       "decision": "decisions/0004-swisstopo-oklch-palette-and-data-marks.md",
-      "sha256": "693f0b79e8f26ec563274a46e5a7bc3b5599563ae5978ae4cb8410cd2dd7492f"
+      "sha256": "98a69d9a66ef7cb35e94bcbf9b32f718428ecaceb4fc34003ae16d0cdf584e79"
     },
     "contracts/server-projections.schema.json": {
       "contract_id": "rezono.cartouche-projections/1",
@@ -22,12 +22,12 @@
     "contracts/std-view.v2.tokens.json": {
       "contract_id": "rezono.std-view-tokens/2",
       "decision": "decisions/0004-swisstopo-oklch-palette-and-data-marks.md",
-      "sha256": "9c087957dead0c15b5e1de33da21f98ec2e50f152b40587c6d087172c3af90b0"
+      "sha256": "7590ac099f406a8f09d20d79e24faa5d8a61aaeebb855178f2c788c0f904e0a8"
     },
     "contracts/rezono-pin.json": {
       "contract_id": "rezono.core-pin/1",
       "decision": "decisions/0006-slip-conformance-boundary.md",
-      "sha256": "e178465896fd5a22b29f1e0d88f127fdca7e596f3623bf1a3bcc7883b74dc60c"
+      "sha256": "160d994559e3c524d3cc1a33f2d98750818534bc470429dc5aea3343637c5c3d"
     }
   }
 }

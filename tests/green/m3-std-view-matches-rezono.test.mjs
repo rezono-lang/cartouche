@@ -115,7 +115,7 @@ test('M3 [std-view-matches-rezono]: slip drops the unshared-sign filter, draws a
   }
 });
 
-test('M3 [std-view-matches-rezono]: invalid cell state maps to violated sign in Slip.svelte, slip-element, and typst-export without throwing', async () => {
+test('M3 [std-view-matches-rezono]: invalid cell state renders with invalid (!) sign in Slip.svelte, slip-element, and typst-export without throwing', async () => {
   const slipPath = path.join(ROOT, 'packages', 'slip', 'src', 'Slip.svelte');
   const invalidRow = {
     kind: 'rule',
@@ -140,8 +140,8 @@ test('M3 [std-view-matches-rezono]: invalid cell state maps to violated sign in 
   try {
     const td = docS.querySelector(`td[${DATA_MARKS.part}="value"][${DATA_MARKS.state}="invalid"]`);
     assert.ok(td, 'Slip.svelte renders data-state="invalid"');
-    assert.ok(td.querySelector(`[${DATA_MARKS.sign}="violated"]`), 'Slip.svelte maps invalid state to violated sign');
-    assert.ok(docS.querySelector(`table[${DATA_MARKS.part}="legend"] tr[${DATA_MARKS.sign}="violated"]`), 'Slip.svelte legend lists violated');
+    assert.ok(td.querySelector(`[${DATA_MARKS.sign}="invalid"]`), 'Slip.svelte draws invalid state with invalid sign');
+    assert.ok(docS.querySelector(`table[${DATA_MARKS.part}="legend"] tr[${DATA_MARKS.sign}="invalid"]`), 'Slip.svelte legend lists invalid');
   } finally {
     await winS.happyDOM.close();
   }
@@ -152,8 +152,8 @@ test('M3 [std-view-matches-rezono]: invalid cell state maps to violated sign in 
   try {
     const td = docE.querySelector(`td[${DATA_MARKS.part}="value"][${DATA_MARKS.state}="invalid"]`);
     assert.ok(td, 'slip-element renders data-state="invalid"');
-    assert.ok(td.querySelector(`[${DATA_MARKS.sign}="violated"]`), 'slip-element maps invalid state to violated sign');
-    assert.ok(docE.querySelector(`table[${DATA_MARKS.part}="legend"] tr[${DATA_MARKS.sign}="violated"]`), 'slip-element legend lists violated');
+    assert.ok(td.querySelector(`[${DATA_MARKS.sign}="invalid"]`), 'slip-element draws invalid state with invalid sign');
+    assert.ok(docE.querySelector(`table[${DATA_MARKS.part}="legend"] tr[${DATA_MARKS.sign}="invalid"]`), 'slip-element legend lists invalid');
   } finally {
     await winE.happyDOM.close();
   }
@@ -167,9 +167,8 @@ test('M3 [std-view-matches-rezono]: invalid cell state maps to violated sign in 
   };
   const reasons = Object.fromEntries(fx01.nodes.filter((n) => n.state === 'unknown').map((n) => [n.id, n.reason]));
   const signs = drawnSigns(mutatedScene);
-  assert.ok(signs.includes('violated'), 'drawnSigns maps invalid state to violated');
-  assert.ok(!signs.includes('invalid'), 'drawnSigns never emits invalid');
+  assert.ok(signs.includes('invalid'), 'drawnSigns emits invalid for invalid state');
   const typ = exportTypst(mutatedScene, { reasonByNodeId: reasons });
-  assert.ok(typ.includes('sign-glyph.violated'), 'exportTypst uses sign-glyph.violated for invalid state');
-  assert.ok(typ.includes('"violated"'), 'exportTypst legend lists violated');
+  assert.ok(typ.includes('sign-glyph.invalid'), 'exportTypst uses sign-glyph.invalid for invalid state');
+  assert.ok(typ.includes('"invalid"'), 'exportTypst legend lists invalid');
 });

@@ -133,7 +133,7 @@ function assertValidSign(name: string): void {
 }
 
 function stateToSign(state: MongeNodeState): string {
-  return state === 'invalid' ? 'violated' : state;
+  return state;
 }
 
 export function normalizeFoldAngle(angleDeg: number | undefined): number {
@@ -246,7 +246,7 @@ export function buildMongeFoldingModel(
       sign: s.sign,
       x: s.x,
       y: s.y,
-      state: s.state === 'invalid' ? 'violated' : s.state,
+      state: s.state,
       proof_ref: s.proof_ref,
       ...(s.completeness_witness_ref ? { completeness_witness_ref: s.completeness_witness_ref } : {})
     })),

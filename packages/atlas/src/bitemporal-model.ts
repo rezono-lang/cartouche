@@ -21,7 +21,7 @@ export const STEP_X = 60;
 export const STEP_Y = 30;
 export const Z_FULL = 90;
 
-export type BitemporalSign = 'valid' | 'changed' | 'unknown' | 'not_applicable' | 'violated';
+export type BitemporalSign = 'valid' | 'changed' | 'unknown' | 'not_applicable' | 'violated' | 'invalid';
 
 export interface BitemporalCellModel {
   readonly id: string;
@@ -88,7 +88,7 @@ export function buildBitemporalModel(fixture: BitemporalFixtureInput): Bitempora
       } else if (raw.state === 'invalid') {
         if (!raw.reason) throw new Error(`invalid cell without published reason: ${raw.proof_ref}`);
         state = 'invalid';
-        sign = 'violated';
+        sign = 'invalid';
         zToken = null;
       } else if (raw.state === 'known') {
         if (raw.z_norm === undefined || raw.z_norm === null) {
