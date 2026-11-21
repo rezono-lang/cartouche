@@ -7,34 +7,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render as renderSlip } from '../../packages/slip/bin/render.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'No hairballs: every exploration view opens as a table or as an ego graph of one question or key; the proof map grows only by explicit why, depends on and affects expansions or a selected witness, and groups by kind with published counts',
-  waits_on: [
-    'm1-absent-never-valid-colour',
-    'm1-claims-match-build',
-    'm1-contrast-wcag-aa',
-    'm1-forced-colors-reduced-motion',
-    'm1-green-guard-covers-harness',
-    'm1-invalid-drawn-everywhere',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-no-borrowed-proof-refs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-proof-tree',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
-
 // Decision 0012 §8 and §3a (proof map requirement 9), avoiding what users dislike in RDFox and Stardog explorers.
 // Amended for the proof map: the map is a graph, but it starts small and grows only on request.
 
