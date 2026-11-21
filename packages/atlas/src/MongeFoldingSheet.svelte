@@ -214,30 +214,34 @@
         >
           {svc.state === 'unknown' ? `${glyph('unknown')} ${svc.reason}` : svc.state === 'invalid' ? `! ${svc.short}` : `${glyph(svc.sign)} ${svc.short}`}
         </text>
-
-        {#each svc.rounds as rm (rm.roundId)}
-          <circle
-            cx={fx(rm.plane2)}
-            cy={fy(rm.plane2)}
-            r="4.5"
-            fill={roundDotFill(rm.state)}
-            stroke={roundDotStroke(rm.state)}
-            stroke-width="0.9"
-            stroke-dasharray={roundDotDash(rm.state)}
-            {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
-          >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
-          <circle
-            cx={fx(rm.plane3)}
-            cy={fy(rm.plane3)}
-            r="4.5"
-            fill={roundDotFill(rm.state)}
-            stroke={roundDotStroke(rm.state)}
-            stroke-width="0.9"
-            stroke-dasharray={roundDotDash(rm.state)}
-            {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
-          >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
-        {/each}
       </g>
+
+      {#if svc.rounds.length > 0}
+        <g>
+          {#each svc.rounds as rm (rm.roundId)}
+            <circle
+              cx={fx(rm.plane2)}
+              cy={fy(rm.plane2)}
+              r="4.5"
+              fill={roundDotFill(rm.state)}
+              stroke={roundDotStroke(rm.state)}
+              stroke-width="0.9"
+              stroke-dasharray={roundDotDash(rm.state)}
+              {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
+            >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
+            <circle
+              cx={fx(rm.plane3)}
+              cy={fy(rm.plane3)}
+              r="4.5"
+              fill={roundDotFill(rm.state)}
+              stroke={roundDotStroke(rm.state)}
+              stroke-width="0.9"
+              stroke-dasharray={roundDotDash(rm.state)}
+              {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
+            >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
+          {/each}
+        </g>
+      {/if}
     {/each}
   </svg>
 
