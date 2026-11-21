@@ -24,12 +24,20 @@ test('Z-set DeltaStore two-layer state + 3-tier CartoucheSeal locks Propose on l
   assert.equal(seal2.canPropose, false);
   assert.equal(store.rows().some((r) => r.row.key === 'step:worker-07' && r.layer === 'provisional'), true);
 
-  // Seal round m-5 -> Propose unlocks and provisional row merges into sealed layer!
-  store.sealProvisionalAsRound({
-    ...fx.manifest,
-    id: 'sha256:sealed-round-m5',
-    epoch: 43
-  });
+  // Client MUST NOT have a self-sealing method (only Rezono seals rounds, Decision 0011).
+  assert.equal('sealProvisionalAsRound' in store, false, 'DeltaStore must not expose client self-sealing');
+
+  // Ingest server-sealed round m-5 snapshot -> Propose unlocks and server-sealed rows replace sealed layer.
+  const sealedM5Rows = [...fx.sealed_rows, ...fx.live_provisional_delta.changes.map((c) => c.row)];
+  store.ingestSealedSnapshot(
+    {
+      ...fx.manifest,
+      id: 'sha256:sealed-round-m5',
+      epoch: 43,
+      trust_tier: 'sealed'
+    },
+    sealedM5Rows
+  );
   const seal3 = store.seal();
   assert.equal(seal3.trustTier, 'sealed');
   assert.equal(seal3.provisionalCount, 0);

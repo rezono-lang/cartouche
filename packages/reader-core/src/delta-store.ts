@@ -35,7 +35,8 @@ export interface CartoucheSeal {
 
 export class DeltaStore<T extends { readonly key: string }> {
   #sealed = new Map<string, T>();
-  #provisional = new Map<string, T>();
+  /** Provisional delta layer: `T` is a +1 addition/update, `null` is a -1 retraction of a sealed key. */
+  #provisional = new Map<string, T | null>();
   #manifest: ManifestMeta;
   #provisionalTier: 'provisional_checked' | 'provisional_engine' | null = null;
 
@@ -49,7 +50,27 @@ export class DeltaStore<T extends { readonly key: string }> {
   applySealedStep(nextManifest: ManifestMeta, changes: readonly ZSetChange<T>[]): void {
     for (const ch of changes) {
       if (ch.weight === 1) this.#sealed.set(ch.row.key, ch.row);
-      else this.#sealed.delete(ch.row.key);
+      else if (ch.weight === -1) this.#sealed.delete(ch.row.key);
+      else throw new Error(`DeltaStore: unsupported Z-set weight ${String(ch.weight)} for key "${ch.row.key}".`);
+    }
+    this.#manifest = nextManifest;
+    this.#provisional.clear();
+    this.#provisionalTier = null;
+  }
+
+  /**
+   * Ingest a complete server-sealed round snapshot published by Rezono (Decision 0011).
+   * Only Rezono seals a round; the client never promotes provisional rows to sealed.
+   */
+  ingestSealedSnapshot(nextManifest: ManifestMeta, sealedRows: readonly T[]): void {
+    if (nextManifest.trust_tier !== 'sealed') {
+      throw new Error(
+        `DeltaStore.ingestSealedSnapshot requires a server-sealed manifest (trust_tier="sealed"), received "${nextManifest.trust_tier}".`
+      );
+    }
+    this.#sealed.clear();
+    for (const row of sealedRows) {
+      this.#sealed.set(row.key, row);
     }
     this.#manifest = nextManifest;
     this.#provisional.clear();
@@ -61,22 +82,22 @@ export class DeltaStore<T extends { readonly key: string }> {
     changes: readonly ZSetChange<T>[]
   ): void {
     for (const ch of changes) {
-      if (ch.weight === 1) this.#provisional.set(ch.row.key, ch.row);
-      else this.#provisional.delete(ch.row.key);
+      if (ch.weight === 1) {
+        this.#provisional.set(ch.row.key, ch.row);
+      } else if (ch.weight === -1) {
+        if (this.#sealed.has(ch.row.key)) {
+          this.#provisional.set(ch.row.key, null);
+        } else {
+          this.#provisional.delete(ch.row.key);
+        }
+      } else {
+        throw new Error(`DeltaStore: unsupported Z-set weight ${String(ch.weight)} for key "${ch.row.key}".`);
+      }
     }
     // Unsealed engine stream strictly dominates checked supposition tier.
     if (this.#provisionalTier !== 'provisional_engine') {
       this.#provisionalTier = tier;
     }
-  }
-
-  sealProvisionalAsRound(nextManifest: ManifestMeta): void {
-    for (const [k, v] of this.#provisional.entries()) {
-      this.#sealed.set(k, v);
-    }
-    this.#provisional.clear();
-    this.#provisionalTier = null;
-    this.#manifest = { ...nextManifest, trust_tier: 'sealed' };
   }
 
   clearProvisional(): void {
@@ -90,7 +111,8 @@ export class DeltaStore<T extends { readonly key: string }> {
       merged.set(k, { row, layer: 'sealed' });
     }
     for (const [k, row] of this.#provisional.entries()) {
-      merged.set(k, { row, layer: 'provisional' });
+      if (row === null) merged.delete(k);
+      else merged.set(k, { row, layer: 'provisional' });
     }
     return [...merged.entries()]
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { DATA_MARKS, SIGNS, STD_VERBS } from '../../reader-core/src/index.ts';
+  import { DATA_MARKS, DeltaStore, SIGNS, STD_VERBS } from '../../reader-core/src/index.ts';
+  import type { ManifestMeta, TrustTier, ZSetChange } from '../../reader-core/src/index.ts';
 
   interface Row {
     key: string;
@@ -14,14 +15,23 @@
   interface Round { id: string; time: string; cert_hash: string; sealed: boolean }
   interface Fixture {
     fixture_id: string;
-    manifest: { id: string; epoch: number; witness_check: string; trust_tier: string };
+    manifest: {
+      id: string;
+      epoch: number;
+      knowledge_time?: string;
+      role?: string;
+      witness_check: string;
+      trust_tier: string;
+    };
     rounds: Round[];
     sealed_rows: Row[];
     live_provisional_delta?: {
       round_id: string;
       latency_ms: number;
-      trust_tier: string;
-      changes: { weight: number; row: Row }[];
+      trust_tier: 'provisional_checked' | 'provisional_engine';
+      cert_hash?: string | null;
+      proof_ref?: string | null;
+      changes: { weight: 1 | -1; row: Row }[];
     } | null;
   }
 
@@ -32,42 +42,71 @@
   const M = DATA_MARKS;
 
   let live = $derived(fixture.live_provisional_delta ?? null);
-  let tier = $derived(live ? live.trust_tier : fixture.manifest.trust_tier);
+
+  let storeState = $derived.by(() => {
+    const manifestMeta: ManifestMeta = {
+      id: fixture.manifest.id,
+      epoch: fixture.manifest.epoch,
+      knowledge_time: fixture.manifest.knowledge_time ?? '',
+      role: fixture.manifest.role ?? '',
+      witness_check: fixture.manifest.witness_check === 'green' ? 'green' : 'failed',
+      trust_tier: fixture.manifest.trust_tier as TrustTier
+    };
+    const store = new DeltaStore<Row>(manifestMeta, fixture.sealed_rows);
+    if (live) {
+      store.applyProvisionalStep(live.trust_tier, live.changes as readonly ZSetChange<Row>[]);
+    }
+    return { entries: store.rows(), seal: store.seal() };
+  });
+
+  let entries = $derived(storeState.entries);
+  let tier = $derived(live ? live.trust_tier : storeState.seal.trustTier);
   let sealedOk = $derived(tier === 'sealed' && fixture.manifest.witness_check === 'green');
   let lockReason = $derived(
     sealedOk ? null : tier === 'provisional_engine' ? 'propose_locked_unsealed_live_stream' : 'propose_locked_not_sealed'
   );
-  let liveRows = $derived(live ? live.changes.map((c) => c.row) : []);
-  let allRows = $derived([...fixture.sealed_rows, ...liveRows]);
+  let liveProofRef = $derived(live?.cert_hash ?? live?.proof_ref ?? undefined);
+
   function isUnknown(r: Row): boolean {
     return r.state === 'unknown' || r.lane === 'unknown';
   }
   function signOf(r: Row): string {
-    return isUnknown(r) ? 'unknown' : r.state === 'absent' ? 'absent' : r.sign;
+    if (isUnknown(r)) return 'unknown';
+    if (r.state === 'absent') return 'absent';
+    if (r.state === 'invalid') return 'violated';
+    return r.sign;
   }
-  let unknownSealed = $derived(fixture.sealed_rows.filter(isUnknown));
-  let unknownLive = $derived(liveRows.filter(isUnknown));
-  let drawnSigns = $derived([...new Set(allRows.map(signOf))]);
-  function sealedIn(lane: string): Row[] {
-    return fixture.sealed_rows.filter((r) => r.lane === lane && !isUnknown(r));
+  function rowReason(r: Row): string | undefined {
+    if (r.state === 'invalid') {
+      if (!r.reason || r.reason.trim().length === 0) {
+        throw new Error('invalid row without published reason: ' + r.key);
+      }
+      return r.reason;
+    }
+    return r.reason;
   }
-  function liveIn(lane: string): Row[] {
-    return liveRows.filter((r) => r.lane === lane && !isUnknown(r));
+  let unknownEntries = $derived(entries.filter((e) => isUnknown(e.row)));
+  let drawnSigns = $derived([...new Set(entries.map((e) => signOf(e.row)))]);
+  function laneEntries(lane: string, layer: 'sealed' | 'provisional') {
+    return entries.filter((e) => e.layer === layer && e.row.lane === lane && !isUnknown(e.row));
   }
   function unknownReason(r: Row): string {
-    if (!r.reason) throw new Error('unknown row without published reason: ' + r.key);
+    if (!r.reason || r.reason.trim().length === 0) throw new Error('unknown row without published reason: ' + r.key);
     return r.reason;
   }
   function glyph(s: string): string {
-    return SIGNS[s]?.glyph ?? SIGNS.derived.glyph;
+    if (!Object.prototype.hasOwnProperty.call(SIGNS, s)) {
+      throw new Error('no std-view sign: ' + s);
+    }
+    return SIGNS[s]!.glyph;
   }
 </script>
 
 {#snippet itemRow(r, layer)}
   <tr {...{ [M.key]: r.key, [M.relation]: r.lane, [M.layer]: layer }}>
-    <td {...{ [M.state]: r.state, [M.reason]: r.reason, [M.proof_ref]: r.proof_ref, [M.completeness_ref]: r.completeness_witness_ref }}>
+    <td {...{ [M.state]: r.state, [M.reason]: rowReason(r), [M.proof_ref]: r.proof_ref, [M.completeness_ref]: r.completeness_witness_ref }}>
       <div {...{ [M.trust_tier]: layer === 'sealed' ? 'sealed' : tier }}>
-        <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span> {r.label}
+        <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span>{#if r.state === 'invalid'} <span aria-hidden="true">!</span>{/if} {r.label}{#if r.state === 'invalid'} <span>({rowReason(r)})</span>{/if}
       </div>
     </td>
   </tr>
@@ -105,9 +144,14 @@
         </tr>
       {/each}
       {#if live}
-        <!-- A live round has no certificate; its proof is the first stream change. -->
-        <tr {...{ [M.key]: live.round_id, [M.layer]: 'provisional', [M.proof_ref]: liveRows[0]?.proof_ref ?? live.round_id }}>
-          <th scope="row">{live.round_id}</th><td><div {...{ [M.trust_tier]: live.trust_tier }}>{live.trust_tier}</div></td>
+        <!-- A live round carries only its own published certificate/proof, never a borrowed change ref. -->
+        <tr {...{ [M.key]: live.round_id, [M.layer]: 'provisional', ...(liveProofRef ? { [M.proof_ref]: liveProofRef } : {}) }}>
+          <th scope="row">{live.round_id}</th>
+          <td>
+            <div {...{ [M.trust_tier]: live.trust_tier }}>
+              {live.trust_tier}{#if liveProofRef} · {liveProofRef}{:else} · no proof{/if}
+            </div>
+          </td>
         </tr>
       {/if}
     </tbody>
@@ -118,8 +162,8 @@
     {#each BOARD_LANES as lane}
       <tbody>
         <tr {...{ [M.key]: lane }}><th scope="rowgroup">{lane}</th></tr>
-        {#each sealedIn(lane) as r}{@render itemRow(r, 'sealed')}{/each}
-        {#each liveIn(lane) as r}{@render itemRow(r, 'provisional')}{/each}
+        {#each laneEntries(lane, 'sealed') as e (e.row.key)}{@render itemRow(e.row, 'sealed')}{/each}
+        {#each laneEntries(lane, 'provisional') as e (e.row.key)}{@render itemRow(e.row, 'provisional')}{/each}
       </tbody>
     {/each}
   </table>
@@ -128,8 +172,7 @@
     <table aria-label="unknown">
       <thead><tr><th scope="col">unknown</th></tr></thead>
       <tbody>
-        {#each unknownSealed as r}{@render unknownRow(r, 'sealed')}{/each}
-        {#each unknownLive as r}{@render unknownRow(r, 'provisional')}{/each}
+        {#each unknownEntries as e (e.row.key)}{@render unknownRow(e.row, e.layer)}{/each}
       </tbody>
     </table>
   </div>
@@ -164,14 +207,9 @@
     <caption>Kringstand table twin</caption>
     <thead><tr><th scope="col">Item</th><th scope="col">Lane</th><th scope="col">State</th><th scope="col">Tier</th></tr></thead>
     <tbody>
-      {#each fixture.sealed_rows as r}
-        <tr {...{ [M.key]: r.key }}>
-          <th scope="row">{r.label}</th><td>{r.lane}</td><td>{r.state}</td><td>sealed</td>
-        </tr>
-      {/each}
-      {#each liveRows as r}
-        <tr {...{ [M.key]: r.key }}>
-          <th scope="row">{r.label}</th><td>{r.lane}</td><td>{r.state}</td><td>{tier}</td>
+      {#each entries as e (e.row.key)}
+        <tr {...{ [M.key]: e.row.key }}>
+          <th scope="row">{e.row.label}</th><td>{e.row.lane}</td><td>{e.row.state}</td><td>{e.layer === 'sealed' ? 'sealed' : tier}</td>
         </tr>
       {/each}
     </tbody>
