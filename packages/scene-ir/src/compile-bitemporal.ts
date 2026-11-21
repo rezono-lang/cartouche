@@ -28,10 +28,26 @@ export interface BitemporalGridInput {
   readonly matrix: readonly (readonly BitemporalCellInput[])[];
 }
 
+export interface BitemporalEpochDiffEntry {
+  readonly key: string;
+  readonly change: 'removed' | 'added' | 'changed';
+  readonly old_display?: string | null;
+  readonly old_proof_iri?: string | null;
+  readonly new_display?: string | null;
+  readonly new_proof_iri?: string | null;
+}
+
+export interface BitemporalEpochDiffInput {
+  readonly from_manifest: string;
+  readonly to_manifest: string;
+  readonly entries: readonly BitemporalEpochDiffEntry[];
+}
+
 export interface BitemporalFixtureInput {
   readonly manifest: ManifestMeta;
   readonly horizon?: { readonly complete: boolean; readonly reason: string | null };
   readonly bitemporal_grid: BitemporalGridInput;
+  readonly epoch_diff?: BitemporalEpochDiffInput;
 }
 
 const CELL_W = 170;

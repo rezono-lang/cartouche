@@ -11,7 +11,10 @@
  */
 
 import { compileBitemporalScene } from '../../scene-ir/src/compile-bitemporal.ts';
-import type { BitemporalFixtureInput } from '../../scene-ir/src/compile-bitemporal.ts';
+import type {
+  BitemporalEpochDiffInput,
+  BitemporalFixtureInput
+} from '../../scene-ir/src/compile-bitemporal.ts';
 import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 
 // Orthographic axonometric tile geometry (fixed 2:1 projection, no perspective).
@@ -50,6 +53,7 @@ export interface BitemporalModel {
   readonly paintOrder: readonly string[];
   readonly drawnSigns: readonly BitemporalSign[];
   readonly viewBox: { readonly minX: number; readonly minY: number; readonly width: number; readonly height: number };
+  readonly epochDiff: BitemporalEpochDiffInput | null;
 }
 
 const DIGIT = /[0-9]/;
@@ -139,6 +143,7 @@ export function buildBitemporalModel(fixture: BitemporalFixtureInput): Bitempora
     cells: Object.freeze(cells),
     paintOrder: Object.freeze(paintOrder),
     drawnSigns: Object.freeze([...signs]),
-    viewBox: Object.freeze({ minX: 0, minY: 0, width, height })
+    viewBox: Object.freeze({ minX: 0, minY: 0, width, height }),
+    epochDiff: fixture.epoch_diff ?? null
   });
 }
