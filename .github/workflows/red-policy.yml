@@ -4,9 +4,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
     branches: [main]
+  merge_group:
+    branches: [main]
 
 concurrency:
-  group: cartouche-red-policy-${{ github.event.pull_request.number }}
+  group: cartouche-red-policy-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -17,13 +19,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - name: Pass cleanly inside merge_group (enforced at PR gate)
+        if: github.event_name == 'merge_group'
+        run: echo "merge_group: PR red-policy already enforced on pull_request."
       - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v4
+        if: github.event_name == 'pull_request'
         with:
           node-version: 22
       - name: Enforce Red-Test & Frozen-Contract PR Policy
+        if: github.event_name == 'pull_request'
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
