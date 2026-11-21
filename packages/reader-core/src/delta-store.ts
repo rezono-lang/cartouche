@@ -2,7 +2,7 @@
  * Two-layer Z-set (+1 / -1) DeltaStore with 3-tier Cartouche Trust Seal.
  * Lesson from Plan.md & Decision 0003:
  *  - A full publication is simply one +1 batch over an empty sealed layer.
- *  - Live <250ms deltas enter the provisional layer (tier: `provisional_engine`),
+ *  - Live unsealed deltas enter the provisional layer (tier: `provisional_engine`),
  *    physically locking `canPropose = false` until sealed by a verified round!
  */
 

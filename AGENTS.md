@@ -18,7 +18,7 @@ These rules apply equally to people and autonomous agents.
 7. **Three-tier trust boundary.**
    - `sealed`: verified round/manifest (`witness_check: green`).
    - `provisional_checked`: server-checked counterfactual (`suppose` / `sweep` / `Δ = 1` world hop).
-   - `provisional_engine`: live unsealed stream (`<250ms`) — **must physically lock `[P] Propose` and approval actions** until the round seals.
+   - `provisional_engine`: live unsealed stream — **must physically lock `[P] Propose` and approval actions** until the round seals.
 8. **Disciplined x-Dimensionality (`xD-Discipline Guard`).**
    - 3D is strictly orthographic/axonometric (zero perspective distortion).
    - Every Z-axis must represent a true metric, stratified, or bitemporal Rezono dimension (nominal IDs on continuous Z height are rejected).
