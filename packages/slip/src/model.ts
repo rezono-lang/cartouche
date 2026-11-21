@@ -186,7 +186,7 @@ function explainMessage(
 	);
 }
 
-function buildSignCatalog(stdPacks: StdPacks, lang: string): SignInfo[] {
+export function buildSignCatalog(stdPacks: StdPacks, lang: string): SignInfo[] {
 	const catalog: SignInfo[] = [];
 	const seen = new Set<string>();
 	for (const status of stdPacks.statuses) {
@@ -333,6 +333,32 @@ function formatLineValue(
 	return { state: 'known', value: keyParts.join(sep), reason: '' };
 }
 
+function originSignForSourceKind(
+	catalog: readonly SignInfo[],
+	kind: string | undefined,
+): SignInfo | undefined {
+	const k = (kind ?? '').trim().toLowerCase();
+	if (k === 'decision' || k === 'law' || k === 'statute' || k === 'policy') {
+		return signByName(catalog, 'origin_decision');
+	}
+	if (k === 'vendor' || k === 'manual' || k === 'spec') {
+		return signByName(catalog, 'origin_vendor');
+	}
+	if (k === 'design' || k === 'synthetic' || k === 'schema' || k === 'config') {
+		return signByName(catalog, 'origin_design');
+	}
+	if (k === 'observation' || k === 'measurement' || k === 'fact') {
+		return signByName(catalog, 'origin_observation');
+	}
+	return undefined;
+}
+
+function formatSourceCitation(name: string, position?: string): string {
+	const base = name.startsWith('@') ? name : `@${name}`;
+	if (!position) return base;
+	return position.startsWith('#') ? `${base}${position}` : `${base}#${position}`;
+}
+
 function formatOrigin(
 	bundle: RoleBundleResponse,
 	lang: string,
@@ -341,12 +367,19 @@ function formatOrigin(
 	node: GroundsNode,
 	answer: ExplainAnswer,
 	polarity: 'positive' | 'negative',
+	forProofTree = false,
 ): { origin: string; originSign?: SignInfo | undefined } {
 	if (polarity === 'negative') {
 		return { origin: viewMessage(stdPacks, lang, 'status.absent') };
 	}
 	if (node.sources && node.sources.length > 0) {
 		const first = node.sources[0]!;
+		if (forProofTree) {
+			return {
+				origin: formatSourceCitation(first.name, first.position),
+				originSign: originSignForSourceKind(catalog, first.kind),
+			};
+		}
 		return { origin: first.position ? `${first.name}:${first.position}` : first.name };
 	}
 	const witness = (answer.witnesses ?? []).find(
@@ -452,12 +485,148 @@ export function buildAnswerTable(
 			if (list) list.push(step);
 			else stepsByPremise.set(id, [step]);
 		}
-		const rows: AnswerTableRow[] = answer.nodes.map((node) => {
+		// Shared DAG deduplication: a premise reached by multiple paths appears once,
+		// preserving first-seen reader order.
+		const uniqueNodes: GroundsNode[] = [];
+		const nodeIndexById = new Map<string, number>();
+		for (const n of answer.nodes) {
+			if (n.outside) {
+				uniqueNodes.push(n);
+				continue;
+			}
+			const id = rowId(n.relation, n.key);
+			if (nodeIndexById.has(id)) continue;
+			nodeIndexById.set(id, uniqueNodes.length);
+			uniqueNodes.push(n);
+		}
+
+		const buildConclusionDetails = (
+			node: GroundsNode,
+		): {
+			sentence?: readonly SentenceSegment[] | undefined;
+			bindings?: readonly import('./types.ts').AnswerBinding[] | undefined;
+		} => {
+			const witness = (answer.witnesses ?? []).find(
+				(w) => w.conclusion.relation === node.relation && w.conclusion.key === node.key,
+			);
+			if (!witness) return {};
+			const rule = (bundle.rules as unknown as RuleLike[]).find((r) => r.id === witness.rule_id);
+			const directSteps = (answer.steps ?? []).filter(
+				(s) => s.conclusion.relation === node.relation && s.conclusion.key === node.key,
+			);
+			const atomPosToRow = new Map<number, number>();
+			const aggPosToRow = new Map<number, number>();
+			for (const s of directSteps) {
+				const targetIdx = nodeIndexById.get(rowId(s.premise.relation, s.premise.key));
+				if (targetIdx === undefined) continue;
+				if (s.how === 'contributes') {
+					if (!aggPosToRow.has(s.position)) aggPosToRow.set(s.position, targetIdx);
+				} else if (!atomPosToRow.has(s.position)) {
+					atomPosToRow.set(s.position, targetIdx);
+				}
+			}
+			const varToRow = new Map<string, number>();
+			let atomIdx = 0;
+			let aggIdx = 0;
+			for (const literal of rule?.body ?? []) {
+				if (literal.kind === 'atom') {
+					const pos = atomIdx++;
+					if (literal.polarity === 'positive') {
+						const rowIdx = atomPosToRow.get(pos);
+						if (rowIdx !== undefined) {
+							for (const term of literal.terms ?? []) {
+								if (term.kind === 'variable' && typeof term.value === 'string') {
+									const name = stripQuestionPrefix(term.value);
+									if (!varToRow.has(name)) varToRow.set(name, rowIdx);
+								}
+							}
+						}
+					}
+				} else if (literal.kind === 'aggregate') {
+					const pos = aggIdx++;
+					const rowIdx = aggPosToRow.get(pos);
+					if (
+						rowIdx !== undefined &&
+						literal.result?.kind === 'variable' &&
+						typeof literal.result.value === 'string'
+					) {
+						const name = stripQuestionPrefix(literal.result.value);
+						if (!varToRow.has(name)) varToRow.set(name, rowIdx);
+					}
+				}
+			}
+			const args: Record<string, string> = {};
+			const bindings: import('./types.ts').AnswerBinding[] = [];
+			for (const binding of witness.bindings ?? []) {
+				const name = stripQuestionPrefix(binding.variable);
+				args[name] = binding.value;
+				let target = varToRow.get(name);
+				if (target === undefined) {
+					for (const s of directSteps) {
+						const parts = parseKey(s.premise.key);
+						if (parts.includes(binding.value)) {
+							const idx = nodeIndexById.get(rowId(s.premise.relation, s.premise.key));
+							if (idx !== undefined) {
+								target = idx;
+								break;
+							}
+						}
+					}
+				}
+				bindings.push(
+					target !== undefined
+						? { variable: name, value: binding.value, line: target }
+						: { variable: name, value: binding.value },
+				);
+			}
+			const messageId = rule?.message ?? `rule.${witness.rule_id}`;
+			const parts = fillParts(bundle.messages, lang, messageId, args);
+			const sentence = parts
+				? parts.map((part) => {
+						if (part.kind === 'var') {
+							const target = varToRow.get(part.name);
+							if (target !== undefined) return { text: part.text, line: target };
+						}
+						return { text: part.text };
+					})
+				: undefined;
+			return {
+				...(sentence ? { sentence } : {}),
+				...(bindings.length > 0 ? { bindings } : {}),
+			};
+		};
+
+		const buildPremiseLinks = (
+			node: GroundsNode,
+			alreadyLinked: ReadonlySet<number>,
+		): readonly import('./types.ts').AnswerPremiseLink[] | undefined => {
+			const directSteps = (answer.steps ?? []).filter(
+				(s) => s.conclusion.relation === node.relation && s.conclusion.key === node.key,
+			);
+			if (directSteps.length === 0) return undefined;
+			const seenLines = new Set<number>(alreadyLinked);
+			const links: import('./types.ts').AnswerPremiseLink[] = [];
+			for (const s of directSteps) {
+				const targetIdx = nodeIndexById.get(rowId(s.premise.relation, s.premise.key));
+				if (targetIdx === undefined || seenLines.has(targetIdx)) continue;
+				seenLines.add(targetIdx);
+				const premKeyParts = parseKey(s.premise.key);
+				const premPol: 'positive' | 'negative' = s.how === 'negative' ? 'negative' : 'positive';
+				links.push({
+					line: targetIdx,
+					label: formatLineLabel(bundle, lang, stdPacks, s.premise.relation, premKeyParts, premPol),
+				});
+			}
+			return links.length > 0 ? links : undefined;
+		};
+
+		const rows: AnswerTableRow[] = uniqueNodes.map((node, idx) => {
 			if (node.outside) {
 				const outsideText =
 					explainMessage(stdPacks, lang, 'explain.outside') ??
 					viewMessage(stdPacks, lang, 'sign.screened');
 				return {
+					line: idx,
 					depth: node.distance,
 					cells: [
 						{ text: String(node.distance) },
@@ -482,9 +651,29 @@ export function buildAnswerTable(
 				polarity,
 				steps[0]?.value,
 			);
-			const originInfo = formatOrigin(bundle, lang, stdPacks, catalog, node, answer, polarity);
+			const originInfo = formatOrigin(bundle, lang, stdPacks, catalog, node, answer, polarity, true);
+			const conclusionDetails = node.distance === 0 ? buildConclusionDetails(node) : {};
+			const alreadyLinked = new Set<number>();
+			for (const seg of conclusionDetails.sentence ?? []) {
+				if (seg.line !== undefined) alreadyLinked.add(seg.line);
+			}
+			for (const b of conclusionDetails.bindings ?? []) {
+				if (b.line !== undefined) alreadyLinked.add(b.line);
+			}
+			const premiseLinks = buildPremiseLinks(node, alreadyLinked);
+			const isLeaf = Boolean(node.sources && node.sources.length > 0);
 			return {
+				line: idx,
 				depth: node.distance,
+				relation: node.relation,
+				key: node.key,
+				polarity,
+				...(conclusionDetails.sentence ? { sentence: conclusionDetails.sentence } : {}),
+				...(conclusionDetails.bindings ? { bindings: conclusionDetails.bindings } : {}),
+				...(premiseLinks ? { premiseLinks } : {}),
+				...(isLeaf ? { source: originInfo.origin } : {}),
+				state: formatted.state,
+				reason: formatted.reason,
 				cells: [
 					{ text: String(node.distance) },
 					{ text: formatLineLabel(bundle, lang, stdPacks, node.relation, keyParts, polarity) },

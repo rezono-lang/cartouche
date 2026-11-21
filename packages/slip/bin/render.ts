@@ -238,6 +238,7 @@ function buildFilesHashMap(compiledSlipCode: string): Readonly<Record<string, st
     ['packages/slip/src/SlipSweep.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SlipSweep.svelte'), 'utf8')],
     ['packages/slip/src/slip-sweep.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-sweep.ts'), 'utf8')],
     ['packages/slip/src/SlipValueCell.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SlipValueCell.svelte'), 'utf8')],
+    ['packages/slip/src/SlipProofTree.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SlipProofTree.svelte'), 'utf8')],
     ['packages/slip/src/slip-controller.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-controller.ts'), 'utf8')],
     ['packages/slip/src/slip-element.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-element.ts'), 'utf8')],
     ['packages/slip/src/slip-verbs.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-verbs.ts'), 'utf8')],

@@ -6,6 +6,7 @@
   import SlipUnserved from './SlipUnserved.svelte';
   import SlipSweep from './SlipSweep.svelte';
   import SlipValueCell from './SlipValueCell.svelte';
+  import SlipProofTree from './SlipProofTree.svelte';
   import type { SweepStopInput } from './slip-sweep.ts';
   import { isLineVerbDisabled, resolveLineVerbs } from './slip-verbs.ts';
 
@@ -62,6 +63,16 @@
     readonly proof_ref?: string | undefined;
     readonly sign?: string | undefined;
     readonly depth?: number | undefined;
+    readonly line?: number | undefined;
+    readonly relation?: string | undefined;
+    readonly key?: string | undefined;
+    readonly polarity?: 'positive' | 'negative' | undefined;
+    readonly sentence?: readonly SentenceSegment[] | undefined;
+    readonly bindings?: readonly { readonly variable: string; readonly value: string; readonly line?: number | undefined }[] | undefined;
+    readonly premiseLinks?: readonly { readonly line: number; readonly label: string }[] | undefined;
+    readonly source?: string | undefined;
+    readonly state?: 'known' | 'unknown' | 'not_applicable' | 'invalid' | 'absent' | undefined;
+    readonly reason?: string | undefined;
   }
 
   interface AnswerTableSpec {
@@ -634,6 +645,9 @@
     {/if}
 
     {#each shownAnswers as answer, answerIdx (answerIdx)}
+      {#if answer.question === 'grounds' && answer.rows.some((r) => r.relation !== undefined)}
+        <SlipProofTree {answer} />
+      {:else}
       <table class="slip-answer-table" data-answer={answer.question} aria-label={answer.heading ?? `Answer ${answer.question}`}>
         {#if answer.heading}<caption>{answer.heading}</caption>{/if}
         <thead>
@@ -670,6 +684,7 @@
         </tbody>
       </table>
       {#if answer.note}<p class="slip-answer-note">{answer.note}</p>{/if}
+      {/if}
     {/each}
 
     {#if drawnSigns.length > 0}
