@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Domain-neutral Rezono ReaderClient. Transport is either `fetch` or an
  * injected in-process handler. Payloads are opaque; nothing is interpreted.
  */
@@ -104,6 +104,7 @@ export class ReaderClient {
     if (s === 404 || s === 501) return { kind: 'unanswered', status: s };
     if (s === 410) return { kind: 'unserved', status: 410, unserved: (res.body as { unserved?: unknown } | undefined)?.unserved ?? res.body ?? null };
     if (s < 200 || s >= 300) return { kind: 'error', status: s, reason: 'http_status' };
+    if (res.body === undefined) return { kind: 'error', status: s, reason: 'invalid_json' };
     const sha256 = await payloadHash(res.body);
     const expected = res.headers?.[HASH_HEADER];
     if (expected !== undefined && expected !== sha256) {

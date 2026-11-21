@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -54,5 +54,7 @@ test('ReaderClient: tampered payload fails SHA-256; fetch transport works and is
   assert.equal(a.sha256, a2.sha256);
   assert.equal(a.sha256, await payloadHash(conf));
   assert.deepEqual(calls[0], ['http://x/bundle', 'GET', 'reader']);
+  const junk = new ReaderClient({ fetch: async () => ({ status: 200, headers: { get: () => null }, text: async () => 'not json' }) });
+  assert.deepEqual(await junk.head(), { kind: 'error', status: 200, reason: 'invalid_json' });
   assert.throws(() => new ReaderClient({}));
 });
