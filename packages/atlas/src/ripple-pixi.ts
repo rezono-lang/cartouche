@@ -5,7 +5,8 @@
  */
 
 import { Application, Graphics } from 'pixi.js';
-import type { PaletteName } from '../../reader-core/src/index.ts';
+import { PALETTES } from '../../reader-core/src/index.ts';
+import type { PaletteTokens } from '../../reader-core/src/index.ts';
 import type { CausalRippleModel, RippleNodeState } from './ripple-layout.ts';
 
 export interface PixiRectCommand {
@@ -15,8 +16,8 @@ export interface PixiRectCommand {
   readonly w: number;
   readonly h: number;
   readonly radius: number;
-  readonly fill: number | null;
-  readonly stroke: number;
+  readonly fill: string | null;
+  readonly stroke: string;
   readonly strokeWidth: number;
 }
 
@@ -30,7 +31,7 @@ export interface PixiCurveCommand {
   readonly cy2: number;
   readonly x2: number;
   readonly y2: number;
-  readonly stroke: number;
+  readonly stroke: string;
   readonly strokeWidth: number;
 }
 
@@ -39,75 +40,24 @@ export type PixiDrawCommand = PixiRectCommand | PixiCurveCommand;
 export interface PixiDrawPlan {
   readonly width: number;
   readonly height: number;
-  readonly background: number;
+  readonly background: string;
   readonly commands: readonly PixiDrawCommand[];
 }
 
-interface PixiThemeHex {
-  readonly paper: number;
-  readonly paperElev: number;
-  readonly rule: number;
-  readonly ruleStrong: number;
-  readonly proof: number;
-  readonly valid: number;
-  readonly caution: number;
-  readonly violated: number;
-  readonly hatch: number;
-  readonly inkSoft: number;
-}
-
-const PIXI_THEMES: Readonly<Record<PaletteName, PixiThemeHex>> = Object.freeze({
-  swisstopo: Object.freeze({
-    paper: 0xf9f8f4,
-    paperElev: 0xfefefd,
-    rule: 0xcfcac0,
-    ruleStrong: 0x33302c,
-    proof: 0x2659b8,
-    valid: 0x2e6f40,
-    caution: 0x996b1f,
-    violated: 0xa62b2b,
-    hatch: 0x858078,
-    inkSoft: 0x5d5953
-  }),
-  obsidian: Object.freeze({
-    paper: 0x151922,
-    paperElev: 0x1d2330,
-    rule: 0x333c4f,
-    ruleStrong: 0xc2c6cf,
-    proof: 0x6ea6ff,
-    valid: 0x67d484,
-    caution: 0xe3b341,
-    violated: 0xf26b6b,
-    hatch: 0x687287,
-    inkSoft: 0x9ea7ba
-  }),
-  forced: Object.freeze({
-    paper: 0x000000,
-    paperElev: 0x000000,
-    rule: 0xffffff,
-    ruleStrong: 0xffffff,
-    proof: 0x5ce1ff,
-    valid: 0x7dff8a,
-    caution: 0xffe047,
-    violated: 0xff7a7a,
-    hatch: 0xffffff,
-    inkSoft: 0xe6e6e6
-  })
-});
-
-function hexForState(state: RippleNodeState, theme: PixiThemeHex): number {
-  if (state === 'violated' || state === 'invalid') return theme.violated;
-  if (state === 'changed') return theme.caution;
-  if (state === 'valid' || state === 'known') return theme.valid;
-  if (state === 'unknown') return theme.hatch;
-  return theme.inkSoft;
+function colorForState(state: RippleNodeState, palette: PaletteTokens): string {
+  if (state === 'violated' || state === 'invalid') return palette.violated;
+  if (state === 'changed') return palette.caution;
+  if (state === 'valid' || state === 'known') return palette.valid;
+  if (state === 'unknown') return palette.hatchStroke;
+  return palette.inkSoft;
 }
 
 /**
- * Produces a deterministic, WebGL-free PixiJS v8 draw plan from the headless CausalRippleModel.
+ * Produces a deterministic, WebGL-free PixiJS v8 draw plan from the headless CausalRippleModel,
+ * deriving every color strictly from canonical std-view PALETTES (single source of truth).
  */
 export function buildPixiDrawPlan(model: CausalRippleModel): PixiDrawPlan {
-  const colors = PIXI_THEMES[model.theme];
+  const colors = PALETTES[model.theme];
   const commands: PixiDrawCommand[] = [];
 
   for (const col of model.columns) {
@@ -210,7 +160,7 @@ export function buildPixiDrawPlan(model: CausalRippleModel): PixiDrawPlan {
       h: n.h,
       radius: 4,
       fill: colors.paper,
-      stroke: hexForState(n.state, colors),
+      stroke: colorForState(n.state, colors),
       strokeWidth: 1.5
     });
   }

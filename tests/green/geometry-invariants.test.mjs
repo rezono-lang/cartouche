@@ -6,7 +6,7 @@ import {
   checkGeometricInvariants,
   compileFlowSplitScene,
   compileMongeScene,
-  compileSubsidyReliefScene
+  compileReliefScene
 } from '../../packages/scene-ir/src/index.ts';
 import { verifySpecimenCoverage } from '../../packages/atlas/src/index.ts';
 
@@ -16,7 +16,7 @@ test('Headless geometric invariants pass on golden Flow, Relief, and Monge fixtu
   const fxMonge = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'fixtures', '08-monge-4d-audit.json'), 'utf8'));
 
   assert.deepEqual(checkGeometricInvariants(compileFlowSplitScene(fxFlow)), []);
-  assert.deepEqual(checkGeometricInvariants(compileSubsidyReliefScene(fxSub)), []);
+  assert.deepEqual(checkGeometricInvariants(compileReliefScene(fxSub)), []);
   assert.deepEqual(checkGeometricInvariants(compileMongeScene(fxMonge)), []);
   assert.equal(verifySpecimenCoverage().ok, true);
 });

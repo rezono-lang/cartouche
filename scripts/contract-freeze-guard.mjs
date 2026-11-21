@@ -19,7 +19,7 @@ import {
   checkGeometricInvariants,
   compileFlowSplitScene,
   compileMongeScene,
-  compileSubsidyReliefScene,
+  compileReliefScene,
   GEOM_INVARIANT_CODES,
   validateXDDiscipline,
   XD_LAW_CODES
@@ -122,7 +122,7 @@ for (const file of fixtureFiles) {
 // 5. Validate compiled CartoucheScene v2 IR outputs against contracts/cartouche-scene.v2.schema.json
 const compiledScenes = [
   compileFlowSplitScene(loadJson(ROOT, 'fixtures/01-platform-drift.json')),
-  compileSubsidyReliefScene(loadJson(ROOT, 'fixtures/04-subsidy-a001-a003.json')),
+  compileReliefScene(loadJson(ROOT, 'fixtures/04-subsidy-a001-a003.json')),
   compileMongeScene(loadJson(ROOT, 'fixtures/08-monge-4d-audit.json'))
 ];
 for (const sc of compiledScenes) {

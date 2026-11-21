@@ -6,7 +6,7 @@ import { DATA_MARKS, PALETTES, SIGNS, STD_VERBS } from '../../packages/reader-co
 import {
   compileFlowSplitScene,
   compileMongeScene,
-  compileSubsidyReliefScene,
+  compileReliefScene,
   GEOM_INVARIANT_CODES,
   validateXDDiscipline,
   XD_LAW_CODES
@@ -40,7 +40,7 @@ test('Contract 1 (CartoucheScene v2 + xD-Discipline): schema sync, valid scenes,
   assert.deepEqual(validateSceneContractSync(sceneContract, XD_LAW_CODES, GEOM_INVARIANT_CODES), []);
 
   const flow = compileFlowSplitScene(loadJson(ROOT, 'fixtures/01-platform-drift.json'));
-  const relief = compileSubsidyReliefScene(loadJson(ROOT, 'fixtures/04-subsidy-a001-a003.json'));
+  const relief = compileReliefScene(loadJson(ROOT, 'fixtures/04-subsidy-a001-a003.json'));
   const monge = compileMongeScene(loadJson(ROOT, 'fixtures/08-monge-4d-audit.json'));
 
   for (const sc of [flow, relief, monge]) {
