@@ -7,7 +7,14 @@ import path from 'node:path';
 import { lintDirectory } from './zero-compute-ast.mjs';
 
 const ROOT = process.cwd();
-const { fileCount, violations } = lintDirectory(path.join(ROOT, 'packages'), ROOT);
+const SCAN_DIRS = ['packages', 'apps'];
+let fileCount = 0;
+const violations = [];
+for (const dir of SCAN_DIRS) {
+  const res = lintDirectory(path.join(ROOT, dir), ROOT);
+  fileCount += res.fileCount;
+  violations.push(...res.violations);
+}
 
 if (violations.length > 0) {
   console.error('❌ zero-compute-ast-lint FAILED:');
@@ -16,4 +23,4 @@ if (violations.length > 0) {
   }
   process.exit(1);
 }
-console.log(`✅ zero-compute-ast-lint passed (${fileCount} package files parsed with oxc-parser ESTree AST).`);
+console.log(`✅ zero-compute-ast-lint passed (${fileCount} package/app files parsed with oxc-parser ESTree AST).`);

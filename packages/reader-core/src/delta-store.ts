@@ -15,6 +15,8 @@ export interface ManifestMeta {
   readonly role: string;
   readonly witness_check: 'green' | 'failed';
   readonly trust_tier: TrustTier;
+  readonly can_propose?: boolean;
+  readonly rights?: { readonly can_propose?: boolean };
 }
 
 export interface ZSetChange<T extends { readonly key: string }> {
@@ -124,7 +126,12 @@ export class DeltaStore<T extends { readonly key: string }> {
     const activeTier: TrustTier = provCount > 0 && this.#provisionalTier
       ? this.#provisionalTier
       : this.#manifest.trust_tier;
-    const canPropose = this.#manifest.witness_check === 'green' && activeTier !== 'provisional_engine';
+    // Decision 0014: never derive canPropose=true client-side when the reader omits can_propose/rights.
+    const readerGrant = this.#manifest.can_propose ?? this.#manifest.rights?.can_propose;
+    const canPropose =
+      readerGrant === true &&
+      this.#manifest.witness_check === 'green' &&
+      activeTier !== 'provisional_engine';
     return Object.freeze({
       manifestId: this.#manifest.id,
       epoch: this.#manifest.epoch,

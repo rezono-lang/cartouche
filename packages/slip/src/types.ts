@@ -44,6 +44,7 @@ export interface Rule {
 
 export interface Source {
   readonly kind?: string;
+  readonly sign?: string;
   readonly name: string;
   readonly position?: string;
 }

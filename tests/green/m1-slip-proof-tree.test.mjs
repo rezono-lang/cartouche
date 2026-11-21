@@ -6,7 +6,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { rezonoMessageFiller, rezonoStdPacks } from '../../packages/slip/bin/rezono-source.ts';
 import { buildAnswerTable, buildSignCatalog, useMessageFiller } from '../../packages/slip/src/model.ts';
-import { rowProofRef } from '../../packages/slip/src/slip-props.ts';
 import { auditA11y, parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
 const ROOT = process.cwd();
@@ -51,7 +50,7 @@ function transitiveGatePremises(answer) {
   return expected;
 }
 
-function toAnswerProp(table, manifestId = 'm-1') {
+function toAnswerProp(table) {
   return {
     question: table.question,
     verb: 'why',
@@ -69,7 +68,6 @@ function toAnswerProp(table, manifestId = 'm-1') {
       source: r.source,
       state: r.state,
       reason: r.reason,
-      proof_ref: r.relation && r.key ? rowProofRef(manifestId, r.relation, r.key) : undefined,
       cells: r.cells.map((c) => ({ text: c.text, sign: c.sign?.name }))
     }))
   };
@@ -152,32 +150,31 @@ test('M1 [slip-proof-tree]: opening why renders table[data-answer="grounds"] wit
       );
     }
 
-    // 5. Leaves are base fact sources: carry an origin_* sign with glyph and published @ source; no leaf is derived
+    // 5. Leaves are base fact sources: show published @ source; no leaf is derived; no origin sign is guessed from source.kind (Decision 0014)
     const leafRows = rows.filter((r) => Number(r.getAttribute(M.depth)) === 1);
     assert.equal(leafRows.length, 3);
     for (const leaf of leafRows) {
       const signEls = [...leaf.querySelectorAll(`[${M.sign}]`)];
       const signs = signEls.map((s) => s.getAttribute(M.sign));
-      const originEl = signEls.find((s) => ORIGIN_SIGNS.has(s.getAttribute(M.sign)));
-      assert.ok(
-        originEl,
-        `leaf row ${leaf.getAttribute(M.relation)} must carry an origin_* sign, got ${JSON.stringify(signs)}`
-      );
-      assert.ok(originEl.textContent.trim().length > 0, 'origin sign must render its glyph');
       assert.equal(signs.includes('derived'), false, 'no leaf row may be derived');
+      assert.equal(
+        signs.some((s) => ORIGIN_SIGNS.has(s)),
+        false,
+        'origin_* sign must not be guessed from source.kind when the reader omits source.sign'
+      );
       assert.ok(
         leaf.textContent.includes('@tests/fixtures/slip/README.md#facts/rows.yaml'),
         'leaf row must show published @ source'
       );
     }
 
-    // 6. Seal lists the checker results served by the reader ([data-part="seal"] [data-check])
+    // 6. Seal lists only checker results actually served by the reader ([data-part="seal"] [data-check])
     const seal = doc.querySelector(`[${M.part}="seal"]`);
     assert.ok(seal, 'expected [data-part="seal"]');
     const checks = new Map(
       [...seal.querySelectorAll(`[${M.check}]`)].map((el) => [el.getAttribute(M.check), el.getAttribute(M.status)])
     );
-    assert.equal(checks.get('reader-hashes'), 'green');
+    assert.equal(checks.has('reader-hashes'), false, 'reader-hashes must not be hard-coded');
     assert.equal(checks.get('publisher-record'), 'green');
 
     // 7. Legend lists every [data-sign] drawn anywhere on the page
@@ -245,8 +242,8 @@ test('M1 [slip-proof-tree]: depth-2 recorded reader grounds (busy -> group_size 
 
     for (const leaf of rows.slice(2)) {
       const signs = [...leaf.querySelectorAll(`[${M.sign}]`)].map((s) => s.getAttribute(M.sign));
-      assert.ok(signs.some((s) => ORIGIN_SIGNS.has(s)), 'depth-2 leaf must carry an origin_* sign');
       assert.equal(signs.includes('derived'), false, 'depth-2 leaf must never be derived');
+      assert.equal(signs.some((s) => ORIGIN_SIGNS.has(s)), false, 'depth-2 leaf must not guess origin_* sign from source.kind');
       assert.ok(leaf.textContent.includes('@tests/fixtures/slip/README.md#facts/rows.yaml'));
     }
   } finally {
@@ -299,14 +296,14 @@ test('M1 [slip-proof-tree]: shared DAG deduplicates a premise reached by two pat
         relation: 'shared_fact',
         key: '["group-a"]',
         distance: 2,
-        sources: [{ kind: 'decision', name: 'awir', position: 'art-3' }]
+        sources: [{ kind: 'decision', sign: 'origin_decision', name: 'awir', position: 'art-3' }]
       },
       // Duplicate occurrence of the same shared premise reached via the second path
       {
         relation: 'shared_fact',
         key: '["group-a"]',
         distance: 2,
-        sources: [{ kind: 'decision', name: 'awir', position: 'art-3' }]
+        sources: [{ kind: 'decision', sign: 'origin_decision', name: 'awir', position: 'art-3' }]
       }
     ],
     steps: [

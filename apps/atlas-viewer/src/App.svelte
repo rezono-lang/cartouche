@@ -1,8 +1,6 @@
 <script lang="ts">
   import { PALETTES, paletteCss } from '../../../packages/reader-core/src/palette.ts';
   import type { PaletteName } from '../../../packages/reader-core/src/palette.ts';
-  import { DeltaStore } from '../../../packages/reader-core/src/delta-store.ts';
-  import type { ManifestMeta } from '../../../packages/reader-core/src/delta-store.ts';
   import type { AtlasLocale } from '../../../packages/atlas/src/i18n-mf2.ts';
 
   import StatutoryRelief3D from '../../../packages/atlas/src/StatutoryRelief3D.svelte';
@@ -11,27 +9,8 @@
   import CausalRippleSheet from '../../../packages/atlas/src/CausalRippleSheet.svelte';
   import BitemporalStairSheet from '../../../packages/atlas/src/BitemporalStairSheet.svelte';
   import MongeFoldingSheet from '../../../packages/atlas/src/MongeFoldingSheet.svelte';
-  import Slip from '../../../packages/slip/src/Slip.svelte';
 
-  import {
-    compileFlowSplitScene,
-    compileMongeScene,
-    compileReliefScene
-  } from '../../../packages/scene-ir/src/compilers.ts';
-  import { compileKringstandScene } from '../../../packages/scene-ir/src/compile-kringstand.ts';
-  import { compileCausalRippleScene } from '../../../packages/scene-ir/src/compile-causal-ripple.ts';
-  import { compileBitemporalScene } from '../../../packages/scene-ir/src/compile-bitemporal.ts';
-  import { exportTypst } from '../../../packages/scene-ir/src/typst-export.ts';
-
-  import fx01 from '../../../fixtures/01-platform-drift.json' with { type: 'json' };
-  import fx02 from '../../../fixtures/02-platform-tenant-a.json' with { type: 'json' };
-  import fx03 from '../../../fixtures/03-kring-m1-to-m5-live.json' with { type: 'json' };
-  import fx04 from '../../../fixtures/04-subsidy-a001-a003.json' with { type: 'json' };
-  import fx05 from '../../../fixtures/05-subsidy-bitemporal.json' with { type: 'json' };
-  import fx06 from '../../../fixtures/06-keycloak-dense-28.json' with { type: 'json' };
-  import fx07 from '../../../fixtures/07-unserved-410.json' with { type: 'json' };
-  import fx08 from '../../../fixtures/08-monge-4d-audit.json' with { type: 'json' };
-  import fx09 from '../../../fixtures/09-slip-conformance.json' with { type: 'json' };
+  import viewerData from '../../../fixtures/viewer/prerendered.json' with { type: 'json' };
 
   export type ViewerTab =
     | 'relief'
@@ -79,13 +58,13 @@
   const PALETTE_LIST: readonly PaletteName[] = ['swisstopo', 'obsidian', 'forced'];
   const LOCALE_LIST: readonly AtlasLocale[] = ['en', 'nl'];
   const TYPST_SHEETS: readonly TypstSheetKey[] = ['relief', 'flow', 'kringstand', 'ripple', 'bitemporal', 'monge'];
-  const SLIP_ROW_KEYS = Object.keys(fx09.slip_conformance.rows);
+  const SLIP_ROW_KEYS: readonly string[] = viewerData.slip.rowKeys;
 
-  const reliefFixture = fx04 as Parameters<typeof compileReliefScene>[0] & Record<string, unknown>;
-  const kringFixture = fx03 as unknown;
-  const rippleFixture = fx06 as unknown;
-  const bitemporalFixture = fx05 as unknown;
-  const mongeFixture = fx08 as unknown;
+  const reliefFixture = viewerData.sheets.relief as unknown;
+  const kringFixture = viewerData.sheets.kringstand as unknown;
+  const rippleFixture = viewerData.sheets.ripple as unknown;
+  const bitemporalFixture = viewerData.sheets.bitemporal as unknown;
+  const mongeFixture = viewerData.sheets.monge as unknown;
 
   let activeTab = $state<ViewerTab>(initialTab);
   let theme = $state<PaletteName>(initialTheme in PALETTES ? initialTheme : 'swisstopo');
@@ -98,66 +77,28 @@
   let typstSheet = $state<TypstSheetKey>(initialTypstSheet);
 
   let themeCss = $derived(paletteCss(theme));
-  let activeFlowFixture = $derived(flowRole === 'full' ? fx01 : fx02);
+  let activeFlowFixture = $derived(
+    (flowRole === 'full' ? viewerData.sheets.flowFull : viewerData.sheets.flowRestricted) as unknown
+  );
 
-  let slipSeal = $derived(new DeltaStore(fx09.manifest as ManifestMeta).seal());
-
-  let activeSlipRow = $derived.by(() => {
-    const rows = fx09.slip_conformance.rows as Record<string, Record<string, unknown>>;
-    const raw = rows[slipRowKey];
-    if (!raw) return null;
-    const msgs =
-      (fx09.slip_conformance.messages as Record<string, Record<string, string>>)[locale] ??
-      fx09.slip_conformance.messages.en;
-    const ruleId = String(raw.rule_id ?? '');
-    return {
-      ...raw,
-      sentence_template: msgs[ruleId] ?? ruleId
-    };
+  // Build-time prerendered @rezono/slip HTML (from fixtures/10-slip-reader-answers.json & 07-unserved-410.json).
+  // Zero browser sealing, zero scene compilation, zero build-time model imports.
+  let activeSlipHtml = $derived.by((): string => {
+    if (slipUnserved) {
+      const byTheme = viewerData.slip.unservedHtml as Record<string, string>;
+      return byTheme[theme] ?? byTheme.swisstopo ?? '';
+    }
+    const byTheme = viewerData.slip.servedHtml as Record<string, Record<string, string>>;
+    const rows = byTheme[theme] ?? byTheme.swisstopo ?? {};
+    return rows[slipRowKey] ?? rows[SLIP_ROW_KEYS[0] ?? ''] ?? '';
   });
 
-  function collectReasons(items: readonly { readonly id?: string; readonly key?: string; readonly reason?: string | null }[]): Record<string, string> {
-    const out: Record<string, string> = {};
-    for (const item of items) {
-      const id = item.id ?? item.key;
-      if (id && item.reason) out[id] = item.reason;
-    }
-    return out;
-  }
-
+  // Build-time prerendered deterministic Typst source per sheet.
   let typstSource = $derived.by((): string => {
-    if (typstSheet === 'relief') {
-      const scene = compileReliefScene(fx04 as Parameters<typeof compileReliefScene>[0]);
-      return exportTypst(scene, { title: 'Sheet 01 — Orthographic Relief' });
-    }
     if (typstSheet === 'flow') {
-      const fx = activeFlowFixture as Parameters<typeof compileFlowSplitScene>[0];
-      const scene = compileFlowSplitScene(fx);
-      return exportTypst(scene, {
-        title: 'Sheet 02 — Flow & Reality-Split',
-        reasonByNodeId: collectReasons(fx.nodes)
-      });
+      return flowRole === 'full' ? viewerData.typst.flowFull : viewerData.typst.flowRestricted;
     }
-    if (typstSheet === 'kringstand') {
-      const scene = compileKringstandScene(fx03 as Parameters<typeof compileKringstandScene>[0]);
-      return exportTypst(scene, { title: 'Sheet 03 — Kringstand' });
-    }
-    if (typstSheet === 'ripple') {
-      const scene = compileCausalRippleScene(fx06 as Parameters<typeof compileCausalRippleScene>[0]);
-      return exportTypst(scene, { title: 'Sheet 04 — Causal Ripple' });
-    }
-    if (typstSheet === 'bitemporal') {
-      const scene = compileBitemporalScene(fx05 as Parameters<typeof compileBitemporalScene>[0]);
-      return exportTypst(scene, { title: 'Sheet 05 — Bitemporal Staircase' });
-    }
-    const fx = fx08 as Parameters<typeof compileMongeScene>[0] & {
-      readonly services: readonly { readonly id: string; readonly reason?: string | null }[];
-    };
-    const scene = compileMongeScene(fx);
-    return exportTypst(scene, {
-      title: 'Sheet 06 — Monge Folding Atlas',
-      reasonByNodeId: collectReasons(fx.services)
-    });
+    return viewerData.typst[typstSheet];
   });
 
   function selectTab(id: ViewerTab): void {
@@ -280,16 +221,9 @@
           </label>
         {/if}
       </div>
-      {#if slipUnserved}
-        <Slip {theme} unserved={fx07.unserved} httpStatus={fx07.http_status} />
-      {:else}
-        <Slip
-          {theme}
-          seal={slipSeal}
-          horizon={fx09.horizon}
-          conformanceRow={activeSlipRow}
-        />
-      {/if}
+      <div class="slip-prerendered">
+        {@html activeSlipHtml}
+      </div>
     {:else if activeTab === 'typst'}
       <div class="subbar" role="group" aria-label="Typst sheet source">
         {#each TYPST_SHEETS as key (key)}

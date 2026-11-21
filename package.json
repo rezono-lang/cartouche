@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "dev": "vite --config apps/atlas-viewer/vite.config.ts",
-    "build:viewer": "vite build --config apps/atlas-viewer/vite.config.ts",
+    "build:viewer": "node --experimental-strip-types --no-warnings scripts/prerender-viewer.mjs && vite build --config apps/atlas-viewer/vite.config.ts",
     "fast-check": "node scripts/fast-check.mjs",
     "test:green": "node --experimental-strip-types --no-warnings --test tests/green/*.test.mjs",
     "lint:zero-compute": "node scripts/zero-compute-lint.mjs",

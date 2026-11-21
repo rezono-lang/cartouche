@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Deterministic @rezono/slip render harness (Decision 0006).
- * Accepts a JSON request ({ store | fixture, role, pack, lang, row?, keys?, reader?, theme?, model?, seal?, selectedStop? })
+ * Accepts a JSON request ({ store | fixture, role, pack, lang, row?, keys?, reader?, theme?, selectedStop? })
  * and returns { html, files } where `files` maps every built @rezono/slip asset to its LF-normalized SHA-256 digest.
  *
  * Reading Rezono's reader (Decision 0009): a fixture with `reader_answers` (fixtures/10-slip-reader-answers.json)
@@ -90,6 +90,7 @@ interface SweepStopPayload {
   readonly status: 'green' | 'warning' | 'red' | 'not_computed' | 'unavailable';
   readonly turn: 'turns' | 'same' | 'unknown' | null;
   readonly fold_display: string | null;
+  readonly proof_ref?: string;
   readonly checks?: readonly SweepStopCheck[];
 }
 
@@ -118,7 +119,6 @@ interface SlipFixturePayload {
   readonly http_status?: number;
   readonly unserved?: UnservedInfo;
   readonly manifest?: ManifestMeta;
-  readonly seal_checks?: readonly SealCheckItem[];
   readonly horizon?: { readonly complete: boolean; readonly reason: string | null };
   readonly slip_enrichment?: {
     readonly prism_5: readonly PrismSpectrum[];
@@ -174,7 +174,6 @@ export interface SlipRenderRequest {
   readonly reader?: ReaderCapabilityConfig | string;
   readonly activeVerb?: VerbKey;
   readonly selectedStop?: number | null;
-  readonly model?: SlipModel | null;
 }
 
 export interface SlipRenderResponse {
@@ -275,8 +274,11 @@ function loadPayload(request: SlipRenderRequest): SlipFixturePayload | null {
   throw new Error(`Unable to locate fixture: ${request.fixture}`);
 }
 
-function sealFromManifest(manifest: ManifestMeta): CartoucheSeal {
-  const canPropose = manifest.witness_check === 'green' && manifest.trust_tier !== 'provisional_engine';
+function sealFromManifest(manifest: ManifestMeta & { readonly provisional_count?: number }): CartoucheSeal {
+  const readerGrant = manifest.can_propose ?? manifest.rights?.can_propose;
+  const canPropose =
+    readerGrant === true && manifest.witness_check === 'green' && manifest.trust_tier !== 'provisional_engine';
+  const provisionalCount = manifest.provisional_count ?? 0;
   return Object.freeze({
     manifestId: manifest.id,
     epoch: manifest.epoch,
@@ -284,7 +286,7 @@ function sealFromManifest(manifest: ManifestMeta): CartoucheSeal {
     role: manifest.role,
     witnessCheck: manifest.witness_check,
     trustTier: manifest.trust_tier,
-    provisionalCount: manifest.trust_tier === 'sealed' ? 0 : 1,
+    provisionalCount,
     canPropose
   });
 }
@@ -378,7 +380,8 @@ async function fixtureSentence(
 /** Fixture 09's stops on the line that holds the swept cell (pre-projected by Rezono; zero client role projection). */
 function fixtureSweeps(
   grounds: readonly SlipGroundLine[],
-  sweeps: SlipConformancePayload['sweeps']
+  sweeps: SlipConformancePayload['sweeps'],
+  manifestId: string
 ): SlipPropsSweep[] {
   const out: SlipPropsSweep[] = [];
   grounds.forEach((line, idx) => {
@@ -395,7 +398,7 @@ function fixtureSweeps(
         folds:
           stop.fold_display === null
             ? []
-            : [{ line: idx, cell: { state: 'known', display: stop.fold_display, proof_ref: `sweep:${name}#${stop.index}` } }]
+            : [{ line: idx, cell: { state: 'known', display: stop.fold_display, proof_ref: stop.proof_ref ?? manifestId } }]
       }))
     });
   });
@@ -537,11 +540,16 @@ async function renderFromReader(
 }
 
 export async function render(request: SlipRenderRequest): Promise<SlipRenderResponse> {
-  // Decision 0011: Seals and seal checks come strictly from the reader/publication; caller overrides are forbidden.
+  // Decision 0011 & 0014: Seals, seal checks, and models come strictly from the reader/publication; caller overrides are forbidden.
   const rawReq = request as Record<string, unknown>;
   if (rawReq.seal !== undefined || rawReq.sealChecks !== undefined) {
     throw new Error(
       'Slip render: caller-injected seal or sealChecks are forbidden; seals must come from the reader or publication.'
+    );
+  }
+  if (rawReq.model !== undefined) {
+    throw new Error(
+      'Slip render: caller-injected model is forbidden; models must be built from the reader or publication.'
     );
   }
 
@@ -589,7 +597,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
 
   const seal: CartoucheSeal | null = payload?.manifest ? sealFromManifest(payload.manifest) : null;
 
-  let model: SlipModel | null = request.model ?? null;
+  let model: SlipModel | null = null;
   if (!model && payload?.slip_enrichment && seal) {
     model = createSlipModel({
       subjectId: payload.fixture_id ?? 'subject',
@@ -643,7 +651,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
       }
       for (const v of addedVerbs) availableLineVerbs.add(v);
 
-      sweeps = fixtureSweeps(mergedGrounds ?? [], conf.sweeps);
+      sweeps = fixtureSweeps(mergedGrounds ?? [], conf.sweeps, seal?.manifestId ?? '');
       // `suppose` opens the sweep control of a line; it opens no answer table (Rezono's slip).
       for (const rawKey of request.keys ?? []) {
         if (typeof rawKey !== 'string') continue;
@@ -699,7 +707,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
       theme,
       model,
       seal,
-      sealChecks: payload?.seal_checks ?? [],
+      sealChecks: [],
       horizon: payload?.horizon ?? null,
       activeVerb,
       conformanceRow,

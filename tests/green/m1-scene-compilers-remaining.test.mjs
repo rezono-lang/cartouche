@@ -61,8 +61,11 @@ test('M1 Sheet 03 (kringstand): compiles fixture 03 into valid CartoucheScene v2
   assert.equal(/\d/.test(renderOpaqueText(unknownNode.cell)), false);
   assert.ok(renderOpaqueText(unknownNode.cell).includes('telemetry_timeout'));
 
-  // Sealed-only snapshot unlocks Propose
-  const sealedScene = compileKringstandScene(fx, { includeProvisional: false });
+  // Sealed-only snapshot with explicit reader grant unlocks Propose
+  const sealedScene = compileKringstandScene(
+    { ...fx, manifest: { ...fx.manifest, can_propose: true } },
+    { includeProvisional: false }
+  );
   assert.deepEqual(validateSceneShape(sealedScene, SCENE_CONTRACT), []);
   assert.deepEqual(checkGeometricInvariants(sealedScene), []);
   assert.equal(sealedScene.nodes.length, 8);
@@ -111,7 +114,8 @@ test('M1 Sheet 03 (kringstand): compiles fixture 03 into valid CartoucheScene v2
 });
 
 test('M1 Sheet 04 (causal-ripple): compiles fixture 06 into valid CartoucheScene v2 preserving incomplete horizon and opaque tokens', () => {
-  const fx = loadJson(ROOT, 'fixtures/06-keycloak-dense-28.json');
+  const fxRaw = loadJson(ROOT, 'fixtures/06-keycloak-dense-28.json');
+  const fx = { ...fxRaw, manifest: { ...fxRaw.manifest, can_propose: true } };
   const scene = compileCausalRippleScene(fx);
 
   assert.equal(scene.archetype, 'causal-ripple');
