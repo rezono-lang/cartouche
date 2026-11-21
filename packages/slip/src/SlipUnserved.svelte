@@ -6,6 +6,7 @@
     readonly superseded_by?: string | null;
     readonly reason_message_id?: string | null;
     readonly withdrawn_by_decision_ref?: string | null;
+    readonly withdrawn_at?: string | null;
   }
 
   // Renders the refusal exactly as published. Without a body, the only honest reason is the HTTP status.
@@ -38,5 +39,8 @@
     <p class="slip-unserved-decision">
       Decision: <a href={'#' + unserved.withdrawn_by_decision_ref} {...{ [M.proof_ref]: unserved.withdrawn_by_decision_ref }}>{unserved.withdrawn_by_decision_ref}</a>
     </p>
+  {/if}
+  {#if unserved?.withdrawn_at}
+    <p class="slip-unserved-date"><time datetime={unserved.withdrawn_at}>{unserved.withdrawn_at}</time></p>
   {/if}
 </div>

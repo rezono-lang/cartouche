@@ -15,6 +15,7 @@
     readonly superseded_by?: string | null;
     readonly reason_message_id: string;
     readonly withdrawn_by_decision_ref?: string | null;
+    readonly withdrawn_at?: string | null;
   }
 
   interface SealCheckItem {
@@ -134,6 +135,7 @@
     openAnswer?: string | null;
     manifestHash?: string | null;
     dataset?: string | null;
+    supersededBy?: string | null;
     sweeps?: readonly LineSweep[];
     openSweepLine?: number | null;
     selectedStopIndex?: number | null;
@@ -158,6 +160,7 @@
     openAnswer = null,
     manifestHash = null,
     dataset = null,
+    supersededBy = null,
     sweeps = [],
     openSweepLine = null,
     selectedStopIndex = null,
@@ -406,6 +409,12 @@
   {:else}
     {#if seal}
       <SlipSeal {seal} checks={effectiveSealChecks} {manifestHash} {dataset} />
+    {/if}
+
+    {#if supersededBy}
+      <div class="slip-superseded" role="status">
+        {lang.toLowerCase().startsWith('nl') ? 'Vervangen door manifest' : 'Superseded by manifest'}: <code>{supersededBy}</code>
+      </div>
     {/if}
 
     {#if !model && seal && !proposeAllowed && proposeBlockedReason}

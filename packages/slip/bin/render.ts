@@ -176,6 +176,7 @@ export interface SlipRenderRequest {
   readonly reader?: ReaderCapabilityConfig | string;
   readonly activeVerb?: VerbKey;
   readonly selectedStop?: number | null;
+  readonly supersededBy?: string | null;
 }
 
 export interface SlipRenderResponse {
@@ -577,6 +578,7 @@ async function renderFromReader(
       sealChecks: props.sealChecks,
       manifestHash: props.manifestHash,
       dataset: props.dataset ?? resolvedPin?.dataset ?? null,
+      supersededBy: request.supersededBy ?? null,
       conformanceRow: props.row,
       answers: props.answers,
       openAnswer: actions.openAnswer,
