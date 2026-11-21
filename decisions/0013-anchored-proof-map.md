@@ -44,12 +44,14 @@ Decision 0001 holds unchanged.
 
 ### 3. Anchors
 
-- **Rezono publishes the anchor.**
+- **Rezono publishes the anchor as a row of a view.**
+  - A domain binds its kinds to Rezono's `std-space` theory with an ordinary view, so the anchor is a row of that view (Rezono decision `one-structure-space-and-readings` §1–2, 21-11).
+  - Like any row, it has two times, four states, a witness and access.
   - It is a path in a partonomy, for example site › building › room › row › rack › slot.
   - It ends in integer coordinates on a declared grid with its unit. The grid follows Rezono's exact geometry design: a projected national grid in millimetres, a geographic grid in 10⁻⁷ degree, or a local grid such as a room in millimetres or a rack in rack units.
   - A footprint, when served, is a polygon on that grid.
 - **Cartouche never makes an anchor.** It never geocodes, never parses an address, never infers a place from a label, and never snaps. A row without a served anchor stays in the derivation layout. In the place layout it sits in an "unplaced" tray, never at a guessed place.
-- **A contested anchor is shown as contested.** When Rezono serves `invalid` for a place (two sources, two places), Cartouche draws both candidate places and the conflict line between them, both taken from the witness. It never picks one.
+- **A contested anchor is shown as contested.** When the anchor row is `invalid` (two sources, two places), Cartouche draws both candidate places and the conflict line between them, both taken from the witness. It never picks one.
 - **A moved thing moves.** An anchor that changes between epochs is shown by the motion between epochs (0012 M1 5a).
 - **No anchors, no view.** Until Rezono serves anchors, this view does not exist. Cartouche reads no field that Rezono does not serve (issue #46, point 4). The fields it needs are listed in §9.
 
@@ -96,13 +98,14 @@ Decision 0001 holds unchanged.
 
 ### 9. What Rezono must serve
 
-Each item below becomes a Rezono issue before any red test that needs it is promoted. Nothing is read before Rezono serves it.
+Rezono decided on 21-11 to serve all of this from its core, not as fields added for Cartouche (Rezono decision `one-structure-space-and-readings`). Each item becomes a Rezono red test before any red test here that needs it is promoted. Nothing is read before Rezono serves it.
 
-1. An `anchor` for each row or keyed thing: the partonomy path, the grid identifier and unit, the integer coordinates, an optional footprint, all per epoch.
-2. The derivation stratum of every published row.
-3. For measured facts: the witness points, or their hash with a clip volume, plus the statistic and its value.
-4. The role decision for places: the full anchor, a coarser level, or none.
-5. Served worlds for `suppose` (already asked for by `m2-proof-map-suppose`).
+1. **Anchors:** the rows of the view that binds the domain to `std-space` (that decision §2). Each has a part-of path, a grid identifier and unit, integer coordinates and an optional footprint, all per epoch.
+2. **The derivation stratum and the founded alternative witnesses.** Both are relations that Rezono's rules derive over the published witness graph (§4).
+3. **Measurement witnesses.** For measured facts: the witness points, or their hash with a clip volume, plus the statistic and its value.
+4. **The role decision for places.** Places are personal or not under Rezono's personal-data handling: the full anchor, a coarser level, or none.
+5. **Served worlds for `suppose`.** `m2-proof-map-suppose` already asks for these.
+6. **The reading report.** One per layout and role, with warnings only (§5).
 
 ### 10. Reference layers
 
@@ -125,6 +128,15 @@ Each item below becomes a Rezono issue before any red test that needs it is prom
 - **Performance is measured, not claimed** (0012 5b).
   - **Budget:** a recorded scene with at least 200,000 reference points and 2,000 marks keeps a 95th-percentile frame time at or under 16.7 ms on the CI GPU runner.
   - **Renderer:** the single WebGL renderer of `m2-proof-map-scale`.
+
+### 12a. The fidelity of each layout
+
+Each layout is a reading that Rezono declares and measures (Rezono decision `one-structure-space-and-readings` §5–6).
+- **Rezono measures.** Rezono's checker publishes a reading report per layout and role. It counts, exactly, what the layout preserves: order, containment, coverage and distinctness, with the elements that break them.
+  - The derivation layout is measured against the proof order.
+  - The place layout is measured against the part-of tree and the geometry.
+- **Cartouche shows the report.** It appears beside the scene as a fidelity panel. Cartouche computes none of it.
+- **A broken measure is a warning,** never a block (owner, 21-11).
 
 ### 13. How these red tests work
 
@@ -149,6 +161,7 @@ All of these wait on the open M1 tests and on the proof map's layout, glyphs and
 | 8 | `m3-place-reference-layers` | Reference layers carry their licence and attribution in the scene and are thinned at build time. They are never listed as a premise unless a witness names them. |
 | 9 | `m3-place-camera-honesty` | The xD guard accepts perspective only for a scene that declares no magnitude channel by size or height. It rejects the same scene once a size is bound to a value. Orthographic is the default. |
 | 10 | `m3-place-accessible-twin` | The table twin holds the anchor path, state, value and stratum of every placed row. Keyboard walking follows edges and the partonomy. Reduced motion jumps. Messages come through MF2. |
+| 12 | `m3-place-reading-report` | For each layout and role, the scene shows the reading report Rezono publishes: order, containment, coverage and distinctness counts, and the offending elements. It is shown as a warning, never as a block. The counts in the panel equal the published ones. No measure is computed in Cartouche (opaque-token mutation). |
 | 11 | `m3-place-scale-measured` | The frame-time budget of §12 is measured on a recorded scene: at least 200,000 points and 2,000 marks, 95th percentile at or under 16.7 ms on CI. The test records the first-render budget it measures. |
 
 ## Considered and rejected
@@ -165,4 +178,5 @@ All of these wait on the open M1 tests and on the proof map's layout, glyphs and
 - The proof map gains a second layout, not a second renderer.
 - Rezono needs an anchor contract (§9) before anything here can be promoted. Those issues come first.
 - Decision 0002 gains one exception, which the xD guard checks.
-- The board gains 11 M3 tasks. All wait on M1 and on the proof map; none can be claimed before §13's planner step.
+- The board gains 12 M3 tasks, including `m3-place-reading-report` (§12a). All wait on M1 and on the proof map; none can be claimed before §13's planner step.
+- Amended on 21-11 to read anchors, strata, alternatives and fidelity from Rezono's core (Rezono decision `one-structure-space-and-readings`), instead of fields served for Cartouche alone.
