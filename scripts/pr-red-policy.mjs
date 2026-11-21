@@ -14,6 +14,10 @@
  *     - Deleting `tests/red/<id>.test.mjs` WITHOUT the `planner` label is permitted ONLY when
  *       the PR simultaneously adds a promoted green test (`tests/green/<id>.test.mjs`) AND
  *       modifies implementation code under `packages/`.
+ *  4. Already-merged green tests (`tests/green/*.test.mjs`):
+ *     - Adding a new promoted green test (`A`) is permitted for workers.
+ *     - Modifying (`M`) or deleting (`D`) an already-merged green test requires the `planner` label
+ *       (prevents silent weakening of existing assertions).
  */
 
 import { execFileSync } from 'node:child_process';
@@ -53,6 +57,13 @@ export function evaluatePrPolicy(changes, labels = []) {
     if (PROTECTED_POLICY_PATHS.has(ch.path) && !hasPlanner) {
       violations.push(
         `Protected guard/policy file "${ch.path}" cannot be modified without the "planner" label.`
+      );
+    }
+
+    const gm = ch.path.match(/^tests\/green\/(.+)\.test\.mjs$/);
+    if (gm && !hasPlanner && ch.status !== 'A') {
+      violations.push(
+        `Already-merged green test "${ch.path}" (${ch.status}) cannot be modified or deleted without the "planner" label (prevents silent assertion weakening).`
       );
     }
 

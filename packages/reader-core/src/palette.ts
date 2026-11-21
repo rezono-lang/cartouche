@@ -33,14 +33,14 @@ export const PALETTES: Readonly<Record<PaletteName, PaletteTokens>> = Object.fre
     limestone: 'oklch(0.875 0.022 82)',
     ink: 'oklch(0.180 0.008 75)',
     inkSoft: 'oklch(0.410 0.009 75)',
-    inkFaint: 'oklch(0.575 0.008 75)',
+    inkFaint: 'oklch(0.515 0.008 75)',
     rule: 'oklch(0.840 0.011 82)',
     ruleStrong: 'oklch(0.235 0.008 75)',
     proof: 'oklch(0.450 0.165 258)',
     valid: 'oklch(0.455 0.115 148)',
-    caution: 'oklch(0.545 0.135 68)',
+    caution: 'oklch(0.535 0.135 68)',
     violated: 'oklch(0.495 0.175 24)',
-    hatchStroke: 'oklch(0.600 0.012 80)'
+    hatchStroke: 'oklch(0.520 0.012 80)'
   }),
   obsidian: Object.freeze({
     desk: 'oklch(0.150 0.012 252)',
@@ -50,14 +50,14 @@ export const PALETTES: Readonly<Record<PaletteName, PaletteTokens>> = Object.fre
     limestone: 'oklch(0.265 0.016 250)',
     ink: 'oklch(0.935 0.008 85)',
     inkSoft: 'oklch(0.730 0.012 248)',
-    inkFaint: 'oklch(0.555 0.012 248)',
+    inkFaint: 'oklch(0.625 0.012 248)',
     rule: 'oklch(0.310 0.016 252)',
     ruleStrong: 'oklch(0.785 0.010 85)',
     proof: 'oklch(0.755 0.135 254)',
     valid: 'oklch(0.760 0.120 148)',
     caution: 'oklch(0.785 0.135 76)',
     violated: 'oklch(0.740 0.155 22)',
-    hatchStroke: 'oklch(0.460 0.016 250)'
+    hatchStroke: 'oklch(0.625 0.016 250)'
   }),
   forced: Object.freeze({
     desk: '#000000',

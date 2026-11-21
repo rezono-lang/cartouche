@@ -22,7 +22,7 @@
     "contracts/std-view.v2.tokens.json": {
       "contract_id": "rezono.std-view-tokens/2",
       "decision": "decisions/0004-swisstopo-oklch-palette-and-data-marks.md",
-      "sha256": "31934596b608dfc146fd1aad99941eb7ef1d26bdbee21495e30184466fbf046f"
+      "sha256": "9c087957dead0c15b5e1de33da21f98ec2e50f152b40587c6d087172c3af90b0"
     },
     "contracts/rezono-pin.json": {
       "contract_id": "rezono.core-pin/1",
