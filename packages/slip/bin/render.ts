@@ -296,29 +296,11 @@ function synthesizeAnswerTable(
       }))
     };
   }
-  if (question === 'reach' && row) {
-    return {
-      question,
-      verb,
-      headers: ['Rule', 'Relation', 'Proof'],
-      rows: (row.grounds_distance_1 ?? []).map((line) => ({
-        cells: [row.rule_id, line.relation, line.cell.proof_ref],
-        proof_ref: line.cell.proof_ref,
-        sign: line.sign
-      }))
-    };
-  }
-  const fallbackProofRef = row?.grounds_distance_1?.[0]?.cell.proof_ref ?? row?.result_cell?.proof_ref;
   return {
     question,
     verb,
-    headers: ['Question', 'Rule', 'Status'],
-    rows: [
-      {
-        cells: [question, row?.rule_id ?? 'slip', 'answered'],
-        ...(fallbackProofRef ? { proof_ref: fallbackProofRef } : {})
-      }
-    ]
+    headers: ['Question', 'Status'],
+    rows: []
   };
 }
 
@@ -339,8 +321,8 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
     payload?.unserved ??
     (payload?.manifest && payload.manifest.witness_check === 'failed'
       ? {
-          code: 'object_hash_mismatch',
-          reason_message_id: 'unserved.tampered.witness_failed',
+          code: 'witness_failed',
+          reason_message_id: 'witness_failed',
           superseded_by: null,
           withdrawn_by_decision_ref: null
         }

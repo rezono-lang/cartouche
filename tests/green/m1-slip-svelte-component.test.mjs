@@ -561,6 +561,25 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
     /Unknown std-view sign/
   );
 
+  // Counterexample 5 (P1): opening 'd' (depends -> reach) without reader.answersByQuestion['reach'] must NOT fabricate rows
+  const reachUnanswered = await renderSlipHarness({
+    fixture: 'fixtures/09-slip-conformance.json',
+    role: 'reader',
+    pack: 'slip',
+    lang: 'en',
+    row: 'busy::group-a',
+    keys: ['d']
+  });
+  const { window: winR, document: docR } = parseHtml(reachUnanswered.html);
+  try {
+    const ansTable = docR.querySelector(`table[${DATA_MARKS.answer}="reach"]`);
+    assert.ok(ansTable, 'expected table[data-answer="reach"]');
+    assert.ok(ansTable.querySelector('th'), 'answer table must have <th> headers');
+    assert.equal(ansTable.querySelectorAll('tbody tr').length, 0, 'unanswered reach must emit 0 tbody rows');
+  } finally {
+    await winR.happyDOM.close();
+  }
+
   // Opaque-token mutation test on Slip.svelte: mutated strings pass through verbatim with zero NaN
   const fx = loadFixture('01-platform-drift.json');
   const seal = new DeltaStore(fx.manifest, []).seal();
