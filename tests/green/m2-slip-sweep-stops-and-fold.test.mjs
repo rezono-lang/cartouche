@@ -68,11 +68,17 @@ test('M2 conformance [stops-only]: <del>/<ins> fold only from the published fold
 
 test('M2 conformance [stops-only]: partial-read role gets only unavailable stops and no fold', async () => {
   const published = SWEEP().stops_summary;
-  const stops = stopsOf(await page({ role: 'summary' }));
+  const summaryFixture = fx();
+  summaryFixture.manifest = { ...summaryFixture.manifest, role: 'summary' };
+  summaryFixture.slip_conformance.sweeps.item_amount = {
+    ...summaryFixture.slip_conformance.sweeps.item_amount,
+    stops: published
+  };
+  const stops = stopsOf(await page({ fixture: summaryFixture, role: 'summary' }));
   assert.equal(stops.length, published.length);
   for (const el of stops) assert.equal(el.getAttribute('data-status'), 'unavailable');
   assert.equal(stops.some((el) => el.querySelector('[data-check]')), false);
-  const folded = await page({ role: 'summary', selectedStop: 1 });
+  const folded = await page({ fixture: summaryFixture, role: 'summary', selectedStop: 1 });
   assert.equal(folded.querySelector('del'), null);
 });
 

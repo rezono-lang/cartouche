@@ -22,16 +22,16 @@ import type { Component } from 'svelte';
 import { compile } from 'svelte/compiler';
 import { render as svelteRender } from 'svelte/server';
 import { STD_VERBS, canonicalJson } from '../../reader-core/src/index.ts';
-import type { CartoucheSeal, ManifestMeta, PaletteName, RawCellInput } from '../../reader-core/src/index.ts';
+import type { CartoucheSeal, ManifestMeta, PaletteName, RawCellInput, TrustTier } from '../../reader-core/src/index.ts';
 import { createSlipModel, selectSlipVerb } from '../src/slip-controller.ts';
 import type { AdjacentWorldHop, MissingLever, PrismSpectrum, SlipModel, VerbKey } from '../src/slip-controller.ts';
 import { resolveSlipShortcut } from '../src/slip-element.ts';
-import type { SealCheckItem, UnservedInfo } from '../src/slip-element.ts';
+import type { SealCheckItem, SlipSealInput, UnservedInfo } from '../src/slip-element.ts';
 import { buildAnswerTable, mergeLineAnsweredVerbs, resolveLineVerbs, resolveReaderExtraVerbs } from '../src/slip-verbs.ts';
 import { loadSlip } from '../src/model.ts';
 import { slipPropsFromView } from '../src/slip-props.ts';
 import type { SlipProps, SlipPropsSweep } from '../src/slip-props.ts';
-import type { MessageResource, ReaderHandler, RowSelection } from '../src/types.ts';
+import type { HeadResponse, MessageResource, ReaderHandler, RowSelection } from '../src/types.ts';
 import { rezonoMessageFiller, rezonoStdPacks } from './rezono-source.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -96,6 +96,8 @@ interface SweepStopPayload {
 interface SweepPayload {
   readonly target_relation: string;
   readonly target_key: readonly string[];
+  /** Role-projected stops published by Rezono for the publication's single role. */
+  readonly stops?: readonly SweepStopPayload[];
   readonly stops_reader?: readonly SweepStopPayload[];
   readonly stops_summary?: readonly SweepStopPayload[];
 }
@@ -116,6 +118,7 @@ interface SlipFixturePayload {
   readonly http_status?: number;
   readonly unserved?: UnservedInfo;
   readonly manifest?: ManifestMeta;
+  readonly seal_checks?: readonly SealCheckItem[];
   readonly horizon?: { readonly complete: boolean; readonly reason: string | null };
   readonly slip_enrichment?: {
     readonly prism_5: readonly PrismSpectrum[];
@@ -171,8 +174,6 @@ export interface SlipRenderRequest {
   readonly reader?: ReaderCapabilityConfig | string;
   readonly activeVerb?: VerbKey;
   readonly selectedStop?: number | null;
-  readonly seal?: CartoucheSeal | null;
-  readonly sealChecks?: readonly SealCheckItem[];
   readonly model?: SlipModel | null;
 }
 
@@ -273,16 +274,56 @@ function loadPayload(request: SlipRenderRequest): SlipFixturePayload | null {
   throw new Error(`Unable to locate fixture: ${request.fixture}`);
 }
 
-function sealFromManifest(manifest: ManifestMeta, roleOverride?: string): CartoucheSeal {
+function sealFromManifest(manifest: ManifestMeta): CartoucheSeal {
   const canPropose = manifest.witness_check === 'green' && manifest.trust_tier !== 'provisional_engine';
   return Object.freeze({
     manifestId: manifest.id,
     epoch: manifest.epoch,
     knowledgeTime: manifest.knowledge_time,
-    role: roleOverride ?? manifest.role,
+    role: manifest.role,
     witnessCheck: manifest.witness_check,
     trustTier: manifest.trust_tier,
     provisionalCount: manifest.trust_tier === 'sealed' ? 0 : 1,
+    canPropose
+  });
+}
+
+const VALID_TRUST_TIERS = new Set<TrustTier>(['sealed', 'provisional_checked', 'provisional_engine']);
+
+interface ReaderHeadWithSeal extends HeadResponse {
+  readonly trust_tier?: TrustTier;
+  readonly can_propose?: boolean;
+  readonly provisional_count?: number;
+  readonly rights?: { readonly can_propose?: boolean };
+  readonly seal?: {
+    readonly trust_tier?: TrustTier;
+    readonly can_propose?: boolean;
+    readonly provisional_count?: number;
+  };
+}
+
+/**
+ * Derive the Slip seal strictly from what Rezono's reader published in /head (Decision 0011):
+ * - NEVER hard-code `trustTier: 'sealed'` when the reader omitted `trust_tier`.
+ * - NEVER derive `canPropose` from `witness_check === 'green'` alone; require an explicit reader grant.
+ */
+function sealFromReaderHead(head: ReaderHeadWithSeal, role: string): SlipSealInput {
+  const green = head.witness_check === 'green';
+  const rawTier = head.trust_tier ?? head.seal?.trust_tier;
+  if (rawTier !== undefined && !VALID_TRUST_TIERS.has(rawTier)) {
+    throw new Error(`reader head: unknown trust_tier "${String(rawTier)}"`);
+  }
+  const readerGrant = head.can_propose ?? head.rights?.can_propose ?? head.seal?.can_propose;
+  const canPropose = readerGrant === true && green && rawTier !== 'provisional_engine';
+  const provisionalCount = head.provisional_count ?? head.seal?.provisional_count ?? 0;
+  return Object.freeze({
+    manifestId: head.id,
+    epoch: head.epoch,
+    knowledgeTime: head.knowledge_time ?? '',
+    role,
+    witnessCheck: green ? 'green' : 'failed',
+    ...(rawTier !== undefined ? { trustTier: rawTier } : {}),
+    provisionalCount,
     canPropose
   });
 }
@@ -333,18 +374,17 @@ async function fixtureSentence(
   });
 }
 
-/** Fixture 09's stops on the line that holds the swept cell, each with that line's fold from fold_display. */
+/** Fixture 09's stops on the line that holds the swept cell (pre-projected by Rezono; zero client role projection). */
 function fixtureSweeps(
   grounds: readonly SlipGroundLine[],
-  sweeps: SlipConformancePayload['sweeps'],
-  role: string
+  sweeps: SlipConformancePayload['sweeps']
 ): SlipPropsSweep[] {
   const out: SlipPropsSweep[] = [];
   grounds.forEach((line, idx) => {
     const sweep = line.sweep_name ? sweeps?.[line.sweep_name] : undefined;
     if (!sweep || !line.sweep_name) return;
     const name = line.sweep_name;
-    const stops = (role === 'summary' ? sweep.stops_summary : sweep.stops_reader) ?? [];
+    const stops = sweep.stops ?? sweep.stops_reader ?? [];
     out.push({
       line: idx,
       name,
@@ -451,8 +491,10 @@ async function renderFromReader(
 
   const row = typeof request.row === 'object' ? request.row : undefined;
   let props: SlipProps;
+  let readerHead: ReaderHeadWithSeal;
   try {
     const view = await loadSlip(fetchFn, { pack, lang, row }, await rezonoStdPacks(), await rezonoMessageFiller());
+    readerHead = view.head as ReaderHeadWithSeal;
     props = slipPropsFromView(view);
   } catch (err) {
     const refused = refusals.at(-1);
@@ -467,24 +509,7 @@ async function renderFromReader(
     return { html: out.body ?? '', files };
   }
 
-  const head = (recorded['/' + encodeURIComponent(pack) + '/head']?.body ?? null) as {
-    id: string;
-    epoch: number;
-    knowledge_time?: string;
-    witness_check?: string;
-  } | null;
-  if (!head) throw new Error('reader answers: no head');
-  const green = head.witness_check === 'green';
-  const seal: CartoucheSeal = Object.freeze({
-    manifestId: head.id,
-    epoch: head.epoch,
-    knowledgeTime: head.knowledge_time ?? '',
-    role,
-    witnessCheck: green ? 'green' : 'failed',
-    trustTier: 'sealed',
-    provisionalCount: 0,
-    canPropose: green
-  });
+  const seal = sealFromReaderHead(readerHead, role);
   const lines = props.row.grounds_distance_1 ?? props.row.steps ?? [];
   const actions = applyLineActions(request.keys ?? [], lines, props.sweeps, props.answers, seal.canPropose, {
     activeVerb: null,
@@ -511,6 +536,14 @@ async function renderFromReader(
 }
 
 export async function render(request: SlipRenderRequest): Promise<SlipRenderResponse> {
+  // Decision 0011: Seals and seal checks come strictly from the reader/publication; caller overrides are forbidden.
+  const rawReq = request as Record<string, unknown>;
+  if (rawReq.seal !== undefined || rawReq.sealChecks !== undefined) {
+    throw new Error(
+      'Slip render: caller-injected seal or sealChecks are forbidden; seals must come from the reader or publication.'
+    );
+  }
+
   const slipPath = path.join(SLIP_SRC_DIR, 'Slip.svelte');
   const bundle = compileSvelteFile(slipPath);
   const files = buildFilesHashMap(bundle.compiledCode);
@@ -547,12 +580,13 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
     return { html: out.body ?? '', files };
   }
 
-  const seal: CartoucheSeal | null =
-    request.seal !== undefined
-      ? request.seal
-      : payload?.manifest
-        ? sealFromManifest(payload.manifest, request.role)
-        : null;
+  if (payload?.manifest && request.role !== undefined && request.role !== payload.manifest.role) {
+    throw new Error(
+      `Slip render: client-side role projection is forbidden (requested role "${request.role}" does not match publication role "${payload.manifest.role}"). Role projection belongs to Rezono.`
+    );
+  }
+
+  const seal: CartoucheSeal | null = payload?.manifest ? sealFromManifest(payload.manifest) : null;
 
   let model: SlipModel | null = request.model ?? null;
   if (!model && payload?.slip_enrichment && seal) {
@@ -608,8 +642,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
       }
       for (const v of addedVerbs) availableLineVerbs.add(v);
 
-      const role = request.role ?? payload.manifest?.role ?? 'reader';
-      sweeps = fixtureSweeps(mergedGrounds ?? [], conf.sweeps, role);
+      sweeps = fixtureSweeps(mergedGrounds ?? [], conf.sweeps);
       // `suppose` opens the sweep control of a line; it opens no answer table (Rezono's slip).
       for (const rawKey of request.keys ?? []) {
         if (typeof rawKey !== 'string') continue;
@@ -665,7 +698,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
       theme,
       model,
       seal,
-      sealChecks: request.sealChecks ?? [],
+      sealChecks: payload?.seal_checks ?? [],
       horizon: payload?.horizon ?? null,
       activeVerb,
       conformanceRow,

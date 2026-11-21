@@ -12,11 +12,20 @@
  *  - the head is kept on the view, so the seal quotes what the reader served;
  *  - types are tightened for Cartouche's strict compiler settings.
  *
- * What this model computes that belongs in Rezono's reader (Decision 0009, point 1): choosing the home row; pairing
- * witnesses and calculation witnesses with lines; binding rule variables to lines through the body's atom positions;
- * placing aggregate totals before their contributors; matching calculation steps to premise rows; choosing origin
- * signs; parsing `known:` values and keys; resolving a sweep's table through kind inheritance; normalising stop
- * statuses and turns; and pairing a variant's difference entries with lines into folds.
+ * Computation Disposition Audit (Decision 0009 point 1 & Decision 0011 §2 item 13):
+ * This module runs STRICTLY at build time inside `packages/slip/bin/render.ts` and is NEVER imported by browser/page
+ * bundle files (`Slip.svelte`, `slip-element.ts`, `packages/slip/src/index.ts`). Each of the 10 computations currently
+ * carried over from Rezono's reference model has an explicit target disposition:
+ *  1. Choosing the home row -> Target: Rezono reader/publisher (`/<pack>/home` or `head.home_claim`); build-time only here.
+ *  2. Pairing witnesses & calculation witnesses with lines -> Target: Rezono reader/gate (`/ask/grounds` pre-joined lines); build-time only here.
+ *  3. Binding rule variables to lines via body atom positions -> Target: Rezono publisher/gate (pre-bound sentence segments with line indices); build-time only here.
+ *  4. Placing aggregate totals before their contributors -> Target: Rezono reader/gate (canonical grounds order with `part: "total"` and `depth`); build-time only here.
+ *  5. Matching calculation steps to premise rows -> Target: Rezono reader/gate (pre-linked calc steps in display order); build-time only here.
+ *  6. Choosing origin signs -> Target: Rezono publisher (`packs/std-view/key.yaml` sign attached to each published row); build-time only here.
+ *  7. Parsing `known:` values and keys -> Target: Rezono reader/gate (structured `{ state, display, reason }` opaque cells); build-time only here.
+ *  8. Resolving a sweep's table through kind inheritance -> Target: Rezono reader/gate (bound target relation/slot on `/sweeps`); build-time only here.
+ *  9. Normalising stop statuses and turns -> Target: Rezono reader/gate (canonical `green|warning|red|not_computed|unavailable` and `turns|same|unknown|null`); build-time only here.
+ * 10. Pairing a variant's difference entries with lines into folds -> Target: Build-time scene compiler (`bin/render.ts`) / Rezono `/sweeps` fold projection; never computed in browser.
  */
 import type {
 	AnswerTable,

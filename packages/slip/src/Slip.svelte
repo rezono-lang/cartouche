@@ -87,10 +87,21 @@
     readonly reason: string | null;
   }
 
+  interface ReaderSeal {
+    readonly manifestId: string;
+    readonly epoch: number;
+    readonly knowledgeTime: string;
+    readonly role: string;
+    readonly witnessCheck: 'green' | 'failed';
+    readonly trustTier?: TrustTier | undefined;
+    readonly provisionalCount: number;
+    readonly canPropose: boolean;
+  }
+
   interface Props {
     theme?: PaletteName;
     model?: SlipModel | null;
-    seal?: CartoucheSeal | null;
+    seal?: ReaderSeal | null;
     sealChecks?: readonly SealCheckItem[];
     unserved?: UnservedInfo | null;
     httpStatus?: number | null;
@@ -158,7 +169,9 @@
         ? null
         : trustTier === 'provisional_engine'
           ? 'propose_locked_unsealed_live_stream'
-          : 'propose_locked_witness_failed'
+          : seal && seal.witnessCheck !== 'green'
+            ? 'propose_locked_witness_failed'
+            : 'propose_locked_no_right'
   );
 
   let effectiveSealChecks = $derived.by((): readonly SealCheckItem[] => {

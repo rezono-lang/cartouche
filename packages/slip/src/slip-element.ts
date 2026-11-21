@@ -92,10 +92,21 @@ export interface ElementConformanceRow {
   readonly steps?: readonly ElementCalcStep[] | undefined;
 }
 
+export interface SlipSealInput {
+  readonly manifestId: string;
+  readonly epoch: number;
+  readonly knowledgeTime: string;
+  readonly role: string;
+  readonly witnessCheck: 'green' | 'failed';
+  readonly trustTier?: CartoucheSeal['trustTier'] | undefined;
+  readonly provisionalCount: number;
+  readonly canPropose: boolean;
+}
+
 export interface SlipElementState {
   readonly theme?: PaletteName | undefined;
   readonly model?: SlipModel | null | undefined;
-  readonly seal?: CartoucheSeal | null | undefined;
+  readonly seal?: SlipSealInput | null | undefined;
   readonly sealChecks?: readonly SealCheckItem[] | undefined;
   readonly unserved?: UnservedInfo | null | undefined;
   readonly httpStatus?: number | null | undefined;
@@ -223,7 +234,9 @@ export function renderSlipElementHtml(state: SlipElementState): string {
         ? null
         : trustTier === 'provisional_engine'
           ? 'propose_locked_unsealed_live_stream'
-          : 'propose_locked_witness_failed';
+          : seal && seal.witnessCheck !== 'green'
+            ? 'propose_locked_witness_failed'
+            : 'propose_locked_no_right';
 
   const parts: string[] = [
     `<div class="cartouche-slip-root" ${DATA_MARKS.theme}="${escapeHtml(theme)}"` +
@@ -271,10 +284,12 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       state.sealChecks && state.sealChecks.length > 0
         ? state.sealChecks
         : [{ id: 'witness', status: seal.witnessCheck === 'green' ? 'green' : 'red', label: 'witness' }];
+    const sealTierAttr = seal.trustTier ? ` ${DATA_MARKS.trust_tier}="${escapeHtml(seal.trustTier)}"` : '';
+    const sealTierSpan = seal.trustTier ? `<span>${escapeHtml(seal.trustTier)}</span> ` : '';
     parts.push(
-      `<section class="slip-seal" ${DATA_MARKS.part}="seal" ${DATA_MARKS.trust_tier}="${escapeHtml(seal.trustTier)}" aria-label="Verification seal">`,
+      `<section class="slip-seal" ${DATA_MARKS.part}="seal"${sealTierAttr} aria-label="Verification seal">`,
       `<div><span ${DATA_MARKS.part}="manifest-hash">${escapeHtml(seal.manifestId)}</span> `,
-      `<span>${escapeHtml(seal.trustTier)}</span> <span>${escapeHtml(seal.role)}</span></div>`,
+      `${sealTierSpan}<span>${escapeHtml(seal.role)}</span></div>`,
       `<ul aria-label="Seal checks">`
     );
     for (const chk of checks) {
