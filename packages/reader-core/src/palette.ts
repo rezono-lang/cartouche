@@ -122,6 +122,35 @@ export const STD_VERBS: readonly StdVerbSpec[] = Object.freeze([
   Object.freeze({ verb: 'propose', key: 'p', primary: true })
 ]);
 
+export const FONT_FACES_CSS = `@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
+}`;
+
 export const FORCED_COLORS_CSS = `@media (forced-colors: active) {
   [data-cartouche-theme] {
     --c-desk: Canvas;
@@ -145,7 +174,10 @@ export const FORCED_COLORS_CSS = `@media (forced-colors: active) {
 export function paletteCss(name: PaletteName): string {
   const p = PALETTES[name];
   return [
+    FONT_FACES_CSS,
     `[data-cartouche-theme="${name}"] {`,
+    `  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;`,
+    `  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;`,
     `  --c-desk: ${p.desk};`,
     `  --c-paper: ${p.paper};`,
     `  --c-paper-elev: ${p.paperElev};`,
