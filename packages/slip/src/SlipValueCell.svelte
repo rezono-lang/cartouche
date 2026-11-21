@@ -11,9 +11,13 @@
   // absent without witness, known without display. Nothing here invents a reason.
   let opaque = $derived(asOpaqueCell(cell));
   let reason = $derived.by((): string | null => {
-    const r = opaque.reason;
+    const raw = opaque.reason?.trim() ?? '';
+    const r = raw.length > 0 ? raw : null;
     if (opaque.state === 'known') return null;
-    if (opaque.state === 'unknown' || opaque.state === 'invalid') {
+    // Unknown, invalid, and not_applicable require a published epistemic reason.
+    // Absent cells carry completeness_witness_ref (and emit data-reason whenever published,
+    // without fabricating one or breaking frozen fixtures whose absent rows omit reason).
+    if (opaque.state === 'unknown' || opaque.state === 'invalid' || opaque.state === 'not_applicable') {
       if (!r) throw new Error('non-known cell without published reason: ' + opaque.proofRef);
       if (opaque.state === 'unknown' && DIGIT.test(r)) {
         throw new Error('unknown cell reason must not contain digits: ' + opaque.proofRef);
@@ -22,9 +26,10 @@
     return r;
   });
   let glyph = $derived.by((): string => {
-    const spec = SIGNS[opaque.state];
-    if (!spec) throw new Error('no std-view sign for state: ' + opaque.state);
-    return spec.glyph;
+    if (!Object.prototype.hasOwnProperty.call(SIGNS, opaque.state)) {
+      throw new Error('no std-view sign for state: ' + opaque.state);
+    }
+    return SIGNS[opaque.state]!.glyph;
   });
 </script>
 
