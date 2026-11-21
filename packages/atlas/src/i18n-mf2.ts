@@ -116,7 +116,25 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'reason.review_pending': 'Review pending',
     'reason.valid_after_knowledge': 'Not applicable before knowledge time',
     'reason.awaiting_probe': 'Awaiting observation probe',
-    'reason.incomplete': 'Incomplete horizon'
+    'reason.incomplete': 'Incomplete horizon',
+    'reason.fact_missing': 'Required fact missing',
+    'reason.no_recorded_answer': 'No recorded answer',
+    'sheet.coverage.title': 'Question Coverage',
+    'sheet.coverage.questions_caption': 'Declared questions and published coverage status',
+    'sheet.coverage.unused_caption': 'Unused kinds and slots in the reader catalogue',
+    'sheet.coverage.col_question': 'Question',
+    'sheet.coverage.col_rows': 'Published rows',
+    'sheet.coverage.col_example': 'Example slip',
+    'sheet.coverage.col_element': 'Catalogue element',
+    'sheet.coverage.col_category': 'Category',
+    'sheet.coverage.cat_kind': 'Kind',
+    'sheet.coverage.cat_slot': 'Slot',
+    'sheet.coverage.summary_answered': 'Answered',
+    'sheet.coverage.summary_unknown': 'Unknown',
+    'sheet.coverage.summary_untested': 'Untested',
+    'sheet.coverage.summary_unused_kinds': 'Unused kinds',
+    'sheet.coverage.summary_unused_slots': 'Unused slots',
+    'sheet.coverage.open_slip': 'Open slip'
   }),
   nl: Object.freeze({
     'sheet.relief.title': 'Orthografisch Reliëf',
@@ -226,7 +244,25 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'reason.review_pending': 'Beoordeling in behandeling',
     'reason.valid_after_knowledge': 'Niet van toepassing vóór kennismoment',
     'reason.awaiting_probe': 'Wacht op meetpunt',
-    'reason.incomplete': 'Onvolledige horizon'
+    'reason.incomplete': 'Onvolledige horizon',
+    'reason.fact_missing': 'Vereist feit ontbreekt',
+    'reason.no_recorded_answer': 'Geen vastgelegd antwoord',
+    'sheet.coverage.title': 'Vraagdekking',
+    'sheet.coverage.questions_caption': 'Verklaarde vragen en gepubliceerde dekkingsstatus',
+    'sheet.coverage.unused_caption': 'Ongebruikte soorten en velden in de lezercatalogus',
+    'sheet.coverage.col_question': 'Vraag',
+    'sheet.coverage.col_rows': 'Gepubliceerde rijen',
+    'sheet.coverage.col_example': 'Voorbeeldstrook',
+    'sheet.coverage.col_element': 'Cataloguselement',
+    'sheet.coverage.col_category': 'Categorie',
+    'sheet.coverage.cat_kind': 'Soort',
+    'sheet.coverage.cat_slot': 'Veld',
+    'sheet.coverage.summary_answered': 'Beantwoord',
+    'sheet.coverage.summary_unknown': 'Onbekend',
+    'sheet.coverage.summary_untested': 'Ongetest',
+    'sheet.coverage.summary_unused_kinds': 'Ongebruikte soorten',
+    'sheet.coverage.summary_unused_slots': 'Ongebruikte velden',
+    'sheet.coverage.open_slip': 'Open strook'
   })
 });
 
