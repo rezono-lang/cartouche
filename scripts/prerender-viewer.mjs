@@ -7,6 +7,7 @@
  * golden fixture JSON files.
  */
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -148,8 +149,48 @@ const typst = {
   })
 };
 
+const TIME_EPOCHS = ['m-1', 'm-2', 'm-3', 'm-4'];
+const TIME_VALID_DATES = ['2026-01-01', '2026-04-01', '2026-07-01', '2026-10-01'];
+const MANIFEST_BY_EPOCH = Object.fromEntries(
+  TIME_EPOCHS.map((ep) => [
+    ep,
+    `sha256:${crypto.createHash('sha256').update(`${fx05.manifest.id}:${ep}`).digest('hex').slice(0, 32)}`
+  ])
+);
+const fx05Bitemporal = {
+  ...fx05,
+  bitemporal_grid: {
+    ...fx05.bitemporal_grid,
+    valid_times: TIME_VALID_DATES,
+    epochs: TIME_EPOCHS
+  }
+};
+
+const bitemporalByTime = {};
+for (const theme of PALETTES) {
+  bitemporalByTime[theme] = {};
+  for (const knownAt of TIME_EPOCHS) {
+    bitemporalByTime[theme][knownAt] = {};
+    for (const validAt of TIME_VALID_DATES) {
+      bitemporalByTime[theme][knownAt][validAt] = await renderSheetHtml(sheetPath('BitemporalStairSheet.svelte'), {
+        fixture: fx05Bitemporal,
+        theme,
+        activeValidAt: validAt,
+        activeKnownAt: knownAt,
+        activeManifestId: MANIFEST_BY_EPOCH[knownAt]
+      });
+    }
+  }
+}
+
 const output = {
   sheetsHtml,
+  timeControl: {
+    validTimes: TIME_VALID_DATES,
+    servedEpochs: TIME_EPOCHS,
+    manifestByEpoch: MANIFEST_BY_EPOCH,
+    bitemporalByTime
+  },
   slip: {
     rowKeys: SLIP_ROWS.map((r) => r.id),
     servedHtml,
