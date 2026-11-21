@@ -37,7 +37,7 @@ export function privatePatternsFromEnv(env) {
 
 // Hardcoded domain terms forbidden inside reusable packages/* (allowed only in fixtures/ and tests/).
 const DOMAIN_WORDS =
-  /\b(keycloak|hubble|zorgtoeslag|belastingdienst|raadsbesluit|subsidy|income|assets|postgres|vault)\b/i;
+  /\b(keycloak|hubble|zorgtoeslag|belastingdienst|raadsbesluit|subsidy|statutory|income|assets|postgres|vault)\b/i;
 
 export function findDomainWordViolation(text) {
   // Split CamelCase, PascalCase, and snake_case tokens so compileSubsidyReliefScene / incomeCell / assets_cell are caught.
@@ -74,6 +74,10 @@ for (const file of files) {
     }
   }
   if (DOMAIN_FREE_DIRS.some((dir) => rel.startsWith(`${dir}/`))) {
+    const foundPath = findDomainWordViolation(rel);
+    if (foundPath) {
+      violations.push(`${rel}: hardcoded domain term "${foundPath}" found in filename inside domain-neutral ${rel.split('/')[0]}/ directory.`);
+    }
     const found = findDomainWordViolation(text);
     if (found) {
       violations.push(`${rel}: hardcoded domain term "${found}" found inside domain-neutral ${rel.split('/')[0]}/ directory.`);
