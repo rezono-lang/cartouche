@@ -131,6 +131,10 @@
                 <span data-sign="absent">
                   {SIGNS.absent?.glyph ?? '⦸'} absent
                 </span>
+              {:else if n.state === 'invalid'}
+                <span data-sign="violated" data-reason={n.reason ?? undefined}>
+                  ! invalid{#if n.reason} · {n.reason}{/if}
+                </span>
               {:else}
                 {n.stateGlyph} {n.state}
               {/if}
@@ -162,7 +166,7 @@
               data-sign="drift"
               data-state="violated"
               data-layer="both"
-              data-proof-ref={e.proofRef}
+              data-proof-ref={e.proofRef ?? undefined}
               data-stated-proof-ref={e.statedProofRef ?? undefined}
               data-observed-proof-ref={e.observedProofRef ?? undefined}
             >

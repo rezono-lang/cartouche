@@ -2,7 +2,7 @@
   import { DATA_MARKS, PALETTES, SIGNS, paletteCss } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
   import { buildMongeFoldingModel } from './monge-model.ts';
-  import type { MongeFixtureInput, Point2D } from './monge-model.ts';
+  import type { MongeFixtureInput, MongeNodeState, Point2D } from './monge-model.ts';
 
   interface Props {
     fixture: MongeFixtureInput;
@@ -42,6 +42,27 @@
   function fy(pt: Point2D, dy = 0): string {
     const pos: Point2D = { x: pt.x, y: pt.y + dy };
     return pos.y.toFixed(2);
+  }
+
+  function roundDotFill(state: MongeNodeState): string {
+    if (state === 'unknown') return 'url(#monge-hatch)';
+    if (state === 'absent') return 'none';
+    if (state === 'violated') return 'var(--c-violated)';
+    if (state === 'invalid') return 'var(--c-paper-elev)';
+    return 'var(--c-valid)';
+  }
+
+  function roundDotStroke(state: MongeNodeState): string {
+    if (state === 'absent') return 'var(--c-ink-soft)';
+    if (state === 'invalid' || state === 'violated') return 'var(--c-violated)';
+    if (state === 'unknown') return 'var(--c-hatch)';
+    return 'var(--c-ink)';
+  }
+
+  function roundDotDash(state: MongeNodeState): string | undefined {
+    if (state === 'absent') return '2 1.5';
+    if (state === 'invalid') return '2 1';
+    return undefined;
   }
 </script>
 
@@ -105,7 +126,7 @@
     {/each}
 
     {#each model.services as svc (svc.id)}
-      <g {...{ [M.key]: svc.id, [M.proof_ref]: svc.proofRef }}>
+      <g>
         <polyline
           points={polyline(svc.rayToPlane2)}
           fill="none"
@@ -130,11 +151,25 @@
           [M.sign]: 'drift',
           [M.stated_proof_ref]: arc.statedProofRef,
           [M.observed_proof_ref]: arc.observedProofRef,
-          [M.proof_ref]: arc.statedProofRef
+          [M.proof_ref]: arc.proofRef ?? undefined
         }}
       >
-        <path d={arc.statedPath} fill="none" stroke="var(--c-proof)" stroke-width="2" />
-        <path d={arc.observedPath} fill="none" stroke="var(--c-violated)" stroke-width="2" stroke-dasharray="5 3" />
+        <!-- Unified convention with Sheet 02: stated = dashed (6 3), observed = solid -->
+        <path
+          d={arc.statedPath}
+          fill="none"
+          stroke="var(--c-proof)"
+          stroke-width="2"
+          stroke-dasharray="6 3"
+          {...{ [M.stated_proof_ref]: arc.statedProofRef }}
+        />
+        <path
+          d={arc.observedPath}
+          fill="none"
+          stroke="var(--c-violated)"
+          stroke-width="2.5"
+          {...{ [M.observed_proof_ref]: arc.observedProofRef }}
+        />
         <text x={fx(arc.midpoint)} y={fy(arc.midpoint, -8)} fill="var(--c-violated)" font-size="10">
           {arc.label}
         </text>
@@ -158,7 +193,7 @@
             fill="url(#monge-hatch)"
             stroke="var(--c-hatch)"
             stroke-width="1.4"
-            {...{ [M.sign]: 'unknown', [M.proof_ref]: svc.proofRef }}
+            {...{ [M.sign]: 'unknown' }}
           />
         {/if}
 
@@ -166,18 +201,18 @@
           cx={fx(svc.plane1)}
           cy={fy(svc.plane1)}
           r="9"
-          fill={svc.state === 'unknown' ? 'url(#monge-hatch)' : 'var(--c-paper-elev)'}
-          stroke={svc.state === 'violated' ? 'var(--c-violated)' : svc.state === 'absent' ? 'var(--c-ink-soft)' : 'var(--c-ink)'}
+          fill={svc.state === 'unknown' ? 'url(#monge-hatch)' : svc.state === 'absent' ? 'none' : 'var(--c-paper-elev)'}
+          stroke={svc.state === 'violated' || svc.state === 'invalid' ? 'var(--c-violated)' : svc.state === 'absent' ? 'var(--c-ink-soft)' : 'var(--c-ink)'}
           stroke-width="1.6"
-          stroke-dasharray={svc.state === 'absent' ? '3 2' : undefined}
+          stroke-dasharray={svc.state === 'absent' || svc.state === 'invalid' ? '3 2' : undefined}
         />
         <text
           x={fx(svc.plane1, 12)}
           y={fy(svc.plane1, 4)}
-          fill="var(--c-ink)"
+          fill={svc.state === 'invalid' ? 'var(--c-violated)' : 'var(--c-ink)'}
           font-size="10"
         >
-          {svc.state === 'unknown' ? `${glyph('unknown')} ${svc.reason}` : `${glyph(svc.sign)} ${svc.short}`}
+          {svc.state === 'unknown' ? `${glyph('unknown')} ${svc.reason}` : svc.state === 'invalid' ? `! ${svc.short}` : `${glyph(svc.sign)} ${svc.short}`}
         </text>
 
         {#each svc.rounds as rm (rm.roundId)}
@@ -185,20 +220,22 @@
             cx={fx(rm.plane2)}
             cy={fy(rm.plane2)}
             r="4.5"
-            fill={rm.state === 'unknown' ? 'url(#monge-hatch)' : rm.state === 'violated' ? 'var(--c-violated)' : 'var(--c-valid)'}
-            stroke="var(--c-ink)"
+            fill={roundDotFill(rm.state)}
+            stroke={roundDotStroke(rm.state)}
             stroke-width="0.9"
-            {...{ [M.sign]: rm.state, [M.proof_ref]: svc.proofRef }}
-          />
+            stroke-dasharray={roundDotDash(rm.state)}
+            {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
+          >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
           <circle
             cx={fx(rm.plane3)}
             cy={fy(rm.plane3)}
             r="4.5"
-            fill={rm.state === 'unknown' ? 'url(#monge-hatch)' : rm.state === 'violated' ? 'var(--c-violated)' : 'var(--c-valid)'}
-            stroke="var(--c-ink)"
+            fill={roundDotFill(rm.state)}
+            stroke={roundDotStroke(rm.state)}
             stroke-width="0.9"
-            {...{ [M.sign]: rm.state, [M.proof_ref]: svc.proofRef }}
-          />
+            stroke-dasharray={roundDotDash(rm.state)}
+            {...{ [M.sign]: rm.sign, [M.state]: rm.state, [M.proof_ref]: rm.proofRef ?? undefined }}
+          >{#if rm.proofRef === null}<title>no proof</title>{/if}</circle>
         {/each}
       </g>
     {/each}
@@ -232,6 +269,8 @@
               {glyph('unknown')} {svc.reason}
             {:else if svc.state === 'absent'}
               {glyph('absent')} absent
+            {:else if svc.state === 'invalid'}
+              <span {...{ [M.sign]: 'violated' }}>! invalid{#if svc.reason} · {svc.reason}{/if}</span>
             {:else}
               {svc.state}
             {/if}

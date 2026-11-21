@@ -50,8 +50,7 @@ test('M2: bitemporal model is headless, orthographic, collision-free and never p
     const raw = GRID.matrix[c.row][c.col];
     assert.equal(c.proofRef, raw.proof_ref);
     if (raw.state === 'unknown') {
-      assert.notEqual(c.zToken, null);
-      assert.ok(c.zToken !== '0' && c.zToken !== '0.0', 'unknown must not sit at z=0');
+      assert.equal(c.zToken, null, 'Decision 0011 §1: unknown must not encode a height/magnitude');
       assert.equal(c.display, null);
     }
     if (raw.state === 'not_applicable') assert.equal(c.zToken, null, 'N/A stays hollow: no prism');
@@ -128,8 +127,9 @@ test('M2: Sheet 05 3D orthographic staircase has hatched unknown curtains, hollo
       const state = g.getAttribute(M.state);
       if (state === 'unknown') {
         assert.ok(g.getAttribute(M.reason));
-        assert.ok(g.innerHTML.includes('url(#bt-hatch)'), 'unknown is a hatched curtain');
-        assert.ok(g.innerHTML.includes('--z: 1'), 'unknown has full non-zero height');
+        assert.ok(g.innerHTML.includes('url(#bt-hatch)'), 'unknown is a hatched band');
+        assert.equal(g.innerHTML.includes('--z:'), false, 'Decision 0011 §1: unknown must carry no --z height/magnitude');
+        assert.equal(g.querySelector('rect'), null, 'Decision 0011 §1: unknown must not draw an extruded prism');
         assert.equal(/[0-9]/.test(g.textContent), false);
       }
       if (state === 'not_applicable') {
