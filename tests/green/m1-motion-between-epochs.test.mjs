@@ -5,15 +5,6 @@ import path from 'node:path';
 import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Motion only where it means something: moving known at between two epochs shows what disappears in del and what appears in ins, each with its own proof link, animated only under prefers-reduced-motion: no-preference',
-  waits_on: [
-    'm1-time-valid-at-known-at'
-  ]
-};
-
 // Decision 0012 §2 (5a). The change between two epochs is the one motion with meaning. It uses the same <del> and <ins>
 // as a fold in the slip, driven by the reader-published difference (Cartouche never diffs two snapshots itself).
 

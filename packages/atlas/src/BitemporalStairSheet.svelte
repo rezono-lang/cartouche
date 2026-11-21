@@ -206,6 +206,23 @@
         </tr>
       {/each}
     </tbody>
+    {#if model.epochDiff && model.epochDiff.entries.length > 0}
+      <tfoot>
+        {#each model.epochDiff.entries as entry (entry.key)}
+          <tr>
+            <th scope="row">{entry.key}</th>
+            <td colspan={model.validTimes.length}>
+              {#if entry.old_display != null && entry.old_proof_iri}
+                <del class="bt-diff-del"><a href={`?at=${encodeURIComponent(entry.old_proof_iri)}`}>{entry.old_display}</a></del>
+              {/if}
+              {#if entry.new_display != null && entry.new_proof_iri}
+                <ins class="bt-diff-ins"><a href={`?at=${encodeURIComponent(entry.new_proof_iri)}`}>{entry.new_display}</a></ins>
+              {/if}
+            </td>
+          </tr>
+        {/each}
+      </tfoot>
+    {/if}
   </table>
 
   <table {...{ [M.part]: 'legend' }}>
@@ -224,4 +241,8 @@
   .hollow { background: transparent; border: 1px dashed currentColor; }
   .hatched { background: repeating-linear-gradient(45deg, transparent 0 4px, var(--c-hatch) 4px 5px); }
   .invalid { border: 2px dashed var(--c-violated); }
+  .bt-diff-del a, .bt-diff-ins a { color: inherit; }
+  @media (prefers-reduced-motion: no-preference) {
+    .bt-diff-del, .bt-diff-ins { transition: opacity 180ms ease; }
+  }
 </style>
