@@ -4,33 +4,34 @@ on:
   pull_request:
     branches: [main]
   merge_group:
-    branches: [main]
+    types: [checks_requested]
   push:
     branches: [main]
+  workflow_dispatch:
 
 # Lesson 3 from Rezono: immediately cancel superseded PR runs to save runners!
 concurrency:
   group: cartouche-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     outputs:
       core: ${{ steps.filter.outputs.core }}
       scene: ${{ steps.filter.outputs.scene }}
       ui: ${{ steps.filter.outputs.ui }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
       - id: filter
         run: |
-          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "merge_group" ]; then
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "merge_group" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "core=true" >> "$GITHUB_OUTPUT"
             echo "scene=true" >> "$GITHUB_OUTPUT"
             echo "ui=true" >> "$GITHUB_OUTPUT"
@@ -41,34 +42,34 @@ jobs:
           echo "$CHANGED" | grep -qE '^(packages/scene-ir|packages/reader-core|contracts|fixtures)/' && echo "scene=true" >> "$GITHUB_OUTPUT" || echo "scene=false" >> "$GITHUB_OUTPUT"
           echo "$CHANGED" | grep -qE '^(packages/slip|packages/atlas|decisions)/' && echo "ui=true" >> "$GITHUB_OUTPUT" || echo "ui=false" >> "$GITHUB_OUTPUT"
 
-  # Ultra-lightweight universal gate (runs in <30s on 1 runner, zero backend needed!)
+  # Ultra-lightweight universal gate (runs in ~12s on 1 runner, zero backend needed!)
   fast-guards-and-green:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Run complete fast-check (tsc + AST zero-compute lint + mutation & invariant tests)
+      - name: Run complete fast-check (tsc + AST zero-compute lint + contract freeze + tests)
         run: npm run fast-check
 
   # Visual / 3D verification ONLY runs when UI/Scene actually changes (never blocks core PRs!)
   scene-and-specimen:
     needs: [detect-changes, fast-guards-and-green]
     if: needs.detect-changes.outputs.scene == 'true' || needs.detect-changes.outputs.ui == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Verify geometric invariants & red-board integrity
+      - name: Verify geometric invariants, Svelte DOM/WCAG smoke & red-board integrity
         run: |
-          node --experimental-strip-types --no-warnings --test tests/green/geometry-invariants.test.mjs tests/green/xd-discipline-guard.test.mjs
+          node --experimental-strip-types --no-warnings --test tests/green/geometry-invariants.test.mjs tests/green/xd-discipline-guard.test.mjs tests/green/svelte-dom-a11y-smoke.test.mjs
           npm run red-board -- --json > /dev/null
