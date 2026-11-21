@@ -698,7 +698,7 @@ export function renderReliefOrthographicSvg(
 
     const reasonText = formatReasonLabel(locale, curtain.reason, messages);
     parts.push(
-      `<g ${DATA_MARKS.part}="curtain" ${DATA_MARKS.key}="curtain:${escapeXml(curtain.subjectId)}" ` +
+      `<g ${DATA_MARKS.part}="curtain" ${DATA_MARKS.key}="${escapeXml(curtain.subjectId)}" ` +
         `${DATA_MARKS.sign}="unknown" ${DATA_MARKS.state}="unknown" ` +
         `${DATA_MARKS.reason}="${escapeXml(curtain.reason)}" ${DATA_MARKS.proof_ref}="${escapeXml(curtain.proofRef)}">`,
       `<polygon points="${curtainPoly}" fill="url(#relief-unknown-hatch)" stroke="${p.hatchStroke}" stroke-width="1.5" stroke-dasharray="5 3" fill-opacity="0.72" />`,
@@ -771,7 +771,7 @@ export function renderRelief2DProfileSvg(
   const unknownGlyph = resolveSignSpec('unknown').glyph;
   for (const curtain of model.curtains) {
     parts.push(
-      `<g ${DATA_MARKS.part}="curtain" ${DATA_MARKS.key}="curtain:${escapeXml(curtain.subjectId)}" ` +
+      `<g ${DATA_MARKS.part}="curtain" ${DATA_MARKS.key}="${escapeXml(curtain.subjectId)}" ` +
         `${DATA_MARKS.sign}="unknown" ${DATA_MARKS.state}="unknown" ` +
         `${DATA_MARKS.reason}="${escapeXml(curtain.reason)}" ${DATA_MARKS.proof_ref}="${escapeXml(curtain.proofRef)}">`,
       `<rect x="${padLeft}" y="${padTop}" width="${plotW}" height="${plotH}" fill="url(#relief-unknown-hatch-2d)" stroke="${p.hatchStroke}" stroke-dasharray="5 3" fill-opacity="0.35" />`,
