@@ -152,7 +152,7 @@ test('M1 Sheet 02: tenant_a role view leaks zero restricted entities, declares n
   try {
     const horizon = doc.querySelector(`[${DATA_MARKS.part}="horizon"][${DATA_MARKS.reason}="not_read_in_full"]`);
     assert.ok(horizon, 'expected honest incomplete horizon indicator with data-reason="not_read_in_full"');
-    assert.ok(horizon.textContent.includes('not_read_in_full'));
+    assert.ok(horizon.textContent.trim().length > 0 && !horizon.textContent.includes('not_read_in_full'));
 
     assert.equal(doc.querySelectorAll(`svg [${DATA_MARKS.sign}="drift"]`).length, 0, 'tenant_a must render zero drift edges');
 

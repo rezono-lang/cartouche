@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DATA_MARKS, SIGNS, paletteCss } from '../../reader-core/src/index.ts';
   import type { PaletteName, SignSpec } from '../../reader-core/src/index.ts';
-  import { formatAtlasMessage, formatReasonLabel } from './i18n-mf2.ts';
+  import { formatAtlasMessage, formatReasonLabel, formatSignLabel, formatStateLabel, formatTrustTierLabel } from './i18n-mf2.ts';
   import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
   import {
     buildReliefModel,
@@ -86,6 +86,7 @@
 
 <section
   class="cartouche-relief-sheet"
+  lang={lang}
   aria-labelledby="relief-3d-title"
   {...{
     [M.sheet]: 'relief-3d',
@@ -118,7 +119,7 @@
     >
       <div class="relief-seal-meta">
         <span {...{ [M.part]: 'manifest-hash' }}>{model.scene.seal.manifestId}</span>
-        <span>{model.scene.seal.trustTier}</span>
+        <span>{formatTrustTierLabel(lang, model.scene.seal.trustTier, messages)}</span>
         <span>{model.scene.seal.role}</span>
       </div>
       <ul aria-label={t('sheet.common.seal_checks')}>
@@ -150,7 +151,7 @@
           <span
             class="cartouche-sign"
             role="img"
-            aria-label="unknown"
+            aria-label={formatStateLabel(lang, 'unknown', messages)}
             {...{
               [M.sign]: 'unknown',
               [M.reason]: curtain.reason
@@ -159,7 +160,7 @@
             <span aria-hidden="true">{resolveSignSpec('unknown').glyph}</span>
           </span>
           <span>{formatReasonLabel(lang, curtain.reason, messages)}</span>
-          <a href={`#${curtain.proofRef}`} {...{ [M.proof_ref]: curtain.proofRef }}>witness</a>
+          <a href={`#${curtain.proofRef}`} {...{ [M.proof_ref]: curtain.proofRef }}>{t('sheet.common.witness')}</a>
         </div>
       {/each}
     </section>
@@ -168,16 +169,16 @@
   <section aria-label={t('sheet.common.twin')}>
     <h3>{t('sheet.common.twin')}</h3>
     <table {...{ [M.part]: 'twin' }}>
-      <caption>Subject outcomes, cliff distances, and citations</caption>
+      <caption>{t('sheet.relief.subjects_caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Subject</th>
-          <th scope="col">Sign</th>
-          <th scope="col">State</th>
+          <th scope="col">{t('col.subject')}</th>
+          <th scope="col">{t('col.sign')}</th>
+          <th scope="col">{t('col.state')}</th>
           <th scope="col">{model.zAxis.label}</th>
-          <th scope="col">Cliff Distance</th>
-          <th scope="col">Citation</th>
-          <th scope="col">Proof</th>
+          <th scope="col">{t('col.cliff_distance')}</th>
+          <th scope="col">{t('col.citation')}</th>
+          <th scope="col">{t('col.proof')}</th>
         </tr>
       </thead>
       <tbody>
@@ -194,13 +195,13 @@
               <span
                 class="cartouche-sign"
                 role="img"
-                aria-label={sub.sign}
+                aria-label={formatSignLabel(lang, sub.sign, messages)}
                 {...{ [M.sign]: sub.sign }}
               >
                 <span aria-hidden="true">{resolveSignSpec(sub.sign).glyph}</span>
               </span>
             </td>
-            <td>{sub.state}</td>
+            <td>{formatStateLabel(lang, sub.state, messages)}</td>
             {#if sub.amountCell.state === 'known'}
               <td
                 {...{
@@ -224,7 +225,7 @@
                 <span
                   class="cartouche-sign"
                   role="img"
-                  aria-label={sub.amountCell.state}
+                  aria-label={formatStateLabel(lang, sub.amountCell.state, messages)}
                   {...{
                     [M.sign]: sub.amountCell.state,
                     [M.reason]: sub.amountCell.reason ?? undefined
@@ -233,7 +234,7 @@
                   <span aria-hidden="true">{resolveSignSpec(sub.amountCell.state).glyph}</span>
                 </span>
                 {#if sub.amountCell.reason}
-                  <span>{sub.amountCell.reason}</span>
+                  <span>{formatReasonLabel(lang, sub.amountCell.reason, messages)}</span>
                 {/if}
               </td>
             {/if}
@@ -246,14 +247,14 @@
     </table>
 
     <table {...{ [M.part]: 'twin' }}>
-      <caption>Orthographic sweep grid cells</caption>
+      <caption>{t('sheet.relief.grid_caption')}</caption>
       <thead>
         <tr>
           <th scope="col">{model.xAxis.label}</th>
           <th scope="col">{model.yAxis.label}</th>
           <th scope="col">{model.zAxis.label}</th>
-          <th scope="col">State</th>
-          <th scope="col">Proof</th>
+          <th scope="col">{t('col.state')}</th>
+          <th scope="col">{t('col.proof')}</th>
         </tr>
       </thead>
       <tbody>
@@ -290,7 +291,7 @@
                 <span
                   class="cartouche-sign"
                   role="img"
-                  aria-label={cell.opaque.state}
+                  aria-label={formatStateLabel(lang, cell.opaque.state, messages)}
                   {...{
                     [M.sign]: cell.opaque.state,
                     [M.reason]: cell.opaque.reason ?? undefined
@@ -299,11 +300,11 @@
                   <span aria-hidden="true">{resolveSignSpec(cell.opaque.state).glyph}</span>
                 </span>
                 {#if cell.opaque.reason}
-                  <span>{cell.opaque.reason}</span>
+                  <span>{formatReasonLabel(lang, cell.opaque.reason, messages)}</span>
                 {/if}
               </td>
             {/if}
-            <td>{cell.opaque.state}</td>
+            <td>{formatStateLabel(lang, cell.opaque.state, messages)}</td>
             <td>{cell.opaque.proofRef}</td>
           </tr>
         {/each}
@@ -311,23 +312,23 @@
     </table>
   </section>
 
-  <section aria-label="Sheet legend">
-    <h3>Legend</h3>
+  <section aria-label={t('sheet.common.legend')}>
+    <h3>{t('sheet.common.legend')}</h3>
     <table {...{ [M.part]: 'legend' }}>
-      <caption>Drawn epistemic signs on this sheet</caption>
+      <caption>{t('sheet.common.legend_caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Glyph</th>
-          <th scope="col">Sign</th>
-          <th scope="col">Kind</th>
-          <th scope="col">Pattern</th>
+          <th scope="col">{t('col.glyph')}</th>
+          <th scope="col">{t('col.sign')}</th>
+          <th scope="col">{t('col.kind')}</th>
+          <th scope="col">{t('col.pattern')}</th>
         </tr>
       </thead>
       <tbody>
         {#each model.legendItems as item (item.key)}
           <tr {...{ [M.sign]: item.key }}>
             <td><span aria-hidden="true">{item.glyph}</span></td>
-            <td>{item.key}</td>
+            <td>{formatSignLabel(lang, item.key, messages)}</td>
             <td>{item.kind}</td>
             <td>{item.pattern}</td>
           </tr>

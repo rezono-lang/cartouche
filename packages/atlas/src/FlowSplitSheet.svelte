@@ -1,12 +1,16 @@
 <script lang="ts">
   import { SIGNS } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
+  import { formatAtlasMessage, formatReasonLabel, formatSignLabel, formatStateLabel, formatTrustTierLabel } from './i18n-mf2.ts';
+  import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
   import { buildFlowSplitModel, renderFlowSplitSvg } from './flow-split-svg.ts';
   import type { FlowSplitFixtureInput } from './flow-split-svg.ts';
 
   interface Props {
     fixture: FlowSplitFixtureInput;
     theme?: PaletteName;
+    lang?: AtlasLocale;
+    messages?: Mf2MessageCatalog | null;
     curtainSplit?: number;
     title?: string;
   }
@@ -14,15 +18,22 @@
   let {
     fixture,
     theme = 'swisstopo',
+    lang = 'en',
+    messages = null,
     curtainSplit = 50,
-    title = 'Flow & Reality-Split Curtain'
+    title
   }: Props = $props();
 
+  let t = $derived((key: string, params?: Readonly<Record<string, string>>): string =>
+    formatAtlasMessage(lang, key, params, messages)
+  );
+  let resolvedTitle = $derived(title ?? t('sheet.flow.title'));
   let model = $derived(buildFlowSplitModel(fixture, { theme, curtainSplit }));
-  let svgMarkup = $derived(renderFlowSplitSvg(model, `${title} — stated parallel observed flow diagram`));
+  let svgMarkup = $derived(renderFlowSplitSvg(model, t('sheet.flow.diagram_label', { title: resolvedTitle })));
 </script>
 
 <section
+  lang={lang}
   data-sheet="flow-split"
   data-projection="2d"
   data-cartouche-theme={model.theme}
@@ -30,8 +41,8 @@
   aria-labelledby="flow-split-title"
 >
   <header>
-    <h1 id="flow-split-title">{title}</h1>
-    <p>stated ∥ observed</p>
+    <h1 id="flow-split-title">{resolvedTitle}</h1>
+    <p>{t('sheet.flow.subtitle')}</p>
 
     {#if !model.scene.horizon.complete}
       <div
@@ -39,7 +50,9 @@
         data-status="warning"
         data-reason={model.scene.horizon.reason ?? 'not_read_in_full'}
       >
-        incomplete: {model.scene.horizon.reason ?? 'not_read_in_full'}
+        {t('sheet.common.horizon_incomplete', {
+          reason: formatReasonLabel(lang, model.scene.horizon.reason ?? 'not_read_in_full', messages)
+        })}
       </div>
     {/if}
 
@@ -54,7 +67,7 @@
       >
         {model.scene.seal.witnessCheck}
       </span>
-      <span>{model.scene.seal.trustTier}</span>
+      <span>{formatTrustTierLabel(lang, model.scene.seal.trustTier, messages)}</span>
       <span>role={model.scene.seal.role}</span>
       <span>epoch={model.scene.seal.epoch}</span>
       <span>{model.scene.seal.knowledgeTime}</span>
@@ -65,21 +78,21 @@
     {@html svgMarkup}
   </figure>
 
-  <aside aria-label="Sheet legend">
-    <h2>Legend</h2>
+  <aside aria-label={t('sheet.common.legend')}>
+    <h2>{t('sheet.common.legend')}</h2>
     <table data-part="legend">
-      <caption>Drawn epistemic signs on this sheet</caption>
+      <caption>{t('sheet.common.legend_caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Sign</th>
-          <th scope="col">Glyph</th>
-          <th scope="col">Kind</th>
+          <th scope="col">{t('col.sign')}</th>
+          <th scope="col">{t('col.glyph')}</th>
+          <th scope="col">{t('col.kind')}</th>
         </tr>
       </thead>
       <tbody>
         {#each model.legendItems as item (item.key)}
           <tr data-sign={item.key}>
-            <td>{item.key}</td>
+            <td>{formatSignLabel(lang, item.key, messages)}</td>
             <td>{item.glyph}</td>
             <td>{item.kind}</td>
           </tr>
@@ -88,18 +101,18 @@
     </table>
   </aside>
 
-  <section aria-label="Accessible table twin">
-    <h2>Accessible Table Twin</h2>
+  <section aria-label={t('sheet.common.twin')}>
+    <h2>{t('sheet.common.twin')}</h2>
     <table data-part="twin">
-      <caption>Entities projected across stated and observed layers</caption>
+      <caption>{t('sheet.flow.entities_caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Entity</th>
-          <th scope="col">Zone</th>
-          <th scope="col">Layer</th>
-          <th scope="col">Sign</th>
-          <th scope="col">State</th>
-          <th scope="col">Proof</th>
+          <th scope="col">{t('col.entity')}</th>
+          <th scope="col">{t('col.zone')}</th>
+          <th scope="col">{t('col.layer')}</th>
+          <th scope="col">{t('col.sign')}</th>
+          <th scope="col">{t('col.state')}</th>
+          <th scope="col">{t('col.proof')}</th>
         </tr>
       </thead>
       <tbody>
@@ -115,7 +128,7 @@
             <td>{n.label}</td>
             <td>{n.zone}</td>
             <td>{n.layer}</td>
-            <td>{n.signGlyph} {n.sign}</td>
+            <td>{n.signGlyph} {formatSignLabel(lang, n.sign, messages)}</td>
             <td
               data-part="value"
               data-state={n.state}
@@ -125,18 +138,18 @@
             >
               {#if n.state === 'unknown'}
                 <span data-sign="unknown" data-reason={n.reason ?? undefined}>
-                  {SIGNS.unknown?.glyph ?? '▨'} unknown · {n.reason}
+                  {SIGNS.unknown?.glyph ?? '▨'} {formatStateLabel(lang, 'unknown', messages)} · {formatReasonLabel(lang, n.reason ?? 'incomplete', messages)}
                 </span>
               {:else if n.state === 'absent'}
                 <span data-sign="absent">
-                  {SIGNS.absent?.glyph ?? '⦸'} absent
+                  {SIGNS.absent?.glyph ?? '⦸'} {formatStateLabel(lang, 'absent', messages)}
                 </span>
               {:else if n.state === 'invalid'}
                 <span data-sign="invalid" data-reason={n.reason ?? undefined}>
-                  ! invalid{#if n.reason} · {n.reason}{/if}
+                  ! {formatStateLabel(lang, 'invalid', messages)}{#if n.reason} · {formatReasonLabel(lang, n.reason, messages)}{/if}
                 </span>
               {:else}
-                {n.stateGlyph} {n.state}
+                {n.stateGlyph} {formatStateLabel(lang, n.state, messages)}
               {/if}
             </td>
             <td>{n.proofRef}</td>
@@ -147,15 +160,15 @@
 
     {#if model.driftEdges.length > 0}
       <table data-part="twin">
-        <caption>Reality-split drift edges (stated parallel observed)</caption>
+        <caption>{t('sheet.flow.drift_caption')}</caption>
         <thead>
           <tr>
-            <th scope="col">Edge</th>
-            <th scope="col">From</th>
-            <th scope="col">To</th>
-            <th scope="col">Label</th>
-            <th scope="col">Stated Proof</th>
-            <th scope="col">Observed Proof</th>
+            <th scope="col">{t('col.edge')}</th>
+            <th scope="col">{t('col.from')}</th>
+            <th scope="col">{t('col.to')}</th>
+            <th scope="col">{t('col.label')}</th>
+            <th scope="col">{t('col.stated_proof')}</th>
+            <th scope="col">{t('col.observed_proof')}</th>
           </tr>
         </thead>
         <tbody>

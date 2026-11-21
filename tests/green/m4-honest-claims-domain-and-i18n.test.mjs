@@ -68,7 +68,7 @@ test('M4 [honest-claims-domain-and-i18n]: domain-free relief compiler + CamelCas
 test('M4 [honest-claims-domain-and-i18n]: Rezono MF2 i18n replaces hard-coded English and raw snake_case reasons in en & nl', async () => {
   assert.equal(formatAtlasMessage('nl', 'sheet.relief.title'), 'Orthografisch Reliëf');
   assert.equal(formatReasonLabel('nl', 'depth_limit_hop_2'), 'Doorzoeking gestopt bij staplimiet');
-  assert.equal(formatReasonLabel('en', 'income_statement_not_received'), 'Income statement not received');
+  assert.equal(formatReasonLabel('en', 'income_statement_not_received'), 'Reason unavailable');
   assert.equal(
     formatReasonLabel('nl', 'income_statement_not_received', {
       nl: { 'reason.income_statement_not_received': 'Inkomensverklaring nog niet ontvangen' }

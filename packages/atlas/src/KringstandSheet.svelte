@@ -1,6 +1,8 @@
 <script lang="ts">
   import { DATA_MARKS, DeltaStore, SIGNS, STD_VERBS } from '../../reader-core/src/index.ts';
   import type { ManifestMeta, TrustTier, ZSetChange } from '../../reader-core/src/index.ts';
+  import { formatAtlasMessage, formatReasonLabel, formatSignLabel, formatStateLabel, formatTrustTierLabel } from './i18n-mf2.ts';
+  import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
 
   interface Row {
     key: string;
@@ -37,7 +39,19 @@
     } | null;
   }
 
-  let { fixture }: { fixture: Fixture } = $props();
+  let {
+    fixture,
+    lang = 'en',
+    messages = null
+  }: {
+    fixture: Fixture;
+    lang?: AtlasLocale;
+    messages?: Mf2MessageCatalog | null;
+  } = $props();
+
+  let t = $derived((key: string, params?: Readonly<Record<string, string>>): string =>
+    formatAtlasMessage(lang, key, params, messages)
+  );
 
   // Structural lane keys (contract lane enum, minus the separate unknown band).
   const BOARD_LANES = ['needed', 'waiting', 'ready', 'done', 'stuck', 'absent'];
@@ -116,7 +130,7 @@
   <tr {...{ [M.key]: r.key, [M.relation]: r.lane, [M.layer]: layer }}>
     <td {...{ [M.state]: r.state, [M.reason]: rowReason(r), [M.proof_ref]: r.proof_ref, [M.completeness_ref]: r.completeness_witness_ref }}>
       <div {...{ [M.trust_tier]: layer === 'sealed' ? 'sealed' : tier }}>
-        <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span> {r.label}{#if r.state === 'invalid'} <span>({rowReason(r)})</span>{/if}
+        <span aria-hidden="true" {...{ [M.sign]: signOf(r) }}>{glyph(signOf(r))}</span> {r.label}{#if r.state === 'invalid'} <span>({formatReasonLabel(lang, rowReason(r) ?? 'incomplete', messages)})</span>{/if}
       </div>
     </td>
   </tr>
@@ -126,27 +140,28 @@
   <tr {...{ [M.key]: r.key, [M.layer]: layer }}>
     <td {...{ [M.state]: 'unknown', [M.reason]: unknownReason(r), [M.proof_ref]: r.proof_ref }}>
       <div {...{ [M.trust_tier]: layer === 'sealed' ? 'sealed' : tier }}>
-        <span aria-hidden="true" {...{ [M.sign]: 'unknown' }}>{glyph('unknown')}</span> <span>{r.reason}</span>
+        <span aria-hidden="true" {...{ [M.sign]: 'unknown' }}>{glyph('unknown')}</span> <span>{formatReasonLabel(lang, r.reason ?? 'incomplete', messages)}</span>
       </div>
     </td>
   </tr>
 {/snippet}
 
 <section
+  lang={lang}
   aria-labelledby="kring-title"
   {...{ [M.sheet]: 'kringstand', [M.trust_tier]: tier }}
 >
-  <h2 id="kring-title">Kringstand and round timeline</h2>
+  <h2 id="kring-title">{t('sheet.kringstand.title')}</h2>
 
   <div {...{ [M.part]: 'seal', [M.trust_tier]: tier }}>
     <span {...{ [M.part]: 'manifest-hash' }}>{fixture.manifest.id}</span>
     <span {...{ [M.check]: 'witness', [M.status]: fixture.manifest.witness_check }}>{fixture.manifest.witness_check}</span>
-    <strong>{tier}</strong>
+    <strong>{formatTrustTierLabel(lang, tier, messages)}</strong>
     {#if live}<span data-live-latency-ms={live.latency_ms}> live {live.latency_ms} ms</span>{/if}
   </div>
 
-  <table aria-label="Round chronometer">
-    <thead><tr><th scope="col">Round</th><th scope="col">Certificate</th></tr></thead>
+  <table aria-label={t('sheet.kringstand.chronometer')}>
+    <thead><tr><th scope="col">{t('col.round')}</th><th scope="col">{t('col.certificate')}</th></tr></thead>
     <tbody>
       {#each fixture.rounds as r}
         <tr {...{ [M.key]: r.id, [M.layer]: r.sealed ? 'sealed' : 'provisional', [M.proof_ref]: r.cert_hash }}>
@@ -159,7 +174,7 @@
           <th scope="row">{live.round_id}</th>
           <td>
             <div {...{ [M.trust_tier]: live.trust_tier }}>
-              {live.trust_tier}{#if liveProofRef} · {liveProofRef}{:else} · no proof{/if}
+              {formatTrustTierLabel(lang, live.trust_tier, messages)}{#if liveProofRef} · {liveProofRef}{:else} · {t('sheet.common.no_proof')}{/if}
             </div>
           </td>
         </tr>
@@ -167,8 +182,8 @@
     </tbody>
   </table>
 
-  <table aria-label="Board lanes">
-    <thead><tr><th scope="col">Lane</th></tr></thead>
+  <table aria-label={t('sheet.kringstand.lanes')}>
+    <thead><tr><th scope="col">{t('col.lane')}</th></tr></thead>
     {#each BOARD_LANES as lane}
       <tbody>
         <tr {...{ [M.key]: lane }}><th scope="rowgroup">{lane}</th></tr>
@@ -179,15 +194,15 @@
   </table>
 
   <div class="hatched" {...{ [M.part]: 'unknown-band' }}>
-    <table aria-label="unknown">
-      <thead><tr><th scope="col">unknown</th></tr></thead>
+    <table aria-label={formatStateLabel(lang, 'unknown', messages)}>
+      <thead><tr><th scope="col">{formatStateLabel(lang, 'unknown', messages)}</th></tr></thead>
       <tbody>
         {#each unknownEntries as e (e.row.key)}{@render unknownRow(e.row, e.layer)}{/each}
       </tbody>
     </table>
   </div>
 
-  <form aria-label="Proof drawer" onsubmit={(e) => e.preventDefault()}>
+  <form aria-label={t('sheet.kringstand.drawer')} onsubmit={(e) => e.preventDefault()}>
     {#each STD_VERBS as v}
       {#if v.verb === 'propose'}
         <button
@@ -204,22 +219,22 @@
   </form>
 
   <table {...{ [M.part]: 'legend' }}>
-    <caption>Legend</caption>
-    <thead><tr><th scope="col">Sign</th><th scope="col">Meaning</th></tr></thead>
+    <caption>{t('sheet.common.legend')}</caption>
+    <thead><tr><th scope="col">{t('col.sign')}</th><th scope="col">{t('col.meaning')}</th></tr></thead>
     <tbody>
       {#each drawnSigns as s}
-        <tr {...{ [M.sign]: s }}><th scope="row"><span aria-hidden="true">{glyph(s)}</span></th><td>{s}</td></tr>
+        <tr {...{ [M.sign]: s }}><th scope="row"><span aria-hidden="true">{glyph(s)}</span></th><td>{formatSignLabel(lang, s, messages)}</td></tr>
       {/each}
     </tbody>
   </table>
 
   <table {...{ [M.part]: 'twin' }}>
-    <caption>Kringstand table twin</caption>
-    <thead><tr><th scope="col">Item</th><th scope="col">Lane</th><th scope="col">State</th><th scope="col">Tier</th></tr></thead>
+    <caption>{t('sheet.kringstand.twin_caption')}</caption>
+    <thead><tr><th scope="col">{t('col.item')}</th><th scope="col">{t('col.lane')}</th><th scope="col">{t('col.state')}</th><th scope="col">{t('col.tier')}</th></tr></thead>
     <tbody>
       {#each entries as e (e.row.key)}
         <tr {...{ [M.key]: e.row.key }}>
-          <th scope="row">{e.row.label}</th><td>{e.row.lane}</td><td>{e.row.state}</td><td>{e.layer === 'sealed' ? 'sealed' : tier}</td>
+          <th scope="row">{e.row.label}</th><td>{e.row.lane}</td><td>{formatStateLabel(lang, e.row.state, messages)}</td><td>{formatTrustTierLabel(lang, e.layer === 'sealed' ? 'sealed' : tier, messages)}</td>
         </tr>
       {/each}
     </tbody>

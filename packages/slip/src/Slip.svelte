@@ -119,6 +119,7 @@
 
   interface Props {
     theme?: PaletteName;
+    lang?: string;
     model?: SlipModel | null;
     seal?: ReaderSeal | null;
     sealChecks?: readonly SealCheckItem[];
@@ -142,6 +143,7 @@
 
   let {
     theme = 'swisstopo',
+    lang = 'en',
     model = null,
     seal = null,
     sealChecks = [],
@@ -375,10 +377,21 @@
     chosenStop = index;
     if (onStopSelect) onStopSelect(index);
   }
+  function formatProposeLockText(code: string, locale: string): string {
+    const isNl = locale.toLowerCase().startsWith('nl');
+    if (code === 'propose_locked_unsealed_live_stream') {
+      return isNl ? 'Voorstel vergrendeld: live stroom is nog niet verzegeld' : 'Propose locked: live stream is unsealed';
+    }
+    if (code === 'propose_locked_witness_failed') {
+      return isNl ? 'Voorstel vergrendeld: getuigencontrole mislukt' : 'Propose locked: witness check failed';
+    }
+    return isNl ? 'Voorstel vergrendeld: recht niet verleend door lezer' : 'Propose locked: right not granted by reader';
+  }
 </script>
 
 <div
   class="cartouche-slip-root"
+  lang={lang}
   data-cartouche-theme={resolvedTheme}
   data-trust-tier={trustTier}
   role="region"
@@ -397,7 +410,7 @@
 
     {#if !model && seal && !proposeAllowed && proposeBlockedReason}
       <div class="slip-propose-lock" data-reason={proposeBlockedReason}>
-        Propose locked: {proposeBlockedReason}
+        {formatProposeLockText(proposeBlockedReason, lang)}
       </div>
     {/if}
 
