@@ -5,16 +5,8 @@ import path from 'node:path';
 import { DATA_MARKS as M } from '../../packages/reader-core/src/index.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Absent (⦸) never takes the valid colour on any sheet, parked Monge included: no absent mark or part of it paints with --c-valid or a valid token value (issue #23 §1)',
-  waits_on: []
-};
-
-// Decision 0012 §2 (6a), issue #23 §1: Monge fills absent round dots with the valid green. After #30 the absent
-// service mark is honest, but its round dots in the absent rounds are still filled with var(--c-valid).
-// Absent is verified non-existence; painting it valid says the opposite. A parked sheet may not lie either.
+// Decision 0012 §2 (6a), issue #23 §1: Monge must never paint an absent mark (or any descendant of one)
+// with the valid green colour. Absent is verified non-existence; painting it valid says the opposite.
 
 const ROOT = process.cwd();
 const fx = (name) => JSON.parse(fs.readFileSync(path.join(ROOT, 'fixtures', name), 'utf8'));
