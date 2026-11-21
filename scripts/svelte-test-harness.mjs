@@ -76,12 +76,9 @@ export function parseHtml(htmlFragment, { title = 'Cartouche Sheet', lang = 'en'
 export async function auditA11y(htmlFragment, opts = {}) {
   const { window: win, document: doc } = parseHtml(htmlFragment, opts);
   try {
-    // Run axe-core WCAG 2.1 AA structural/ARIA rules inside the Happy-DOM document.
-    // color-contrast is disabled here because Happy-DOM does not compute CSS layout painting;
-    // perceptual OKLCH contrast is mathematically verified in contract-freeze-guard.mjs.
+    // Run full axe-core WCAG 2.1 AA rules (including color-contrast) inside Happy-DOM.
     const results = await axe.run(doc.documentElement, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
-      rules: { 'color-contrast': { enabled: false } }
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }
     });
     return results.violations;
   } finally {

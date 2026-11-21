@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { SIGNS } from '../../packages/reader-core/src/index.ts';
+import {
+  REQUIRED_EPISTEMIC_STATES,
+  SPECIMEN_ENTRIES,
+  verifySpecimenCoverage
+} from '../../packages/atlas/src/specimen.ts';
+
+test('Specimen coverage verifies every std-view sign and every epistemic state including invalid (!)', () => {
+  const report = verifySpecimenCoverage();
+  assert.equal(report.ok, true);
+  assert.deepEqual(report.missingSigns, []);
+  assert.deepEqual(report.missingStates, []);
+  assert.deepEqual([...report.palettes].sort(), ['forced', 'obsidian', 'swisstopo']);
+
+  const coveredNames = new Set(
+    SPECIMEN_ENTRIES.filter((e) => e.kind !== 'trust_tier').map((e) => e.dataEntry.split(':')[1])
+  );
+  for (const sign of Object.keys(SIGNS)) {
+    assert.ok(coveredNames.has(sign), `SPECIMEN_ENTRIES missing std-view sign "${sign}"`);
+  }
+
+  for (const state of REQUIRED_EPISTEMIC_STATES) {
+    const entry = SPECIMEN_ENTRIES.find((e) => e.dataEntry === `state:${state}`);
+    assert.ok(entry, `SPECIMEN_ENTRIES missing epistemic state "${state}"`);
+  }
+
+  const invalidEntry = SPECIMEN_ENTRIES.find((e) => e.dataEntry === 'state:invalid');
+  assert.equal(invalidEntry?.glyph, '!');
+});

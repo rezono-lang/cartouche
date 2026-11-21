@@ -12,10 +12,15 @@ import path from 'node:path';
 import { parseSync } from 'oxc-parser';
 
 const OPAQUE_NAME_RE =
-  /^(display|previousDisplay|previous_display|cell|rawCell|amount|value|val|figure|rate|cap|income|assets|total|subtotal|sum|score|cost|price|threshold|tariff|subsidy|benefit|balance|salary|quota|metric|amount_cell|income_cell|assets_cell|ratio_display|outcome_display|cliff_distance_display)$/i;
+  /^(display|previousDisplay|previous_display|cell|rawCell|amount|value|val|figure|rate|cap|income|assets|total|subtotal|sum|score|cost|price|threshold|tariff|subsidy|benefit|balance|salary|quota|metric|amount_cell|income_cell|assets_cell|ratio_display|outcome_display|cliff_distance_display|z_norm|bar_units|dependent_count)$/i;
 
 const DOMAIN_SORT_PROP_RE =
-  /^(display|previousDisplay|value|val|amount|rate|score|total|subtotal|sum|date|time|timestamp|priority|rank|income|assets|cost|price|count|status|state|eur|cents|percentage|ratio)$/i;
+  /^(display|previousDisplay|value|val|amount|rate|score|total|subtotal|sum|date|time|timestamp|priority|rank|income|assets|cost|price|count|status|state|eur|cents|percentage|ratio|z_norm|bar_units|dependent_count)$/i;
+
+const GEOMETRY_SORT_PROPS = new Set(['x', 'y', 'ix', 'iy', 'w', 'h', 'hop', 'depth', 'index', 'line', 'column', 'row']);
+
+const CSS_CALC_DOMAIN_VAR_RE =
+  /--(amount|value|val|rate|total|subtotal|sum|score|cost|price|income|assets|threshold|ratio|display|bar[-_]units|dependent[-_]count|count|metric)\b/i;
 
 const ZERO_FALLBACK_STR_RE = /^[€$£]?\s*0([.,]0+)?\s*%?$/;
 
@@ -163,6 +168,46 @@ export function extractSvelteSnippets(source) {
 export function lintSourceCode(source, filePath = 'inline.ts') {
   const violations = [];
   const isSvelte = filePath.endsWith('.svelte');
+
+  // ZC13: CSS calc(...) on published/domain tokens or inline style attributes
+  if (isSvelte) {
+    const lineAt = (offset) => source.slice(0, offset).split(/\r?\n/).length;
+    // Inline style="..." containing calc(...)
+    const inlineStyleCalcRe = /style\s*=\s*["'][^"']*\bcalc\s*\([^)]*\)[^"']*["']/gi;
+    let sm;
+    while ((sm = inlineStyleCalcRe.exec(source)) !== null) {
+      violations.push({
+        code: 'ZC13',
+        file: filePath,
+        line: lineAt(sm.index),
+        message: 'Inline style CSS calc(...) performs client-side arithmetic on rendered tokens (Decision 0001).'
+      });
+    }
+    // <style> blocks: forbid calc(...) referencing domain CSS vars or combining multiple vars / additive offsets on var(--z)
+    const styleBlockRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+    let sb;
+    while ((sb = styleBlockRe.exec(source)) !== null) {
+      const blockStart = sb.index + sb[0].indexOf('>') + 1;
+      const cssBody = sb[1];
+      const calcRe = /\bcalc\s*\(([^;{}]*)\)/gi;
+      let cm;
+      while ((cm = calcRe.exec(cssBody)) !== null) {
+        const inner = cm[1];
+        const varCount = (inner.match(/\bvar\s*\(/gi) ?? []).length;
+        const hasDomainVar = CSS_CALC_DOMAIN_VAR_RE.test(inner);
+        const hasAdditiveOnVar = varCount > 0 && /[+-]\s+(?!0\b)/.test(inner);
+        if (hasDomainVar || varCount >= 2 || hasAdditiveOnVar) {
+          violations.push({
+            code: 'ZC13',
+            file: filePath,
+            line: lineAt(blockStart + cm.index),
+            message: `CSS calc(${inner.trim()}) computes derived values on published tokens (Decision 0001).`
+          });
+        }
+      }
+    }
+  }
+
   const snippets = isSvelte
     ? extractSvelteSnippets(source)
     : [{ code: source, lineOffset: 0, kind: 'module' }];
@@ -259,23 +304,34 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
           if (prop === 'sort' || prop === 'toSorted') {
             const cb = node.arguments[0];
             if (cb) {
-              const leading = code.slice(Math.max(0, (node.start ?? 0) - 90), node.start ?? 0);
-              const isGeometrySort = /@cartouche-geometry-sort/.test(leading);
-              if (!isGeometrySort) {
-                if (touchesDomainSortProp(cb) || touchesOpaqueName(cb)) {
-                  report(node, 'ZC06', `.${prop}() sorts on domain/opaque cell values; ordering must come from Rezono.`);
-                } else {
-                  let hasPropSub = false;
-                  walkAst(cb, (n) => {
-                    if (n.type === 'BinaryExpression' && n.operator === '-') {
-                      if (n.left?.type === 'MemberExpression' || n.right?.type === 'MemberExpression') {
-                        hasPropSub = true;
-                      }
-                    }
-                  });
-                  if (hasPropSub) {
-                    report(node, 'ZC06', `.${prop}() uses numeric property subtraction; use canonical key order or tag explicit geometry sorts.`);
+              // Domain/opaque property sorting is ALWAYS forbidden, even with @cartouche-geometry-sort
+              if (touchesDomainSortProp(cb) || touchesOpaqueName(cb)) {
+                report(node, 'ZC06', `.${prop}() sorts on domain/opaque cell values; ordering must come from Rezono.`);
+              } else {
+                const leading = code.slice(Math.max(0, (node.start ?? 0) - 90), node.start ?? 0);
+                const isGeometrySort = /@cartouche-geometry-sort/.test(leading);
+                const accessedProps = [];
+                let hasPropSub = false;
+                walkAst(cb, (n) => {
+                  if (n.type === 'MemberExpression') {
+                    const p = getPropName(n);
+                    if (p) accessedProps.push(p);
                   }
+                  if (n.type === 'BinaryExpression' && n.operator === '-') {
+                    if (n.left?.type === 'MemberExpression' || n.right?.type === 'MemberExpression') {
+                      hasPropSub = true;
+                    }
+                  }
+                });
+                const hasNonGeometryProp = accessedProps.some((p) => !GEOMETRY_SORT_PROPS.has(p));
+                if (isGeometrySort && hasNonGeometryProp) {
+                  report(
+                    node,
+                    'ZC06',
+                    `@cartouche-geometry-sort may only sort on pure layout coordinates (${[...GEOMETRY_SORT_PROPS].join(', ')}), not "${accessedProps.find((p) => !GEOMETRY_SORT_PROPS.has(p))}".`
+                  );
+                } else if (!isGeometrySort && hasPropSub) {
+                  report(node, 'ZC06', `.${prop}() uses numeric property subtraction; use canonical key order or tag explicit geometry sorts.`);
                 }
               }
             }
@@ -337,6 +393,14 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
       if (node.type === 'AssignmentExpression' && ARITH_ASSIGN_OPS.has(node.operator)) {
         if (touchesOpaqueName(node.left) || touchesOpaqueName(node.right)) {
           report(node, 'ZC04', `Compound arithmetic "${code.slice(node.start, node.end).slice(0, 60)}" violates Decision 0001.`);
+        }
+      }
+
+      // ZC13: TemplateLiteral or string Literal in JS/TS emitting CSS calc(...) on published tokens
+      if (node.type === 'TemplateLiteral') {
+        const hasCalc = node.quasis.some((q) => /\bcalc\s*\(/i.test(q.value.raw));
+        if (hasCalc && node.expressions.some((e) => touchesOpaqueName(e))) {
+          report(node, 'ZC13', 'CSS calc(...) template expression on opaque/published token violates Decision 0001.');
         }
       }
 
