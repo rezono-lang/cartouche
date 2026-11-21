@@ -100,6 +100,7 @@ export interface SlipPropsAnswer {
   readonly headers: readonly string[];
   readonly rows: readonly SlipPropsAnswerRow[];
   readonly note?: string | undefined;
+  readonly hiddenCount?: number | undefined;
 }
 
 export interface SlipPropsRow {
@@ -295,6 +296,7 @@ function answerOf(
       ...(row.loadBearing !== undefined ? { load_bearing: row.loadBearing } : {}),
       cells: row.cells.map((cell) => ({ text: cell.text, sign: drawable(cell.sign) }))
     })),
-    note: notes.length > 0 ? notes.join(' ') : undefined
+    note: notes.length > 0 ? notes.join(' ') : undefined,
+    ...(table.hiddenCount !== undefined ? { hiddenCount: table.hiddenCount } : {})
   };
 }

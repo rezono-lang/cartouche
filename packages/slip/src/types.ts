@@ -138,6 +138,8 @@ export interface GroundsNode extends RowRef {
   readonly distance: number;
   readonly outside?: boolean;
   readonly sources?: readonly Source[];
+  readonly state?: ValueState;
+  readonly reason?: string;
 }
 
 export interface GroundsStep {
@@ -197,6 +199,7 @@ export interface ExplainAnswer {
   readonly calc_witnesses?: readonly CalcWitness[];
   readonly next?: string;
   readonly more?: readonly RowRef[];
+  readonly hidden_count?: number;
   readonly gap?: {
     readonly premises: readonly GapPremiseLike[];
     readonly candidates?: readonly GapCandidateLike[];
@@ -383,6 +386,7 @@ export interface AnswerTable {
   readonly rows: readonly AnswerTableRow[];
   readonly cutMessage?: string | undefined;
   readonly moreLabel?: string | undefined;
+  readonly hiddenCount?: number | undefined;
 }
 
 export interface RowSelection {
