@@ -1,5 +1,5 @@
 /**
- * Automated Visual Specimen Registry (Lesson from Rede's _specimen oracle).
+ * Automated Visual Specimen Registry (after the _specimen visual-oracle pattern of an earlier viewer).
  * Guarantees every epistemic sign, 4-valued state, and Cartouche trust tier
  * stays registered and testable across all 3 OKLCH palettes.
  */
