@@ -92,6 +92,12 @@
     <span>{formatTrustTierLabel(lang, model.scene.seal.trustTier, messages)}</span>
   </div>
 
+  {#if !model.scene.horizon.complete}
+    <p {...{ [M.part]: 'horizon', [M.reason]: model.scene.horizon.reason ?? 'not_read_in_full' }}>
+      {formatReasonLabel(lang, model.scene.horizon.reason ?? 'not_read_in_full', messages)}
+    </p>
+  {/if}
+
   <div role="group" aria-label={t('sheet.bitemporal.projection')}>
     <button type="button" aria-pressed={shown === '2d'} onclick={() => (current = '2d')}>2D</button>
     <button type="button" aria-pressed={shown === 'orthographic'} onclick={() => (current = 'orthographic')}>3D</button>

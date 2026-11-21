@@ -8,27 +8,6 @@ import { compileBitemporalScene } from '../../packages/scene-ir/src/compile-bite
 import { buildBitemporalFixtureFromGateAnswers } from '../../packages/atlas/src/bitemporal-gate.ts';
 import { auditA11y, parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0015-quality-round-3.md',
-  priority: 3,
-  summary: '#46 point 14: the role zero-leak test renders a restricted role from the gate output recorded for that role, not from a fixture the test filters itself',
-  waits_on: [
-    'm1-green-guard-covers-harness',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
 
 // Decision 0015 §4, issue #46 point 14: the role zero-leak test renders a restricted role from the
 // gate output recorded for that role at contracts/rezono-pin.json, not from a hand-written fixture.
