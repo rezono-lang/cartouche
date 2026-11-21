@@ -130,7 +130,7 @@ export interface ReliefCurtainGeometry {
 export interface ReliefCliffMarker {
   readonly subjectId: string;
   readonly display: string;
-  readonly proofRef: string;
+  readonly proofRef: string | null;
   readonly citation: string | null;
 }
 
@@ -218,6 +218,9 @@ function escapeXml(text: string): string {
 }
 
 function resolveSignSpec(signName: string): SignSpec {
+  if (!Object.prototype.hasOwnProperty.call(SIGNS, signName)) {
+    throw new Error(`Unknown std-view sign: "${signName}".`);
+  }
   const spec = SIGNS[signName];
   if (!spec) {
     throw new Error(`Unknown std-view sign: "${signName}".`);
@@ -246,7 +249,10 @@ export function buildReliefModel(
   fixture: ReliefFixtureInput,
   options: ReliefBuildOptions = {}
 ): ReliefModel {
-  const theme: PaletteName = options.theme && options.theme in PALETTES ? options.theme : 'swisstopo';
+  const theme: PaletteName =
+    options.theme && Object.prototype.hasOwnProperty.call(PALETTES, options.theme)
+      ? options.theme
+      : 'swisstopo';
   const palette = PALETTES[theme];
 
   if (fixture.sweep_2d.projection !== 'orthographic') {
@@ -265,24 +271,36 @@ export function buildReliefModel(
     return { sub, amountCell, incomeCell, assetsCell };
   });
 
-  const compilerSubjects = validatedSubjectCells.map(({ sub, amountCell }) => ({
-    id: sub.id,
-    state: (sub.state === 'unknown' || amountCell.state === 'unknown' ? 'unknown' : 'valid') as 'valid' | 'unknown',
-    amount_cell:
-      amountCell.state === 'unknown'
-        ? {
-            state: 'unknown' as const,
-            display: null,
-            ...(amountCell.reason !== null ? { reason: amountCell.reason } : {}),
-            proof_ref: amountCell.proofRef
-          }
-        : {
-            state: 'known' as const,
-            display: renderOpaqueText(amountCell),
-            proof_ref: amountCell.proofRef
-          },
-    citation: sub.citation
-  }));
+  const compilerSubjects = validatedSubjectCells.map(({ sub, amountCell }) => {
+    if (sub.state !== 'valid' && sub.state !== 'unknown') {
+      throw new Error(
+        `Unsupported relief subject state "${sub.state}" for "${sub.id}" (only "valid" and "unknown" are representable without state collapse).`
+      );
+    }
+    if (amountCell.state !== 'known' && amountCell.state !== 'unknown') {
+      throw new Error(
+        `Unsupported relief amount_cell state "${amountCell.state}" for "${sub.id}" (only "known" and "unknown" are representable without state collapse).`
+      );
+    }
+    return {
+      id: sub.id,
+      state: sub.state,
+      amount_cell:
+        amountCell.state === 'unknown'
+          ? {
+              state: 'unknown' as const,
+              display: null,
+              ...(amountCell.reason !== null ? { reason: amountCell.reason } : {}),
+              proof_ref: amountCell.proofRef
+            }
+          : {
+              state: 'known' as const,
+              display: amountCell.display,
+              proof_ref: amountCell.proofRef
+            },
+      citation: sub.citation
+    };
+  });
 
   const compilerManifolds = fixture.sweep_2d.unknown_manifolds.map((m) => ({
     subject_id: m.subject_id,
@@ -407,6 +425,16 @@ export function buildReliefModel(
     });
   });
 
+  const cliffProofBySubject = new Map<string, string>();
+  for (const extra of fixture.sweep_2d.cliff_distances ?? []) {
+    if (!extra.proof_ref || extra.proof_ref.trim().length === 0) {
+      throw new Error(`Cliff distance entry for "${extra.subject_id}" requires a non-empty proof_ref.`);
+    }
+    cliffProofBySubject.set(extra.subject_id, extra.proof_ref);
+  }
+
+  // Note: subjects[*].cliff_distance_display has no dedicated proof_ref in fixture 04 (planner bump
+  // needed if a dedicated cliff witness is published); never borrow amountCell.proofRef.
   const cliffMarkers: ReliefCliffMarker[] = [];
   const seenCliffSubjects = new Set<string>();
   for (const sub of subjects) {
@@ -416,7 +444,7 @@ export function buildReliefModel(
         Object.freeze({
           subjectId: sub.id,
           display: sub.cliffDistanceDisplay,
-          proofRef: sub.amountCell.proofRef,
+          proofRef: cliffProofBySubject.get(sub.id) ?? null,
           citation: sub.citation
         })
       );
@@ -668,14 +696,14 @@ export function renderReliefOrthographicSvg(
     );
   }
 
-  // Cliff distance markers
+  // Cliff distance markers (emit data-proof-ref only when a dedicated cliff proof_ref is published)
   const legGlyph = resolveSignSpec('legislator').glyph;
   for (let idx = 0; idx < model.cliffMarkers.length; idx++) {
     const marker = model.cliffMarkers[idx]!;
     const my = 48 + idx * 24;
+    const proofAttr = marker.proofRef ? ` ${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}"` : '';
     parts.push(
-      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator" ` +
-        `${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}">`,
+      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator"${proofAttr}>`,
       `<rect x="16" y="${my - 14}" width="260" height="20" rx="3" fill="${p.paperElev}" stroke="${p.proof}" stroke-width="1" />`,
       `<text x="24" y="${my}" fill="${p.proof}" font-size="11">${escapeXml(`${legGlyph} ${marker.subjectId}: ${marker.display}`)}</text>`,
       `</g>`
@@ -763,14 +791,14 @@ export function renderRelief2DProfileSvg(
     );
   }
 
-  // Cliff distance callouts
+  // Cliff distance callouts (emit data-proof-ref only when a dedicated cliff proof_ref is published)
   const legGlyph = resolveSignSpec('legislator').glyph;
   for (let idx = 0; idx < model.cliffMarkers.length; idx++) {
     const marker = model.cliffMarkers[idx]!;
     const my = padTop + plotH + 44 + idx * 14;
+    const proofAttr = marker.proofRef ? ` ${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}"` : '';
     parts.push(
-      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator" ` +
-        `${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}">`,
+      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator"${proofAttr}>`,
       `<text x="${padLeft}" y="${my}" fill="${p.proof}" font-size="11">${escapeXml(`${legGlyph} ${marker.subjectId}: ${marker.display}`)}</text>`,
       `</g>`
     );

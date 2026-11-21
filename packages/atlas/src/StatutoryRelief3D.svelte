@@ -59,6 +59,9 @@
   });
 
   function resolveSignSpec(signName: string): SignSpec {
+    if (!Object.prototype.hasOwnProperty.call(SIGNS, signName)) {
+      throw new Error(`Unknown std-view sign: "${signName}".`);
+    }
     const spec = SIGNS[signName];
     if (!spec) {
       throw new Error(`Unknown std-view sign: "${signName}".`);

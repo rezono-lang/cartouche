@@ -87,12 +87,16 @@ test('M2: Sheet 01 renders orthographic Swisstopo 3D terrain, cliff markers, hat
     assert.ok(svg.querySelector('pattern#relief-unknown-hatch'), 'expected 45-deg hatch pattern for unknown curtain');
 
     const svgMarks = [...svg.querySelectorAll(`[${M.proof_ref}]`)];
-    assert.equal(svgMarks.length, fx.sweep_2d.cells.length + 1 + 1, '5 grid terraces + 1 curtain + 1 cliff marker');
+    assert.equal(svgMarks.length, fx.sweep_2d.cells.length + 1, '5 grid terraces + 1 curtain carry published proofs');
 
-    // Cliff distance marker for A001
+    // Cliff distance marker for A001 displays published cliff text without borrowing amountCell.proofRef
     const cliffMark = svg.querySelector(`g[${M.key}="cliff:A001"][${M.sign}="legislator"]`);
     assert.ok(cliffMark, 'expected cliff distance marker for A001');
-    assert.equal(cliffMark.getAttribute(M.proof_ref), 'witness:sub-A001');
+    assert.equal(
+      cliffMark.getAttribute(M.proof_ref),
+      null,
+      'must not borrow amountCell.proofRef when fixture publishes no dedicated cliff proof_ref'
+    );
     assert.ok(cliffMark.textContent.includes(fx.subjects[0].cliff_distance_display));
 
     // Hatched A003 unknown curtain carries proof, reason, sign, and zero ASCII digits
@@ -217,6 +221,29 @@ test('M2: Sheet 01 enforces xD-Discipline Guard and epistemic honesty (rejects p
   const digitCurtainFx = loadFixture04();
   digitCurtainFx.sweep_2d.unknown_manifolds[0].reason = 'missing since 2025';
   assert.throws(() => buildReliefModel(digitCurtainFx), /zero ASCII digits/);
+
+  // Counterexample (P1 #91): non-known/non-unknown amount_cell (e.g. absent) or subject state must NOT collapse to known/valid
+  const absentAmountFx = loadFixture04();
+  absentAmountFx.subjects[0].amount_cell = {
+    state: 'absent',
+    display: null,
+    proof_ref: 'w',
+    completeness_witness_ref: 'sweep:x'
+  };
+  assert.throws(() => buildReliefModel(absentAmountFx), /Unsupported relief amount_cell state/);
+
+  const violatedSubjectFx = loadFixture04();
+  violatedSubjectFx.subjects[0].state = 'violated';
+  assert.throws(() => buildReliefModel(violatedSubjectFx), /Unsupported relief subject state/);
+
+  // Dedicated published cliff_distances proof_ref is used verbatim when provided
+  const cliffProofFx = loadFixture04();
+  cliffProofFx.sweep_2d.cliff_distances = [
+    { subject_id: 'A001', display: '€ 2.000 to Art. 5 cliff', proof_ref: 'cliff:art5-A001' }
+  ];
+  const cliffModel = buildReliefModel(cliffProofFx);
+  assert.equal(cliffModel.cliffMarkers[0].proofRef, 'cliff:art5-A001');
+  assert.ok(renderReliefOrthographicSvg(cliffModel).includes('data-proof-ref="cliff:art5-A001"'));
 });
 
 test('M2: Sheet 01 passes exhaustive Opaque-Token Mutation Test with zero NaN or client re-ordering', async () => {
