@@ -1,0 +1,1422 @@
+{
+  "fixture_id": "11-zorgtoeslag-bitemporal-gate-answers",
+  "manifest": {
+    "id": "sha256:a11e586942c01d965de15e13051c59910514cd45c757e104d999951f14bad083",
+    "epoch": 4,
+    "knowledge_time": "2026-05-01T00:00:00Z",
+    "role": "checker",
+    "witness_check": "green",
+    "trust_tier": "sealed"
+  },
+  "source": {
+    "decision": "decisions/0012-proof-first-plan.md",
+    "repository": "rezono-lang/rezono",
+    "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+    "pack": "examples/zorgtoeslag-slice",
+    "store": "examples/zorgtoeslag_history_support.py publish_history",
+    "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the pinned commit by .github/workflows/rezono-reader-parity.yml: /zorgtoeslag-slice/head, /zorgtoeslag-slice/head?m=m-1..m-4, and /zorgtoeslag-slice/m-1..m-4/rows/<allowance_relation>, with each HTTP status and JSON body as served.",
+    "recorded_by": null
+  },
+  "epochs": [
+    {
+      "manifest": "m-1",
+      "as_of": "2026-02-01",
+      "known": "2025-11-15",
+      "relation": "calc__allowance"
+    },
+    {
+      "manifest": "m-2",
+      "as_of": "2026-02-01",
+      "known": "2025-12-01",
+      "relation": "calc__allowance"
+    },
+    {
+      "manifest": "m-3",
+      "as_of": "2026-01-01",
+      "known": "2026-02-01",
+      "relation": "calc__allowance"
+    },
+    {
+      "manifest": "m-4",
+      "as_of": "2026-01-01",
+      "known": "2026-05-01",
+      "relation": "calc__allowance"
+    }
+  ],
+  "reader_answers": {
+    "checker": {
+      "/zorgtoeslag-slice/bundle": {
+        "status": 200,
+        "body": {
+          "pack": {
+            "id": "zorgtoeslag-slice"
+          },
+          "kinds": [
+            {
+              "id": "household",
+              "class": "Household",
+              "world": "closed"
+            }
+          ],
+          "attributes": [
+            {
+              "id": "household.insured",
+              "kind": "household",
+              "name": "insured",
+              "table": "household__insured",
+              "type": "boolean",
+              "schema_type": "boolean",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "scalar",
+                "base": "boolean",
+                "range": "boolean"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "household.joint_income",
+              "kind": "household",
+              "name": "joint_income",
+              "table": "household__joint_income",
+              "type": "integer",
+              "schema_type": "Cents",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "currency": "EUR",
+              "semantic": {
+                "case": "money",
+                "base": "integer",
+                "range": "Cents",
+                "currency": "EUR"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "household.partner",
+              "kind": "household",
+              "name": "partner",
+              "table": "household__partner",
+              "type": "boolean",
+              "schema_type": "boolean",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "scalar",
+                "base": "boolean",
+                "range": "boolean"
+              },
+              "world": "closed"
+            }
+          ],
+          "arrows": [],
+          "relations": [
+            {
+              "id": "calc__allowance",
+              "world": "closed",
+              "calc": "allowance",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "allowance"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__household_premium",
+              "world": "closed",
+              "calc": "household_premium",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "household_premium"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__income_limit",
+              "world": "closed",
+              "calc": "income_limit",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "income_limit"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__income_limit_partner",
+              "world": "closed",
+              "calc": "income_limit_partner",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "income_limit_partner"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__income_limit_single",
+              "world": "closed",
+              "calc": "income_limit_single",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "income_limit_single"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__norm_premium",
+              "world": "closed",
+              "calc": "norm_premium",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "norm_premium"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__rate_above",
+              "world": "closed",
+              "calc": "rate_above",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "1",
+                "derived": "rate_above"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__standard_premium",
+              "world": "closed",
+              "calc": "standard_premium",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "standard_premium"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__threshold_income",
+              "world": "closed",
+              "calc": "threshold_income",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "threshold_income"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__threshold_rate",
+              "world": "closed",
+              "calc": "threshold_rate",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "1",
+                "derived": "threshold_rate"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__yearly_amount",
+              "world": "closed",
+              "calc": "yearly_amount",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "yearly_amount"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            }
+          ],
+          "enums": [],
+          "rules": [],
+          "labels": [
+            {
+              "element": "household",
+              "lang": "en",
+              "text": "household"
+            },
+            {
+              "element": "household.insured",
+              "lang": "en",
+              "text": "health insurance cover"
+            },
+            {
+              "element": "household.joint_income",
+              "lang": "en",
+              "text": "joint income"
+            },
+            {
+              "element": "household.partner",
+              "lang": "en",
+              "text": "has toeslagpartner"
+            }
+          ],
+          "messages": [
+            {
+              "lang": "en",
+              "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\narrow.total = {{Every {$kind} has exactly one {$arrow}.}}\narrow.partial = {{Every {$kind} has at most one {$arrow}.}}\nattribute.total = {{Every {$kind} has exactly one {$attribute}.}}\nattribute.partial = {{Every {$kind} has at most one {$attribute}.}}\nis_a = {{Every {$kind} is a {$parent}.}}\nunique_key = {{{$key} belongs to at most one {$kind}.}}\npath_equation = {{For every {$kind}: {$equation}.}}\n"
+            },
+            {
+              "lang": "nl",
+              "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\n"
+            }
+          ],
+          "home": {
+            "claim": []
+          },
+          "questions": []
+        }
+      },
+      "/zorgtoeslag-slice/head": {
+        "status": 200,
+        "body": {
+          "id": "m-4",
+          "epoch": 4,
+          "knowledge_time": "2026-05-01T00:00:00Z",
+          "access_semantics": 2,
+          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
+          "manifest_sha256": "a11e586942c01d965de15e13051c59910514cd45c757e104d999951f14bad083",
+          "witness_check": "green",
+          "trust_tier": "sealed",
+          "may_propose": false,
+          "compiled": [
+            {
+              "file": "bundle/schema-bundle.json",
+              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+            }
+          ],
+          "snapshots": [
+            {
+              "relation": "calc__allowance",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__as_of",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__household_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_single",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__rate_above",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__standard_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_rate",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__yearly_amount",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/head?m=m-1": {
+        "status": 200,
+        "body": {
+          "id": "m-1",
+          "epoch": 1,
+          "knowledge_time": "2025-11-15T00:00:00Z",
+          "access_semantics": 2,
+          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
+          "manifest_sha256": "30ec73d99589c27179dd1c759bf4f18266064e11a88a443daee0b3e960831f1b",
+          "witness_check": "green",
+          "trust_tier": "sealed",
+          "may_propose": false,
+          "compiled": [
+            {
+              "file": "bundle/schema-bundle.json",
+              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+            }
+          ],
+          "snapshots": [
+            {
+              "relation": "calc__allowance",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__as_of",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__household_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_single",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__rate_above",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__standard_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_rate",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__yearly_amount",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/head?m=m-2": {
+        "status": 200,
+        "body": {
+          "id": "m-2",
+          "epoch": 2,
+          "knowledge_time": "2025-12-01T00:00:00Z",
+          "access_semantics": 2,
+          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
+          "manifest_sha256": "2c06c9dc9ac9916db724668a68bcc02e6480733a9b663506aeb1423664684514",
+          "witness_check": "green",
+          "trust_tier": "sealed",
+          "may_propose": false,
+          "compiled": [
+            {
+              "file": "bundle/schema-bundle.json",
+              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+            }
+          ],
+          "snapshots": [
+            {
+              "relation": "calc__allowance",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__as_of",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__household_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_single",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__rate_above",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__standard_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_rate",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__yearly_amount",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/head?m=m-3": {
+        "status": 200,
+        "body": {
+          "id": "m-3",
+          "epoch": 3,
+          "knowledge_time": "2026-02-01T00:00:00Z",
+          "access_semantics": 2,
+          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
+          "manifest_sha256": "33f9f459493bd1fe31b8881a6fbf98bebc7c345cf1042d803aa4ac13b6f2e515",
+          "witness_check": "green",
+          "trust_tier": "sealed",
+          "may_propose": false,
+          "compiled": [
+            {
+              "file": "bundle/schema-bundle.json",
+              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+            }
+          ],
+          "snapshots": [
+            {
+              "relation": "calc__allowance",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__as_of",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__household_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_single",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__rate_above",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__standard_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_rate",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__yearly_amount",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/head?m=m-4": {
+        "status": 200,
+        "body": {
+          "id": "m-4",
+          "epoch": 4,
+          "knowledge_time": "2026-05-01T00:00:00Z",
+          "access_semantics": 2,
+          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
+          "manifest_sha256": "a11e586942c01d965de15e13051c59910514cd45c757e104d999951f14bad083",
+          "witness_check": "green",
+          "trust_tier": "sealed",
+          "may_propose": false,
+          "compiled": [
+            {
+              "file": "bundle/schema-bundle.json",
+              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+            }
+          ],
+          "snapshots": [
+            {
+              "relation": "calc__allowance",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__as_of",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__household_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_single",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__rate_above",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__standard_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_rate",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__yearly_amount",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-1/rows/calc__allowance": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "bob",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "dex",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "eve",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "fay",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "gus",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "hal",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "ivy",
+                "",
+                "unknown",
+                "fact household.insured is missing"
+              ]
+            },
+            {
+              "key": [
+                "kim",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-2/rows/calc__allowance": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann",
+                "13500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "bob",
+                "10500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "dex",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "eve",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "fay",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "gus",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "hal",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "ivy",
+                "",
+                "unknown",
+                "fact household.insured is missing"
+              ]
+            },
+            {
+              "key": [
+                "kim",
+                "0",
+                "known",
+                ""
+              ]
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-3/rows/calc__allowance": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann",
+                "13500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "bob",
+                "10500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "dex",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "eve",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "fay",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "gus",
+                "13500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "hal",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "ivy",
+                "",
+                "unknown",
+                "fact household.insured is missing"
+              ]
+            },
+            {
+              "key": [
+                "kim",
+                "0",
+                "known",
+                ""
+              ]
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-4/rows/calc__allowance": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann",
+                "13600",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "bob",
+                "10700",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "dex",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "eve",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "fay",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "gus",
+                "8500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "hal",
+                "",
+                "unknown",
+                "fact household.joint_income is missing"
+              ]
+            },
+            {
+              "key": [
+                "ivy",
+                "",
+                "unknown",
+                "fact household.insured is missing"
+              ]
+            },
+            {
+              "key": [
+                "kim",
+                "0",
+                "known",
+                ""
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

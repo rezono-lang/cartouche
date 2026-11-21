@@ -26,6 +26,8 @@ export interface BitemporalGridInput {
   readonly valid_times: readonly string[];
   readonly epochs: readonly string[];
   readonly matrix: readonly (readonly BitemporalCellInput[])[];
+  /** True when the gate served opaque display values without a normalized Z-height channel. */
+  readonly flat_known_tiles?: boolean;
 }
 
 export interface BitemporalEpochDiffEntry {

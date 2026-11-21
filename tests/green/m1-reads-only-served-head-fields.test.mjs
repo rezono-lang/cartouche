@@ -41,12 +41,14 @@ function withHead(extra) {
   return fx;
 }
 
-test('M1 [reads-only-served-head-fields]: the recorded head has none of the guessed fields', () => {
+test('M1 [reads-only-served-head-fields]: the recorded head serves trust_tier/may_propose (rezono#1481) and none of the guessed fields', () => {
   const fx = JSON.parse(fs.readFileSync(path.join(ROOT, FX10), 'utf8'));
   for (const [store, roles] of Object.entries(fx.reader_answers)) {
     for (const [role, answers] of Object.entries(roles)) {
       const head = answers['/slip/head'].body;
-      for (const field of ['trust_tier', 'can_propose', 'rights', 'seal', 'provisional_count']) {
+      assert.equal('trust_tier' in head, true, `${store}/${role}: /slip/head must serve trust_tier (rezono#1481)`);
+      assert.equal('may_propose' in head, true, `${store}/${role}: /slip/head must serve may_propose (rezono#1481)`);
+      for (const field of ['can_propose', 'rights', 'seal', 'provisional_count']) {
         assert.equal(field in head, false, `${store}/${role}: /slip/head serves ${field}; re-plan this test with the served name`);
       }
     }

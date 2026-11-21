@@ -3,12 +3,21 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
+import { buildBitemporalFixtureFromGateAnswers } from '../../packages/atlas/src/bitemporal-gate.ts';
 import { buildBitemporalModel } from '../../packages/atlas/src/bitemporal-model.ts';
 import { auditA11y, parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
 const ROOT = process.cwd();
 const SHEET = path.join(ROOT, 'packages', 'atlas', 'src', 'BitemporalStairSheet.svelte');
-const fixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'fixtures', '05-subsidy-bitemporal.json'), 'utf8'));
+const gateRecording = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'fixtures', '11-zorgtoeslag-bitemporal-gate-answers.json'), 'utf8')
+);
+const fixture = buildBitemporalFixtureFromGateAnswers(gateRecording, {
+  pack: 'zorgtoeslag-slice',
+  role: 'checker',
+  subjectId: 'ann',
+  validTime: '2026-02-01'
+});
 const M = DATA_MARKS;
 const GRID = fixture.bitemporal_grid;
 const RAW = GRID.matrix.flat();
@@ -39,7 +48,7 @@ function checkLegendAndTables(doc) {
   for (const t of doc.querySelectorAll('table')) assert.ok(t.querySelector('th'));
 }
 
-test('M2: bitemporal model is headless, orthographic, collision-free and never puts unknown at z=0', () => {
+test('M2: bitemporal model from recorded gate output is headless, orthographic, collision-free and never puts unknown at z=0', () => {
   const model = buildBitemporalModel(fixture);
   assert.equal(model.scene.projection, 'orthographic');
   assert.equal(model.cells.length, GRID.epochs.length * GRID.valid_times.length);
@@ -53,12 +62,14 @@ test('M2: bitemporal model is headless, orthographic, collision-free and never p
       assert.equal(c.zToken, null, 'Decision 0011 §1: unknown must not encode a height/magnitude');
       assert.equal(c.display, null);
     }
-    if (raw.state === 'not_applicable') assert.equal(c.zToken, null, 'N/A stays hollow: no prism');
-    if (raw.state === 'known') assert.equal(c.zToken, String(raw.z_norm));
+    if (raw.state === 'known') {
+      assert.equal(c.zToken, null, 'flat_known_tiles: never invent client-computed Z height');
+      assert.equal(c.display, raw.display);
+    }
   }
   assert.deepEqual(
     [...model.drawnSigns].sort(),
-    ['changed', 'not_applicable', 'unknown', 'valid']
+    ['unknown', 'valid']
   );
   // Perspective is rejected before anything is drawn.
   const persp = structuredClone(fixture);
@@ -66,7 +77,7 @@ test('M2: bitemporal model is headless, orthographic, collision-free and never p
   assert.throws(() => buildBitemporalModel(persp), /perspective/);
 });
 
-test('M2: Sheet 05 2D matrix shows Valid x Knowledge with retroactive revision and hollow N/A cells', async () => {
+test('M2: Sheet 05 2D matrix from recorded gate output shows Valid x Knowledge with zero digits on unknown', async () => {
   const html = await withDoc(fixture, {}, (doc) => {
     const root = doc.querySelector(`section[${M.sheet}="bitemporal-stair"]`);
     assert.equal(root.getAttribute(M.projection), '2d');
@@ -78,36 +89,30 @@ test('M2: Sheet 05 2D matrix shows Valid x Knowledge with retroactive revision a
     assert.equal(doc.querySelectorAll(`${MATRIX} thead th`).length, 1 + GRID.valid_times.length);
     assert.equal(doc.querySelectorAll(`${MATRIX} tbody th`).length, GRID.epochs.length);
 
-    const na = tds.filter((t) => t.getAttribute(M.state) === 'not_applicable');
-    assert.equal(na.length, RAW.filter((r) => r.state === 'not_applicable').length);
-    for (const t of na) {
-      assert.ok(t.querySelector(`[${M.sign}="not_applicable"]`));
-      assert.equal(t.getAttribute(M.reason), 'valid_after_knowledge');
-      assert.equal(t.querySelector('del, ins'), null, 'N/A shows no value');
-    }
-
     const unk = tds.filter((t) => t.getAttribute(M.state) === 'unknown');
     assert.equal(unk.length, RAW.filter((r) => r.state === 'unknown').length);
+    assert.ok(unk.length > 0, 'recorded gate fixture must include at least one unknown epoch');
     for (const t of unk) {
       assert.ok(t.getAttribute(M.reason));
       assert.ok(t.querySelector(`[${M.sign}="unknown"]`));
       assert.equal(/[0-9]/.test(t.textContent), false, 'unknown cell text holds no digit');
     }
 
-    // Retroactive delta: published previous_display is struck, new display inserted.
-    const folded = tds.filter((t) => t.querySelector('del'));
-    assert.equal(folded.length, RAW.filter((r) => r.previous_display).length);
-    for (const t of folded) {
-      assert.equal(t.getAttribute(M.state), 'changed');
-      assert.ok(t.querySelector(`[${M.sign}="changed"]`));
+    const known = tds.filter((t) => t.getAttribute(M.state) === 'known');
+    assert.equal(known.length, RAW.filter((r) => r.state === 'known').length);
+    assert.ok(known.length > 0, 'recorded gate fixture must include at least one known epoch');
+    for (const t of known) {
+      assert.ok(t.querySelector(`[${M.sign}="valid"]`));
+      assert.ok(t.textContent.includes('13500'), 'known cell renders exact gate-served display');
     }
+
     for (const t of tds) assert.ok(t.getAttribute(M.proof_ref));
     checkLegendAndTables(doc);
   });
   assert.deepEqual(await auditA11y(html), []);
 });
 
-test('M2: Sheet 05 3D orthographic staircase has hatched unknown curtains, hollow N/A, proof per mark, table twin', async () => {
+test('M2: Sheet 05 3D orthographic staircase from recorded gate output has hatched unknown curtains, proof per mark, table twin', async () => {
   const html = await withDoc(fixture, { view: 'orthographic' }, (doc) => {
     assert.equal(doc.querySelector('section[data-sheet]').getAttribute(M.projection), 'orthographic');
     assert.equal(doc.querySelector(MATRIX), null);
@@ -132,13 +137,9 @@ test('M2: Sheet 05 3D orthographic staircase has hatched unknown curtains, hollo
         assert.equal(g.querySelector('rect'), null, 'Decision 0011 §1: unknown must not draw an extruded prism');
         assert.equal(/[0-9]/.test(g.textContent), false);
       }
-      if (state === 'not_applicable') {
-        assert.ok(g.querySelector('path[fill="none"]'), 'N/A tile is hollow');
-        assert.equal(g.querySelector('rect'), null, 'N/A has no prism');
-      }
-      if (state === 'known' || state === 'changed') {
-        const z = RAW.find((r) => r.proof_ref === g.getAttribute(M.proof_ref)).z_norm;
-        assert.ok(g.innerHTML.includes(`--z: ${z}`));
+      if (state === 'known') {
+        assert.equal(g.innerHTML.includes('--z:'), false, 'flat_known_tiles: no client-invented --z');
+        assert.equal(g.querySelector('rect'), null, 'flat_known_tiles: flat tile, no extruded prism');
       }
     }
     const twin = doc.querySelector(TWIN);
@@ -156,7 +157,7 @@ test('M2: Sheet 05 refuses dishonest input instead of inventing values', async (
   await assert.rejects(() => mount(noReason), /explicit reason|without published reason/);
 
   const noZ = structuredClone(fixture);
-  delete noZ.bitemporal_grid.matrix[1][0].z_norm;
+  delete noZ.bitemporal_grid.flat_known_tiles;
   await assert.rejects(() => mount(noZ), /without published z_norm/);
 
   const digitReason = structuredClone(fixture);

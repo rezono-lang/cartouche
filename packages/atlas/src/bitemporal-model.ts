@@ -96,11 +96,17 @@ export function buildBitemporalModel(fixture: BitemporalFixtureInput): Bitempora
         zToken = null;
       } else if (raw.state === 'known') {
         if (raw.z_norm === undefined || raw.z_norm === null) {
-          throw new Error(`known cell without published z_norm: ${raw.proof_ref}`);
+          if (!grid.flat_known_tiles) {
+            throw new Error(`known cell without published z_norm: ${raw.proof_ref}`);
+          }
+          state = raw.revised ? 'changed' : 'known';
+          sign = raw.revised ? 'changed' : 'valid';
+          zToken = null;
+        } else {
+          state = raw.revised ? 'changed' : 'known';
+          sign = raw.revised ? 'changed' : 'valid';
+          zToken = String(raw.z_norm);
         }
-        state = raw.revised ? 'changed' : 'known';
-        sign = raw.revised ? 'changed' : 'valid';
-        zToken = String(raw.z_norm);
       } else {
         throw new Error(`unsupported bitemporal state "${raw.state}": ${raw.proof_ref}`);
       }

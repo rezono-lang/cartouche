@@ -113,7 +113,7 @@
             {#each line as c (c.id)}
               <td
                 class={c.state === 'not_applicable' ? 'hollow' : c.state === 'unknown' ? 'hatched' : c.state === 'invalid' ? 'invalid' : c.state === 'changed' ? 'revised' : 'known'}
-                aria-current={activeKnownAt === model.epochs[r] && activeValidAt === model.validTimes[c.col] ? 'true' : undefined}
+                aria-current={(activeKnownAt === model.epochs[r] || (activeKnownAt !== undefined && model.epochs[r].startsWith(`${activeKnownAt} `))) && activeValidAt === model.validTimes[c.col] ? 'true' : undefined}
                 {...{
                   [M.part]: 'value',
                   [M.key]: `${model.epochs[r]}@${model.validTimes[c.col]}`,
@@ -195,6 +195,19 @@
             />
             <text x="0" y="4" text-anchor="middle" font-size="11" font-weight="700" fill="var(--c-violated)">
               !
+            </text>
+          {:else if c.zToken === null}
+            <!-- Flat known/changed tile when the gate serves no normalized Z-height channel -->
+            <path
+              class="flat-known"
+              d={`M0 ${-TILE_HALF_H} L${TILE_HALF_W} 0 L0 ${TILE_HALF_H} L${-TILE_HALF_W} 0 Z`}
+              fill="var(--c-paper-elev)"
+              stroke={c.state === 'changed' ? 'var(--c-caution)' : 'var(--c-ink)'}
+              stroke-width={c.state === 'changed' ? '2' : undefined}
+              stroke-dasharray={c.state === 'changed' ? '6 2' : undefined}
+            />
+            <text x="0" y="4" text-anchor="middle" font-size="11" fill="var(--c-ink)">
+              {c.display}
             </text>
           {:else}
             <g style={`--z: ${c.zToken}`}>

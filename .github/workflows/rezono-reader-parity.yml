@@ -62,7 +62,7 @@ jobs:
           python -m venv .venv
           .venv/bin/python -m pip install -q --no-deps --require-hashes -r requirements/dev.txt
           .venv/bin/python -m pip install -q --no-deps --no-build-isolation \
-            -e ./admission -e ./canon -e ./compiler -e ./checker -e ./edge/publisher
+            -e ./admission -e ./canon -e ./compiler -e ./checker -e ./publication -e ./edge/publisher
           PATH="$PWD/.venv/bin:$PATH" contracts/gen-types.sh
       - name: Install Cartouche
         working-directory: cartouche
@@ -76,6 +76,9 @@ jobs:
           PATH="$PWD/rezono/.venv/bin:$PATH" python cartouche/scripts/publish-rezono-slip-stores.py \
             rezono "$RUNNER_TEMP/stores" > "$RUNNER_TEMP/stores.json"
           cat "$RUNNER_TEMP/stores.json"
+          PATH="$PWD/rezono/.venv/bin:$PATH" python cartouche/scripts/publish-rezono-zorgtoeslag-store.py \
+            rezono "$RUNNER_TEMP/zorgtoeslag-store" > "$RUNNER_TEMP/zorgtoeslag-store.json"
+          cat "$RUNNER_TEMP/zorgtoeslag-store.json"
       - name: Record the reader's answers
         working-directory: cartouche
         env:
@@ -85,17 +88,25 @@ jobs:
           mkdir -p "$RUNNER_TEMP/out"
           node scripts/record-rezono-reader.mjs --rezono ../rezono --stores "$RUNNER_TEMP/stores.json" \
             --run "$RUN_URL" --out "$RUNNER_TEMP/out/10-slip-reader-answers.json"
+          node scripts/record-rezono-zorgtoeslag-gate.mjs --rezono ../rezono --store "$RUNNER_TEMP/zorgtoeslag-store.json" \
+            --run "$RUN_URL" --out "$RUNNER_TEMP/out/11-zorgtoeslag-bitemporal-gate-answers.json"
       - name: Compare with the committed fixture
         id: compare
         working-directory: cartouche
         run: |
           set -euo pipefail
-          if node scripts/compare-reader-answers.mjs fixtures/10-slip-reader-answers.json \
+          differs=false
+          if ! node scripts/compare-reader-answers.mjs fixtures/10-slip-reader-answers.json \
                "$RUNNER_TEMP/out/10-slip-reader-answers.json" > "$RUNNER_TEMP/out/diff.md"; then
-            echo "differs=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "differs=true" >> "$GITHUB_OUTPUT"
+            differs=true
           fi
+          if ! node scripts/compare-reader-answers.mjs fixtures/11-zorgtoeslag-bitemporal-gate-answers.json \
+               "$RUNNER_TEMP/out/11-zorgtoeslag-bitemporal-gate-answers.json" > "$RUNNER_TEMP/out/diff-11.md"; then
+            differs=true
+            printf '\n---\n\n' >> "$RUNNER_TEMP/out/diff.md"
+            cat "$RUNNER_TEMP/out/diff-11.md" >> "$RUNNER_TEMP/out/diff.md"
+          fi
+          echo "differs=$differs" >> "$GITHUB_OUTPUT"
           cat "$RUNNER_TEMP/out/diff.md" | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

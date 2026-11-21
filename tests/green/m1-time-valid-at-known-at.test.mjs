@@ -67,7 +67,7 @@ test('M1 [time-valid-at-known-at]: changing known_at switches manifest hash in s
 test('M1 [time-valid-at-known-at]: bitemporal staircase highlights (valid_at, known_at) and reflects both in page URL state', async () => {
   const { html } = await renderSvelte(APP, {
     initialTab: 'bitemporal',
-    initialValidAt: '2026-01-01',
+    initialValidAt: '2026-02-01',
     initialKnownAt: 'm-2'
   });
   const { window: win, document: doc } = parseHtml(html);
@@ -76,11 +76,11 @@ test('M1 [time-valid-at-known-at]: bitemporal staircase highlights (valid_at, kn
     const activeCell = activeCells.find((el) => {
       const k = el.getAttribute(M.key) ?? '';
       const p = el.getAttribute(M.proof_ref) ?? '';
-      return (k.includes('2026-01-01') || p.includes('2026-01-01')) && (k.includes('m-2') || p.includes('m-2'));
+      return (k.includes('2026-02-01') || p.includes('2026-02-01')) && (k.includes('m-2') || p.includes('m-2'));
     });
-    assert.ok(activeCell, 'bitemporal staircase must mark the (2026-01-01, m-2) cell with aria-current="true"');
+    assert.ok(activeCell, 'bitemporal staircase must mark the (2026-02-01, m-2) cell with aria-current="true"');
 
-    const permalink = doc.querySelector('a[href*="valid_at=2026-01-01"][href*="known_at=m-2"]');
+    const permalink = doc.querySelector('a[href*="valid_at=2026-02-01"][href*="known_at=m-2"]');
     assert.ok(permalink, 'page must expose both valid_at and known_at in the page address so a link reproduces the view');
   } finally {
     await win.happyDOM.close();
