@@ -5,13 +5,18 @@
   interface SealCheck { readonly id: string; readonly status: string; readonly label?: string }
 
   // Renders exactly the checks it is given; it never derives or invents a check result.
-  let { seal, checks = [] }: { seal: CartoucheSeal; checks?: readonly SealCheck[] } = $props();
+  // `manifestHash`: the manifest's sha256 as the reader's head gives it (Rezono's seal); else the manifest id.
+  let {
+    seal,
+    checks = [],
+    manifestHash = null
+  }: { seal: CartoucheSeal; checks?: readonly SealCheck[]; manifestHash?: string | null } = $props();
   const M = DATA_MARKS;
 </script>
 
 <section class="slip-seal" aria-label="Verification seal" {...{ [M.part]: 'seal', [M.trust_tier]: seal.trustTier }}>
   <div class="slip-seal-meta">
-    <span class="slip-manifest-hash" {...{ [M.part]: 'manifest-hash' }}>{seal.manifestId}</span>
+    <span class="slip-manifest-hash" {...{ [M.part]: 'manifest-hash' }}>{manifestHash ?? seal.manifestId}</span>
     <span class="slip-seal-tier">{seal.trustTier}</span>
     <span class="slip-seal-role">{seal.role}</span>
   </div>

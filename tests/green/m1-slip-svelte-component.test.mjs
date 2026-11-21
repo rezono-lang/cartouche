@@ -431,7 +431,8 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
   try {
     const sentenceLinks = [...doc.querySelectorAll(`[${DATA_MARKS.part}="sentence"] a[${DATA_MARKS.line}]`)];
     assert.equal(sentenceLinks.length, 2, 'home claim sentence must bind {$i} and {$a} via explicit premise_position');
-    assert.deepEqual(sentenceLinks.map((a) => a.getAttribute(DATA_MARKS.line)), ['2', '2']);
+    // Lines are numbered by their index from 0 (Rezono's marks, decisions/0010-slip-reads-rezono-reader.md).
+    assert.deepEqual(sentenceLinks.map((a) => a.getAttribute(DATA_MARKS.line)), ['1', '1']);
 
     const lines = [...doc.querySelectorAll(`table[${DATA_MARKS.sheet}="slip"] tr[${DATA_MARKS.line}]`)];
     assert.equal(lines.length, 2);
@@ -464,7 +465,7 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
     const links = [...docG.querySelectorAll(`[${DATA_MARKS.part}="sentence"] a[${DATA_MARKS.line}]`)];
     assert.deepEqual(
       links.map((a) => ({ line: a.getAttribute(DATA_MARKS.line), text: a.textContent })),
-      [{ line: '2', text: '2' }],
+      [{ line: '1', text: '2' }],
       'only aggregate/explicit premise_position bindings should emit a[data-line] links'
     );
   } finally {

@@ -6,7 +6,7 @@
   import SlipUnserved from './SlipUnserved.svelte';
   import SlipSweep from './SlipSweep.svelte';
   import SlipValueCell from './SlipValueCell.svelte';
-  import { canFoldStop } from './slip-sweep.ts';
+  import type { SweepStopInput } from './slip-sweep.ts';
   import { isLineVerbDisabled, resolveLineVerbs } from './slip-verbs.ts';
 
   interface UnservedInfo {
@@ -22,81 +22,69 @@
     readonly label?: string;
   }
 
-  interface SentenceBinding {
-    readonly name: string;
-    readonly display: string;
-    readonly premise_position?: number;
-    readonly aggregate?: boolean;
+  // A line of the slip: a premise row of a rule row, or a step of a calculated row (Rezono decisions/viewer-slip.md).
+  interface SlipLine {
+    readonly part?: 'total' | undefined;
+    readonly relation?: string | undefined;
+    readonly key?: readonly string[] | undefined;
+    readonly polarity?: 'positive' | 'negative' | undefined;
+    readonly depth: number;
+    readonly path?: string | undefined;
+    readonly label?: string | undefined;
+    readonly sign?: string | undefined;
+    readonly cell: RawCellInput;
+    readonly answered_verbs?: readonly string[] | undefined;
+    readonly kind?: 'step' | 'constant' | undefined;
   }
 
-  interface SlipGroundLine {
-    readonly part?: 'total';
-    readonly relation: string;
-    readonly key: readonly string[];
-    readonly polarity: 'positive' | 'negative';
-    readonly depth: number;
-    readonly premise_position?: number;
-    readonly sign: string;
-    readonly cell: RawCellInput;
-    readonly answered_verbs?: readonly string[];
-    readonly sweep_name?: string;
-  }
-
-  interface CalcStepLine {
-    readonly path: string;
-    readonly depth: number;
-    readonly sign: string;
-    readonly cell: RawCellInput;
-    readonly kind?: 'step' | 'constant';
+  // The sentence as the build filled it (Rezono's fill.ts): text, and the index of the line a variable links to.
+  interface SentenceSegment {
+    readonly text: string;
+    readonly line?: number | undefined;
   }
 
   interface SlipConformanceRow {
     readonly kind: 'rule' | 'calc';
     readonly rule_id: string;
-    readonly sentence_template?: string;
-    readonly bindings?: readonly SentenceBinding[];
-    readonly grounds_distance_1?: readonly SlipGroundLine[];
-    readonly result_cell?: RawCellInput;
-    readonly steps?: readonly CalcStepLine[];
+    readonly sentence?: readonly SentenceSegment[] | undefined;
+    readonly grounds_distance_1?: readonly SlipLine[] | undefined;
+    readonly result_cell?: RawCellInput | undefined;
+    readonly steps?: readonly SlipLine[] | undefined;
+  }
+
+  interface AnswerCell {
+    readonly text: string;
+    readonly sign?: string | undefined;
   }
 
   interface AnswerTableRow {
-    readonly cells: readonly string[];
-    readonly proof_ref?: string;
-    readonly sign?: string;
+    readonly cells: readonly (string | AnswerCell)[];
+    readonly proof_ref?: string | undefined;
+    readonly sign?: string | undefined;
+    readonly depth?: number | undefined;
   }
 
   interface AnswerTableSpec {
     readonly question: string;
     readonly verb: string;
+    readonly heading?: string | undefined;
     readonly headers: readonly string[];
     readonly rows: readonly AnswerTableRow[];
+    readonly note?: string | undefined;
   }
 
-  interface SweepStopCheck {
-    readonly id: string;
-    readonly status: 'green' | 'warning' | 'red';
-  }
-
-  interface SweepStop {
-    readonly index: number;
-    readonly display: string;
-    readonly status: 'green' | 'warning' | 'red' | 'not_computed' | 'unavailable';
-    readonly turn: 'turns' | 'same' | 'unknown' | null;
-    readonly fold_display: string | null;
-    readonly checks?: readonly SweepStopCheck[];
+  // The published stops of one sweep, on the line of the cell it moves (built from the reader's answers).
+  interface LineSweep {
+    readonly line: number;
+    readonly name: string;
+    readonly unavailable: boolean;
+    readonly note?: string | undefined;
+    readonly stops: readonly SweepStopInput[];
   }
 
   interface HorizonInfo {
     readonly complete: boolean;
     readonly reason: string | null;
-  }
-
-  interface SentenceSegment {
-    readonly kind: 'text' | 'link';
-    readonly text: string;
-    readonly lineNum?: number;
-    readonly proofRef?: string;
   }
 
   interface Props {
@@ -111,7 +99,12 @@
     availableVerbs?: readonly string[] | null;
     conformanceRow?: SlipConformanceRow | null;
     openAnswers?: readonly AnswerTableSpec[];
-    sweepStops?: readonly SweepStop[];
+    answers?: Readonly<Record<string, AnswerTableSpec>>;
+    openAnswer?: string | null;
+    manifestHash?: string | null;
+    signsLeftOut?: readonly string[];
+    sweeps?: readonly LineSweep[];
+    openSweepLine?: number | null;
     selectedStopIndex?: number | null;
     onVerbSelect?: (verb: VerbKey, spec: StdVerbSpec) => void;
     onStopSelect?: (stopIndex: number) => void;
@@ -129,7 +122,12 @@
     availableVerbs = null,
     conformanceRow = null,
     openAnswers = [],
-    sweepStops = [],
+    answers = {},
+    openAnswer = null,
+    manifestHash = null,
+    signsLeftOut = [],
+    sweeps = [],
+    openSweepLine = null,
     selectedStopIndex = null,
     onVerbSelect,
     onStopSelect
@@ -137,12 +135,19 @@
 
   let selectedVerb = $state<VerbKey | null>(null);
   let chosenStop = $state<number | null>(null);
+  let toggledSweepLine = $state<number | null | undefined>(undefined);
+  let toggledAnswer = $state<string | null | undefined>(undefined);
 
   let resolvedTheme = $derived<PaletteName>(theme in PALETTES ? theme : 'swisstopo');
   let themeCssText = $derived(paletteCss(resolvedTheme));
   let isUnserved = $derived(unserved !== null || httpStatus === 410);
   let currentVerb = $derived<VerbKey>(selectedVerb ?? activeVerb ?? model?.activeVerb ?? 'w');
   let activeStopIndex = $derived<number | null>(chosenStop ?? selectedStopIndex ?? null);
+  // A click or key on the page wins over the start state the build asked for.
+  let currentSweepLine = $derived<number | null>(toggledSweepLine === undefined ? openSweepLine : toggledSweepLine);
+  let currentAnswerKey = $derived<string | null>(toggledAnswer === undefined ? openAnswer : toggledAnswer);
+  let lineAnswer = $derived<AnswerTableSpec | null>(currentAnswerKey === null ? null : (answers[currentAnswerKey] ?? null));
+  let shownAnswers = $derived<readonly AnswerTableSpec[]>(lineAnswer ? [...openAnswers, lineAnswer] : openAnswers);
 
   let trustTier = $derived<TrustTier | undefined>(seal?.trustTier);
   let proposeAllowed = $derived(
@@ -171,68 +176,29 @@
     return STD_VERBS.filter((spec) => allowed.has(spec.verb) || allowed.has(spec.question));
   });
 
-  let groundsList = $derived<readonly SlipGroundLine[]>(conformanceRow?.grounds_distance_1 ?? []);
-  let calcSteps = $derived<readonly CalcStepLine[]>(
+  let groundsList = $derived<readonly SlipLine[]>(conformanceRow?.grounds_distance_1 ?? []);
+  let calcSteps = $derived<readonly SlipLine[]>(
     (conformanceRow?.steps ?? []).filter((step) => step.kind !== 'constant')
   );
+  // Lines are numbered by their index from 0 in the slip (Rezono's marks, Decision 0009).
+  let slipLines = $derived<readonly SlipLine[]>(conformanceRow?.kind === 'calc' ? calcSteps : groundsList);
+  let sentence = $derived<readonly SentenceSegment[]>(conformanceRow?.sentence ?? []);
 
-  let activeSweepStop = $derived.by((): SweepStop | null => {
-    if (activeStopIndex === null) return null;
-    return sweepStops.find((st) => st.index === activeStopIndex) ?? null;
-  });
-
-  function resolveBindingTarget(binding: SentenceBinding, grounds: readonly SlipGroundLine[]): { lineNum: number; proofRef: string } | null {
-    if (grounds.length === 0) return null;
-    if (binding.aggregate === true) {
-      const aggIdx = grounds.findIndex((g) => g.part === 'total');
-      if (aggIdx >= 0) {
-        const match = grounds[aggIdx];
-        if (match) return { lineNum: aggIdx + 1, proofRef: match.cell.proof_ref };
-      }
-    }
-    if (binding.premise_position !== undefined) {
-      const explicitIdx = grounds.findIndex((g) => g.premise_position === binding.premise_position);
-      if (explicitIdx >= 0) {
-        const match = grounds[explicitIdx];
-        if (match) return { lineNum: explicitIdx + 1, proofRef: match.cell.proof_ref };
-      }
-    }
-    return null;
+  function sweepForLine(lineIdx: number): LineSweep | null {
+    return sweeps.find((sw) => sw.line === lineIdx) ?? null;
   }
 
-  let sentenceSegments = $derived.by((): readonly SentenceSegment[] => {
-    if (!conformanceRow || conformanceRow.kind !== 'rule') return [];
-    const template = conformanceRow.sentence_template ?? conformanceRow.rule_id;
-    const bindings = conformanceRow.bindings ?? [];
-    const parts = template.split(/(\{\$[a-zA-Z0-9_]+\})/g);
-    const out: SentenceSegment[] = [];
-    for (const part of parts) {
-      if (!part) continue;
-      const match = /^\{\$([a-zA-Z0-9_]+)\}$/.exec(part);
-      if (match) {
-        const bindingName = match[1];
-        const binding = bindings.find((b) => b.name === bindingName);
-        if (binding) {
-          const target = resolveBindingTarget(binding, groundsList);
-          if (target) {
-            out.push({
-              kind: 'link',
-              text: binding.display,
-              lineNum: target.lineNum,
-              proofRef: target.proofRef
-            });
-            continue;
-          }
-          out.push({ kind: 'text', text: binding.display });
-          continue;
-        }
-      }
-      out.push({ kind: 'text', text: part });
-    }
-    return out;
-  });
+  // The fold of a line: the cell the selected stop's variant gives it, as built from the published difference.
+  // A stop without a variant (red, not computed, unavailable) has no fold.
+  function foldForLine(lineIdx: number): RawCellInput | null {
+    if (currentSweepLine === null || activeStopIndex === null) return null;
+    const sweep = sweepForLine(currentSweepLine);
+    const stop = sweep?.stops.find((st) => st.index === activeStopIndex);
+    if (!stop || (stop.status !== 'green' && stop.status !== 'warning')) return null;
+    return stop.folds?.find((fold) => fold.line === lineIdx)?.cell ?? null;
+  }
 
-  function verbsForLine(line: SlipGroundLine): readonly StdVerbSpec[] {
+  function verbsForLine(line: SlipLine): readonly StdVerbSpec[] {
     return resolveLineVerbs(line.answered_verbs);
   }
 
@@ -256,22 +222,18 @@
     };
 
     if (conformanceRow) {
-      if (conformanceRow.kind === 'rule') {
-        for (const line of groundsList) {
-          addSign(line.sign);
-          if (line.cell.state !== 'known') {
-            addSign(line.cell.state);
-          }
+      if (conformanceRow.kind === 'calc' && conformanceRow.result_cell && conformanceRow.result_cell.state !== 'known') {
+        addSign(conformanceRow.result_cell.state);
+      }
+      for (const [idx, line] of slipLines.entries()) {
+        addSign(line.sign);
+        if (line.cell.state !== 'known') {
+          addSign(line.cell.state);
         }
-      } else {
-        if (conformanceRow.result_cell && conformanceRow.result_cell.state !== 'known') {
-          addSign(conformanceRow.result_cell.state);
-        }
-        for (const step of calcSteps) {
-          addSign(step.sign);
-          if (step.cell.state !== 'known') {
-            addSign(step.cell.state);
-          }
+        const fold = foldForLine(idx);
+        if (fold !== null) {
+          addSign('supposed');
+          if (fold.state !== 'known') addSign(fold.state);
         }
       }
     } else if (model) {
@@ -282,9 +244,12 @@
       addSign('supposed');
     }
 
-    for (const ans of openAnswers) {
+    for (const ans of shownAnswers) {
       for (const row of ans.rows) {
         if (row.sign) addSign(row.sign);
+        for (const cell of row.cells) {
+          if (typeof cell !== 'string') addSign(cell.sign);
+        }
       }
     }
 
@@ -301,13 +266,68 @@
     if (onVerbSelect) onVerbSelect(spec.key, spec);
   }
 
+  // A verb on a line: suppose opens that line's sweep control; another verb opens the answer the build
+  // prepared for that line, if the reader answered it.
+  function activateLineVerb(lineIdx: number, spec: StdVerbSpec): void {
+    if (isLineVerbDisabled(spec, proposeAllowed)) return;
+    if (spec.verb === 'suppose' && sweepForLine(lineIdx) !== null) {
+      toggledSweepLine = currentSweepLine === lineIdx ? null : lineIdx;
+      chosenStop = null;
+      return;
+    }
+    const answerKey = `${lineIdx}:${spec.verb}`;
+    if (answers[answerKey]) toggledAnswer = currentAnswerKey === answerKey ? null : answerKey;
+    activateVerb(spec);
+  }
+
+  function stepStop(direction: 'next' | 'previous'): boolean {
+    const sweep = currentSweepLine === null ? null : sweepForLine(currentSweepLine);
+    if (sweep === null || sweep.stops.length === 0) return false;
+    const stops = sweep.stops;
+    const at = activeStopIndex === null ? -1 : stops.findIndex((st) => st.index === activeStopIndex);
+    const lastPos = stops.length - 1;
+    let nextPos: number;
+    if (direction === 'next') nextPos = at < 0 ? 0 : at === lastPos ? lastPos : at + 1;
+    else nextPos = at < 0 ? lastPos : at === 0 ? 0 : at - 1;
+    const stop = stops[nextPos];
+    if (stop) selectStop(stop.index);
+    return true;
+  }
+
+  function handleLineKeydown(event: KeyboardEvent, lineIdx: number, line: SlipLine): void {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if ((event.key === 'ArrowRight' || event.key === 'ArrowLeft') && currentSweepLine === lineIdx) {
+      if (stepStop(event.key === 'ArrowRight' ? 'next' : 'previous')) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      return;
+    }
+    const spec = verbsForLine(line).find((v) => v.key === event.key.toLowerCase());
+    if (!spec) return;
+    event.preventDefault();
+    event.stopPropagation();
+    activateLineVerb(lineIdx, spec);
+  }
+
   function handleKeydown(event: KeyboardEvent): void {
     if (isUnserved) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     const target = event.target as HTMLElement | null;
     const tag = target?.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if ((event.key === 'ArrowRight' || event.key === 'ArrowLeft') && stepStop(event.key === 'ArrowRight' ? 'next' : 'previous')) {
+      event.preventDefault();
+      return;
+    }
     const pressed = event.key.toLowerCase();
+    const firstSweep = sweeps[0];
+    if (firstSweep && STD_VERBS.some((v) => v.verb === 'suppose' && v.key === pressed)) {
+      event.preventDefault();
+      toggledSweepLine = currentSweepLine === null ? firstSweep.line : null;
+      chosenStop = null;
+      return;
+    }
     const spec = visibleVerbs.find((v) => v.key === pressed);
     if (!spec) return;
     event.preventDefault();
@@ -339,7 +359,7 @@
     <SlipUnserved {unserved} {httpStatus} />
   {:else}
     {#if seal}
-      <SlipSeal {seal} checks={effectiveSealChecks} />
+      <SlipSeal {seal} checks={effectiveSealChecks} {manifestHash} />
     {/if}
 
     {#if horizon && !horizon.complete}
@@ -409,54 +429,74 @@
       </nav>
     {/if}
 
-    {#if conformanceRow && conformanceRow.kind === 'rule'}
-      <div class="slip-sentence" data-part="sentence">
-        {#each sentenceSegments as seg, segIdx (segIdx)}
-          {#if seg.kind === 'link' && seg.lineNum !== undefined}
-            <a
-              href={`#slip-line-${seg.lineNum}`}
-              data-line={String(seg.lineNum)}
-              data-proof-ref={seg.proofRef}
-            >{seg.text}</a>
-          {:else}
-            <span>{seg.text}</span>
-          {/if}
-        {/each}
-      </div>
+    {#if conformanceRow}
+      {#if sentence.length > 0}
+        <div class="slip-sentence" data-part="sentence">
+          {#each sentence as seg, segIdx (segIdx)}
+            {#if seg.line !== undefined && slipLines[seg.line]}
+              <a
+                href={`#slip-line-${seg.line}`}
+                data-line={String(seg.line)}
+                data-proof-ref={slipLines[seg.line]?.cell.proof_ref}
+              >{seg.text}</a>
+            {:else}
+              <span>{seg.text}</span>
+            {/if}
+          {/each}
+        </div>
+      {/if}
 
-      <table class="slip-table" data-sheet="slip" aria-label="Rule proof slip">
+      <table
+        class="slip-table"
+        data-sheet="slip"
+        aria-label={conformanceRow.kind === 'calc' ? 'Calculation proof slip' : 'Rule proof slip'}
+      >
         <thead>
           <tr>
             <th scope="col">Line</th>
             <th scope="col">Sign</th>
-            <th scope="col">Relation</th>
+            <th scope="col">{conformanceRow.kind === 'calc' ? 'Step' : 'Relation'}</th>
             <th scope="col">Value</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {#each groundsList as line, idx (idx)}
-            {@const lineNum = idx + 1}
+          {#if conformanceRow.kind === 'calc' && conformanceRow.result_cell}
+            <tr data-proof-ref={conformanceRow.result_cell.proof_ref}>
+              <td></td>
+              <td></td>
+              <td>{conformanceRow.rule_id}</td>
+              <SlipValueCell cell={conformanceRow.result_cell} />
+              <td></td>
+            </tr>
+          {/if}
+          {#each slipLines as line, idx (idx)}
             {@const lineVerbs = verbsForLine(line)}
-            {@const folded = line.sweep_name !== undefined && canFoldStop(activeSweepStop)}
+            {@const lineSweep = sweepForLine(idx)}
+            {@const sweepOpen = lineSweep !== null && currentSweepLine === idx}
             <tr
-              id={`slip-line-${lineNum}`}
-              data-line={String(lineNum)}
+              id={`slip-line-${idx}`}
+              tabindex="0"
+              data-line={String(idx)}
               data-part={line.part}
               data-relation={line.relation}
-              data-key={canonicalJson(line.key)}
+              data-key={line.key ? canonicalJson(line.key) : undefined}
               data-polarity={line.polarity}
               data-depth={String(line.depth)}
+              data-path={line.path}
               data-proof-ref={line.cell.proof_ref}
+              onkeydown={(event) => handleLineKeydown(event, idx, line)}
             >
-              <td>{lineNum}</td>
+              <td>{idx}</td>
               <td>
-                <span class="cartouche-sign" role="img" aria-label={line.sign} data-sign={line.sign} data-proof-ref={line.cell.proof_ref}>
-                  <span aria-hidden="true">{glyphForSign(line.sign)}</span>
-                </span>
+                {#if line.sign}
+                  <span class="cartouche-sign" role="img" aria-label={line.sign} data-sign={line.sign} data-proof-ref={line.cell.proof_ref}>
+                    <span aria-hidden="true">{glyphForSign(line.sign)}</span>
+                  </span>
+                {/if}
               </td>
-              <td>{line.relation}</td>
-              <SlipValueCell cell={line.cell} fold={folded ? (activeSweepStop?.fold_display ?? null) : null} />
+              <td>{line.label ?? line.relation ?? line.path}</td>
+              <SlipValueCell cell={line.cell} fold={foldForLine(idx)} />
               <td>
                 {#each lineVerbs as spec (spec.verb)}
                   {@const lineLocked = isLineVerbDisabled(spec, proposeAllowed)}
@@ -466,48 +506,24 @@
                     data-key={spec.key}
                     data-proof-ref={line.cell.proof_ref}
                     aria-disabled={lineLocked ? 'true' : undefined}
+                    aria-expanded={spec.verb === 'suppose' && lineSweep !== null ? (sweepOpen ? 'true' : 'false') : undefined}
                     disabled={lineLocked}
-                    onclick={() => activateVerb(spec)}
+                    onclick={() => activateLineVerb(idx, spec)}
                   >
                     <kbd>{spec.key.toUpperCase()}</kbd>
                     <span>{spec.verb}</span>
                   </button>
                 {/each}
+                {#if sweepOpen && lineSweep}
+                  <SlipSweep
+                    stops={lineSweep.stops}
+                    name={lineSweep.name}
+                    note={lineSweep.unavailable ? (lineSweep.note ?? 'Unavailable: this role does not read every relation in full.') : null}
+                    activeIndex={activeStopIndex}
+                    onSelect={selectStop}
+                  />
+                {/if}
               </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    {:else if conformanceRow && conformanceRow.kind === 'calc'}
-      <table class="slip-table" data-sheet="slip" aria-label="Calculation proof slip">
-        <thead>
-          <tr>
-            <th scope="col">Step</th>
-            <th scope="col">Sign</th>
-            <th scope="col">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#if conformanceRow.result_cell}
-            <tr data-proof-ref={conformanceRow.result_cell.proof_ref}>
-              <td>{conformanceRow.sentence_template ?? conformanceRow.rule_id}</td>
-              <td></td>
-              <SlipValueCell cell={conformanceRow.result_cell} />
-            </tr>
-          {/if}
-          {#each calcSteps as step (step.path)}
-            <tr
-              data-path={step.path}
-              data-depth={String(step.depth)}
-              data-proof-ref={step.cell.proof_ref}
-            >
-              <td>{step.path}</td>
-              <td>
-                <span class="cartouche-sign" role="img" aria-label={step.sign} data-sign={step.sign} data-proof-ref={step.cell.proof_ref}>
-                  <span aria-hidden="true">{glyphForSign(step.sign)}</span>
-                </span>
-              </td>
-              <SlipValueCell cell={step.cell} />
             </tr>
           {/each}
         </tbody>
@@ -524,15 +540,15 @@
         </thead>
         <tbody>
           <tr
-            id="slip-line-1"
-            data-line="1"
+            id="slip-line-0"
+            data-line="0"
             data-relation="subject"
             data-key={canonicalJson([model.subjectId])}
             data-polarity="positive"
             data-depth="0"
             data-proof-ref={model.proofRef}
           >
-            <td>1</td>
+            <td>0</td>
             <td>
               <span class="cartouche-sign" role="img" aria-label="derived" data-sign="derived" data-proof-ref={model.proofRef}>
                 <span aria-hidden="true">{glyphForSign('derived')}</span>
@@ -605,35 +621,48 @@
       </section>
     {/if}
 
-    <SlipSweep stops={sweepStops} activeIndex={activeStopIndex} onSelect={selectStop} />
-
-    {#each openAnswers as answer (answer.question)}
-      <table class="slip-answer-table" data-answer={answer.question} aria-label={`Answer ${answer.question}`}>
+    {#each shownAnswers as answer, answerIdx (answerIdx)}
+      <table class="slip-answer-table" data-answer={answer.question} aria-label={answer.heading ?? `Answer ${answer.question}`}>
+        {#if answer.heading}<caption>{answer.heading}</caption>{/if}
         <thead>
           <tr>
-            {#each answer.headers as heading (heading)}
+            {#each answer.headers as heading, hIdx (hIdx)}
               <th scope="col">{heading}</th>
             {/each}
           </tr>
         </thead>
         <tbody>
           {#each answer.rows as ansRow, rowIdx (rowIdx)}
-            <tr data-proof-ref={ansRow.proof_ref}>
-              {#each ansRow.cells as cellText, colIdx (colIdx)}
+            <tr data-proof-ref={ansRow.proof_ref} data-depth={ansRow.depth === undefined ? undefined : String(ansRow.depth)}>
+              {#each ansRow.cells as cell, colIdx (colIdx)}
                 <td>
                   {#if colIdx === 0 && ansRow.sign && ansRow.proof_ref}
                     <span class="cartouche-sign" role="img" aria-label={ansRow.sign} data-sign={ansRow.sign} data-proof-ref={ansRow.proof_ref}>
                       <span aria-hidden="true">{glyphForSign(ansRow.sign)}</span>
                     </span>
                   {/if}
-                  {cellText}
+                  {#if typeof cell === 'string'}
+                    {cell}
+                  {:else}
+                    {#if cell.sign}
+                      <span class="cartouche-sign" role="img" aria-label={cell.sign} data-sign={cell.sign}>
+                        <span aria-hidden="true">{glyphForSign(cell.sign)}</span>
+                      </span>
+                    {/if}
+                    {cell.text}
+                  {/if}
                 </td>
               {/each}
             </tr>
           {/each}
         </tbody>
       </table>
+      {#if answer.note}<p class="slip-answer-note">{answer.note}</p>{/if}
     {/each}
+
+    {#if signsLeftOut.length > 0}
+      <p class="slip-signs-left-out">Signs not in this key, not drawn: {signsLeftOut.join(', ')}</p>
+    {/if}
 
     {#if drawnSigns.length > 0}
       <table class="slip-legend" data-part="legend" aria-label="Sign legend">
@@ -678,6 +707,13 @@
   .slip-verb-btn[disabled] {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+  td del {
+    margin-right: 0.35rem;
+  }
+  td ins {
+    text-decoration: none;
+    font-weight: 600;
   }
   .slip-table,
   .slip-legend,
