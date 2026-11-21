@@ -5,16 +5,7 @@ import path from 'node:path';
 import { DATA_MARKS as M } from '../../packages/reader-core/src/index.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'No mark borrows another mark proof reference: same ref means same data-key, a drift mark never uses a side ref as its own, and within one svg two separate status marks never share a ref (live round, Monge round dots, drift fallback; issue #23 §1)',
-  waits_on: []
-};
-
-// Decision 0012 §2 (6e), issue #23 §1: a drift edge falls back to its stated ref, a live round uses its first
-// change's ref, and Monge round dots use the service's ref. #30 and #33 fixed those three; the relief sheet still
-// gives one conclusion two keys (A003 and curtain:A003), which this test reads as one ref used by two marks. Each mark carries the witness of its own conclusion. Where
+// Decision 0012 §2 (6e), issue #23 §1: each mark carries the witness of its own conclusion. Where
 // the source publishes none, the element leaves data-proof-ref off (and is not a link, see m1-mark-opens-slip), or
 // the mark is not drawn; it never takes another mark's ref. A mark's data-key names its own conclusion, without a
 // prefix such as "curtain:" that makes one conclusion look like two.
@@ -29,6 +20,7 @@ const SHEETS = [
   { name: 'flow-split 02', file: 'FlowSplitSheet.svelte', props: () => ({ fixture: fx('02-platform-tenant-a.json') }) },
   { name: 'kringstand 03', file: 'KringstandSheet.svelte', props: () => ({ fixture: fx('03-kring-m1-to-m5-live.json') }) },
   { name: 'relief-3d 04', file: 'StatutoryRelief3D.svelte', props: () => ({ fixture: fx('04-subsidy-a001-a003.json') }) },
+  { name: 'relief-3d 04 (2d profile)', file: 'StatutoryRelief3D.svelte', props: () => ({ fixture: fx('04-subsidy-a001-a003.json'), projection: '2d' }) },
   { name: 'bitemporal-stair 05', file: 'BitemporalStairSheet.svelte', props: () => ({ fixture: fx('05-subsidy-bitemporal.json') }) },
   { name: 'causal-ripple 06', file: 'CausalRippleSheet.svelte', props: () => ({ fixture: fx('06-keycloak-dense-28.json') }) },
   { name: 'monge-fold 08 at 0°', file: 'MongeFoldingSheet.svelte', props: () => ({ fixture: fx('08-monge-4d-audit.json'), foldAngleDeg: 0 }) }
