@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,7 +18,7 @@ test('M1: Sheet 03 renders 5 board lanes, separate unknown strip, round chronome
   const { html, window: win, document: doc } = await mount(fixture);
   try {
     const lanes = [...doc.querySelectorAll(`[${M.part}="lane"]`)].map((n) => n.getAttribute(M.key));
-    assert.deepEqual(lanes, ['needed', 'waiting', 'ready', 'done', 'absent']);
+    assert.deepEqual(lanes, ['needed', 'waiting', 'ready', 'done', 'stuck', 'absent']);
 
     // Unknown lives only in its own strip, never in a lane, never with digits.
     const strip = doc.querySelector(`[${M.part}="unknown-strip"]`);
@@ -65,6 +65,27 @@ test('M1: Sheet 03 unlocks [P] only when sealed and green', async () => {
     assert.equal(doc.querySelector(`button[${M.verb}="propose"]`).hasAttribute('disabled'), false);
     assert.equal(doc.querySelector('section.kring').getAttribute(M.trust_tier), 'sealed');
     assert.equal(doc.querySelectorAll(`[${M.part}="round"]`).length, 4);
+  } finally {
+    await win.happyDOM.close();
+  }
+  assert.deepEqual(await auditA11y(html), []);
+});
+
+test('M1: Sheet 03 drops no row: stuck lane renders, live unknown rows go to the hatched strip', async () => {
+  const fx = structuredClone(fixture);
+  fx.sealed_rows.push({ key: 'step:s1', lane: 'stuck', label: 'stuck-one', sign: 'observation', state: 'violated', proof_ref: 'round:m-4#stuck-1' });
+  fx.sealed_rows.push({ key: 'step:u2', lane: 'unknown', label: 'unk-sealed', sign: 'derived', state: 'unknown', reason: 'r_a', proof_ref: 'round:m-4#unk-2' });
+  fx.live_provisional_delta.changes.push({ weight: 1, row: { key: 'step:u3', lane: 'ready', label: 'unk-live', sign: 'derived', state: 'unknown', reason: 'r_b', proof_ref: 'stream:u3' } });
+  const { html, window: win, document: doc } = await mount(fx);
+  try {
+    const total = fx.sealed_rows.length + fx.live_provisional_delta.changes.length;
+    assert.equal(doc.querySelectorAll(`[${M.part}="card"], [${M.part}="unknown"]`).length, total);
+    assert.equal(doc.querySelectorAll(`[${M.part}="lane"][${M.key}="stuck"] [${M.part}="card"]`).length, 1);
+    const strip = doc.querySelector(`[${M.part}="unknown-strip"]`);
+    assert.equal(strip.querySelectorAll(`[${M.part}="unknown"]`).length, 3);
+    assert.equal(/[0-9]/.test(strip.textContent), false);
+    assert.equal(strip.querySelector(`[${M.key}="step:u3"]`).getAttribute(M.trust_tier), 'provisional_engine');
+    assert.equal(doc.querySelectorAll(`[${M.part}="lane"] [${M.state}="unknown"]`).length, 0);
   } finally {
     await win.happyDOM.close();
   }

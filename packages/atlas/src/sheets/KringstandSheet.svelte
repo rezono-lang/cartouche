@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
   import { DATA_MARKS, SIGNS, STD_VERBS } from '../../../reader-core/src/index.ts';
 
   interface Row {
@@ -27,7 +27,7 @@
 
   let { fixture }: { fixture: Fixture } = $props();
 
-  const BOARD_LANES = ['needed', 'waiting', 'ready', 'done', 'absent'];
+  const BOARD_LANES = ['needed', 'waiting', 'ready', 'done', 'stuck', 'absent'];
   const M = DATA_MARKS;
 
   let live = $derived(fixture.live_provisional_delta ?? null);
@@ -37,16 +37,19 @@
     sealedOk ? null : tier === 'provisional_engine' ? 'propose_locked_unsealed_live_stream' : 'propose_locked_not_sealed'
   );
   let liveRows = $derived(live ? live.changes.map((c) => c.row) : []);
-  let unknownRows = $derived(fixture.sealed_rows.filter((r) => r.state === 'unknown'));
   let allRows = $derived([...fixture.sealed_rows, ...liveRows]);
+  function isUnknown(r: Row): boolean {
+    return r.state === 'unknown' || r.lane === 'unknown';
+  }
+  let unknownRows = $derived(allRows.filter(isUnknown));
   let drawnSigns = $derived(
-    [...new Set([...allRows.map((r) => (r.state === 'unknown' || r.state === 'absent' ? r.state : r.sign))])]
+    [...new Set([...allRows.map((r) => (isUnknown(r) ? 'unknown' : r.state === 'absent' ? 'absent' : r.sign))])]
   );
   function laneRows(lane: string): Row[] {
-    return fixture.sealed_rows.filter((r) => r.lane === lane && r.state !== 'unknown');
+    return fixture.sealed_rows.filter((r) => r.lane === lane && !isUnknown(r));
   }
   function liveLane(lane: string): Row[] {
-    return liveRows.filter((r) => r.lane === lane);
+    return liveRows.filter((r) => r.lane === lane && !isUnknown(r));
   }
   function glyph(s: string): string {
     return SIGNS[s]?.glyph ?? SIGNS.derived.glyph;
@@ -72,6 +75,7 @@
       </li>
     {/each}
     {#if live}
+      <!-- A live round has no certificate; its proof is the first stream change. -->
       <li
         {...{ [M.part]: 'round', [M.key]: live.round_id, [M.status]: 'unsealed', [M.trust_tier]: live.trust_tier, [M.proof_ref]: liveRows[0]?.proof_ref ?? live.round_id }}
       >
@@ -111,9 +115,9 @@
       {#each unknownRows as r}
         <li
           class="hatched"
-          {...{ [M.part]: 'unknown', [M.key]: r.key, [M.sign]: 'unknown', [M.state]: 'unknown', [M.reason]: r.reason, [M.proof_ref]: r.proof_ref }}
+          {...{ [M.part]: 'unknown', [M.key]: r.key, [M.sign]: 'unknown', [M.state]: 'unknown', [M.reason]: r.reason, [M.proof_ref]: r.proof_ref, [M.trust_tier]: liveRows.includes(r) ? tier : 'sealed' }}
         >
-          <span aria-hidden="true">{glyph('unknown')}</span> <span>{r.reason}</span>
+          <span aria-hidden="true">{glyph('unknown')}</span> <span>{r.reason ?? ''}</span>
         </li>
       {/each}
     </ul>
