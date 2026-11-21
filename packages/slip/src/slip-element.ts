@@ -33,6 +33,7 @@ export interface UnservedInfo {
   readonly superseded_by?: string | null | undefined;
   readonly reason_message_id: string;
   readonly withdrawn_by_decision_ref?: string | null | undefined;
+  readonly withdrawn_at?: string | null | undefined;
 }
 
 export interface SealCheckItem {
