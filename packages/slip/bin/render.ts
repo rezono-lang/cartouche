@@ -121,6 +121,7 @@ interface SlipFixturePayload {
   readonly manifest?: ManifestMeta;
   readonly horizon?: { readonly complete: boolean; readonly reason: string | null };
   readonly slip_enrichment?: {
+    readonly proof_ref?: string | null;
     readonly prism_5: readonly PrismSpectrum[];
     readonly missing_levers: readonly MissingLever[];
     readonly adjacent_worlds_delta1: readonly AdjacentWorldHop[];
@@ -601,7 +602,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
   if (!model && payload?.slip_enrichment && seal) {
     model = createSlipModel({
       subjectId: payload.fixture_id ?? 'subject',
-      proofRef: seal.manifestId,
+      proofRef: payload.slip_enrichment.proof_ref ?? null,
       seal,
       activeVerb: request.activeVerb ?? 'w',
       prism5: payload.slip_enrichment.prism_5,

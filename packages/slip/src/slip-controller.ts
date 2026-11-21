@@ -33,7 +33,7 @@ export interface AdjacentWorldHop {
 
 export interface SlipModel {
   readonly subjectId: string;
-  readonly proofRef: string;
+  readonly proofRef: string | null;
   readonly activeVerb: VerbKey;
   readonly proposeAllowed: boolean;
   readonly proposeBlockedReason: string | null;
@@ -44,7 +44,7 @@ export interface SlipModel {
 
 export function createSlipModel(input: {
   readonly subjectId: string;
-  readonly proofRef: string;
+  readonly proofRef?: string | null;
   readonly seal: CartoucheSeal;
   readonly activeVerb?: VerbKey;
   readonly prism5: readonly PrismSpectrum[];
@@ -65,7 +65,7 @@ export function createSlipModel(input: {
 
   return Object.freeze({
     subjectId: input.subjectId,
-    proofRef: input.proofRef,
+    proofRef: input.proofRef ?? null,
     activeVerb: input.activeVerb ?? 'w',
     proposeAllowed,
     proposeBlockedReason,
