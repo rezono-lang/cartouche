@@ -144,7 +144,13 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'desk.col_value': 'Value',
     'desk.col_slip': 'Slip',
     'desk.open_slip': 'Open slip',
-    'desk.unknown_because': 'Unknown, because {$reason}'
+    'desk.unknown_because': 'Unknown, because {$reason}',
+    'kits.suppose_toggle': 'Suppose variant',
+    'kits.open_slip': 'Open slip',
+    'kits.turning_point': 'Turning point',
+    'kits.col_conclusion': 'Conclusion',
+    'kits.col_value': 'Value',
+    'kits.col_slip': 'Slip'
   }),
   nl: Object.freeze({
     'sheet.relief.title': 'Orthografisch Reliëf',
@@ -282,7 +288,13 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'desk.col_value': 'Waarde',
     'desk.col_slip': 'Strook',
     'desk.open_slip': 'Open strook',
-    'desk.unknown_because': 'Onbekend, omdat {$reason}'
+    'desk.unknown_because': 'Onbekend, omdat {$reason}',
+    'kits.suppose_toggle': 'Stel variant',
+    'kits.open_slip': 'Open strook',
+    'kits.turning_point': 'Omslagpunt',
+    'kits.col_conclusion': 'Conclusie',
+    'kits.col_value': 'Waarde',
+    'kits.col_slip': 'Strook'
   })
 });
 
