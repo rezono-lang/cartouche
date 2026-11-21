@@ -1,6 +1,6 @@
 {
   "rezono_repo": "https://github.com/rezono-lang/rezono",
-  "pinned_commit": "467de7f9e597d2b91b3005167fced453e35fc7ab",
+  "pinned_commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
   "contract_version": "0.1.0-day0",
   "std_view_pack": "packs/std-view",
   "std_loop_pack": "packs/std-loop",

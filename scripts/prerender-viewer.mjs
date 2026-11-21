@@ -7,7 +7,6 @@
  * golden fixture JSON files.
  */
 
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -19,6 +18,7 @@ import { compileKringstandScene } from '../packages/scene-ir/src/compile-kringst
 import { compileCausalRippleScene } from '../packages/scene-ir/src/compile-causal-ripple.ts';
 import { compileBitemporalScene } from '../packages/scene-ir/src/compile-bitemporal.ts';
 import { exportTypst } from '../packages/scene-ir/src/typst-export.ts';
+import { buildBitemporalFixtureFromGateAnswers } from '../packages/atlas/src/bitemporal-gate.ts';
 import { render as renderSlip } from '../packages/slip/bin/render.ts';
 import { renderSvelte } from './svelte-test-harness.mjs';
 
@@ -44,9 +44,19 @@ const fx01 = loadJson('fixtures/01-platform-drift.json');
 const fx02 = loadJson('fixtures/02-platform-tenant-a.json');
 const fx03 = loadJson('fixtures/03-kring-m1-to-m5-live.json');
 const fx04 = loadJson('fixtures/04-subsidy-a001-a003.json');
-const fx05 = loadJson('fixtures/05-subsidy-bitemporal.json');
+const fx11 = loadJson('fixtures/11-zorgtoeslag-bitemporal-gate-answers.json');
 const fx06 = loadJson('fixtures/06-keycloak-dense-28.json');
 const fx08 = loadJson('fixtures/08-monge-4d-audit.json');
+
+const GATE_PACK = 'zorgtoeslag-slice';
+const GATE_ROLE = 'checker';
+const GATE_SUBJECT = 'ann';
+const fx11Default = buildBitemporalFixtureFromGateAnswers(fx11, {
+  pack: GATE_PACK,
+  role: GATE_ROLE,
+  subjectId: GATE_SUBJECT,
+  validTime: '2026-02-01'
+});
 
 const PALETTES = ['swisstopo', 'obsidian', 'forced'];
 const LOCALES = ['en', 'nl'];
@@ -95,7 +105,7 @@ for (const theme of PALETTES) {
     theme
   });
   sheetsHtml.bitemporal[theme] = await renderSheetHtml(sheetPath('BitemporalStairSheet.svelte'), {
-    fixture: fx05,
+    fixture: fx11Default,
     theme
   });
   sheetsHtml.monge[theme] = await renderSheetHtml(sheetPath('MongeFoldingSheet.svelte'), {
@@ -142,29 +152,35 @@ const typst = {
   }),
   kringstand: exportTypst(compileKringstandScene(fx03), { title: 'Sheet 03 — Kringstand' }),
   ripple: exportTypst(compileCausalRippleScene(fx06), { title: 'Sheet 04 — Causal Ripple' }),
-  bitemporal: exportTypst(compileBitemporalScene(fx05), { title: 'Sheet 05 — Bitemporal Staircase' }),
+  bitemporal: exportTypst(compileBitemporalScene(fx11Default), { title: 'Sheet 05 — Bitemporal Staircase' }),
   monge: exportTypst(compileMongeScene(fx08), {
     title: 'Sheet 06 — Monge Folding Atlas',
     reasonByNodeId: collectReasons(fx08.services)
   })
 };
 
-const TIME_EPOCHS = ['m-1', 'm-2', 'm-3', 'm-4'];
-const TIME_VALID_DATES = ['2026-01-01', '2026-04-01', '2026-07-01', '2026-10-01'];
+const TIME_EPOCHS = fx11.epochs.map((ep) => ep.manifest);
+const TIME_VALID_DATES = [...new Set(fx11.epochs.map((ep) => ep.as_of))].sort();
 const MANIFEST_BY_EPOCH = Object.fromEntries(
-  TIME_EPOCHS.map((ep) => [
-    ep,
-    `sha256:${crypto.createHash('sha256').update(`${fx05.manifest.id}:${ep}`).digest('hex').slice(0, 32)}`
+  TIME_EPOCHS.map((ep) => {
+    const head = fx11.reader_answers[GATE_ROLE][`/${GATE_PACK}/head?m=${ep}`];
+    if (!head || head.status !== 200 || !head.body?.manifest_sha256) {
+      throw new Error(`Missing recorded /head?m=${ep} manifest_sha256 in fixtures/11`);
+    }
+    return [ep, `sha256:${head.body.manifest_sha256}`];
+  })
+);
+const fx11ByValidDate = Object.fromEntries(
+  TIME_VALID_DATES.map((validAt) => [
+    validAt,
+    buildBitemporalFixtureFromGateAnswers(fx11, {
+      pack: GATE_PACK,
+      role: GATE_ROLE,
+      subjectId: GATE_SUBJECT,
+      validTime: validAt
+    })
   ])
 );
-const fx05Bitemporal = {
-  ...fx05,
-  bitemporal_grid: {
-    ...fx05.bitemporal_grid,
-    valid_times: TIME_VALID_DATES,
-    epochs: TIME_EPOCHS
-  }
-};
 
 const bitemporalByTime = {};
 for (const theme of PALETTES) {
@@ -173,7 +189,7 @@ for (const theme of PALETTES) {
     bitemporalByTime[theme][knownAt] = {};
     for (const validAt of TIME_VALID_DATES) {
       bitemporalByTime[theme][knownAt][validAt] = await renderSheetHtml(sheetPath('BitemporalStairSheet.svelte'), {
-        fixture: fx05Bitemporal,
+        fixture: fx11ByValidDate[validAt],
         theme,
         activeValidAt: validAt,
         activeKnownAt: knownAt,
