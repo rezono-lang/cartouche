@@ -23,5 +23,5 @@ This playbook applies every hard-won operational lesson from building `rezono-la
 ## 3. Mandatory Visual Quality Gate (Beyond Unit Tests)
 
 1. **Headless Geometric Invariants first:** Every sheet compiler must pass `checkGeometricInvariants(scene)` and `assertXDDiscipline(scene)` in <20ms.
-2. **HTML Prototype Gate for new sheets:** Before spending 10+ PRs wiring a new 3D/WebGPU sheet (`Threlte v8` / `PixiJS v8`), validate layout and visual calm in a standalone HTML prototype and capture screenshots across `swisstopo`, `obsidian`, and `forced` palettes.
+2. **HTML Prototype Gate for new sheets:** Before spending 10+ PRs wiring a new orthographic/canvas sheet (`SVG` / `PixiJS v8`), validate layout and visual calm in a standalone HTML prototype and capture screenshots across `swisstopo`, `obsidian`, and `forced` palettes.
 3. **Golden Fixtures decouple UI from core:** Never block UI PRs on backend runs; live contract parity runs nightly in `.github/workflows/nightly-live.yml`.

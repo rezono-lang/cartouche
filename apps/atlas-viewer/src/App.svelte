@@ -3,7 +3,7 @@
   import type { PaletteName } from '../../../packages/reader-core/src/palette.ts';
   import type { AtlasLocale } from '../../../packages/atlas/src/i18n-mf2.ts';
 
-  import StatutoryRelief3D from '../../../packages/atlas/src/StatutoryRelief3D.svelte';
+  import Relief3DSheet from '../../../packages/atlas/src/Relief3DSheet.svelte';
   import FlowSplitSheet from '../../../packages/atlas/src/FlowSplitSheet.svelte';
   import KringstandSheet from '../../../packages/atlas/src/KringstandSheet.svelte';
   import CausalRippleSheet from '../../../packages/atlas/src/CausalRippleSheet.svelte';
@@ -161,7 +161,7 @@
 
   <section class="viewer-stage" aria-label="Active sheet">
     {#if activeTab === 'relief'}
-      <StatutoryRelief3D fixture={reliefFixture} {theme} lang={locale} />
+      <Relief3DSheet fixture={reliefFixture} {theme} lang={locale} />
     {:else if activeTab === 'flow'}
       <div class="subbar" role="group" aria-label="Projection role">
         <button

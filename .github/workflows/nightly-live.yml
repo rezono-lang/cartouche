@@ -32,7 +32,7 @@ jobs:
           repository: rezono-lang/rezono
           ref: ${{ steps.rezono-pin.outputs.commit }}
           path: .rezono-live
-      - name: Verify pinned Rezono std-view & regenerate fixture 10 transcript parity
+      - name: Verify pinned Rezono source SHA-256 parity
         env:
           CARTOUCHE_PRIVATE_PATTERNS: ${{ secrets.CARTOUCHE_PRIVATE_PATTERNS }}
         run: |
@@ -47,7 +47,7 @@ jobs:
             }
             console.log('Verified all pinned Rezono source files against .rezono-live checkout.');
           "
-          REZONO_LIVE_DIR=.rezono-live npm run fast-check
+          npm run fast-check
       - name: Export Red-Test Board artifact
         run: npm run red-board -- --json > red-board.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

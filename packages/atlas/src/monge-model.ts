@@ -15,6 +15,7 @@ import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 import type { ManifestMeta } from '../../reader-core/src/index.ts';
 
 export type MongeNodeState = 'valid' | 'violated' | 'absent' | 'unknown' | 'invalid';
+export type MongeRoundState = MongeNodeState | 'changed' | 'not_applicable';
 
 export interface MongeServiceInput {
   readonly id: string;
@@ -26,7 +27,7 @@ export interface MongeServiceInput {
   readonly state: MongeNodeState;
   readonly reason?: string | null;
   readonly display?: string | null;
-  readonly round_states?: readonly MongeNodeState[];
+  readonly round_states?: readonly MongeRoundState[];
   readonly round_proof_refs?: readonly (string | null)[];
   readonly proof_ref: string;
   readonly completeness_witness_ref?: string | null;
@@ -59,7 +60,7 @@ export interface Point2D {
 
 export interface MongeRoundMark {
   readonly roundId: string;
-  readonly state: MongeNodeState;
+  readonly state: MongeRoundState;
   readonly sign: string;
   readonly proofRef: string | null;
   readonly plane2: Point2D;
@@ -123,7 +124,6 @@ const ORIGIN_Y = 300;
 const PLANE_HALF_X = 2.0;
 const PLANE_HALF_Y = 1.45;
 const WALL_DEPTH = 1.65;
-const CURTAIN_HEIGHT = 1.2;
 const DRIFT_OFFSET = 5;
 
 function assertValidSign(name: string): void {
@@ -132,7 +132,7 @@ function assertValidSign(name: string): void {
   }
 }
 
-function stateToSign(state: MongeNodeState): string {
+function stateToSign(state: MongeRoundState): string {
   return state;
 }
 
@@ -334,12 +334,13 @@ export function buildMongeFoldingModel(
 
     let unknownCurtain: readonly [Point2D, Point2D, Point2D, Point2D] | undefined;
     if (s.state === 'unknown') {
-      // Hatched uncertainty curtain rising off z = 0 (never collapsed to z = 0).
-      const halfSpan = 0.16;
-      const b0 = projectOrtho(s.x - halfSpan, s.y, 0.08, trig);
-      const b1 = projectOrtho(s.x + halfSpan, s.y, 0.08, trig);
-      const t1 = projectOrtho(s.x + halfSpan, s.y, CURTAIN_HEIGHT, trig);
-      const t0 = projectOrtho(s.x - halfSpan, s.y, CURTAIN_HEIGHT, trig);
+      // Flat hatched uncertainty band on Plane I (never encodes a height/magnitude on unknown, Decision 0014).
+      const halfX = 0.16;
+      const halfY = 0.1;
+      const b0 = projectOrtho(s.x - halfX, s.y - halfY, 0, trig);
+      const b1 = projectOrtho(s.x + halfX, s.y - halfY, 0, trig);
+      const t1 = projectOrtho(s.x + halfX, s.y + halfY, 0, trig);
+      const t0 = projectOrtho(s.x - halfX, s.y + halfY, 0, trig);
       unknownCurtain = [b0, b1, t1, t0];
     }
 

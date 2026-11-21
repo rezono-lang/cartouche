@@ -148,27 +148,6 @@ export interface OrthographicCameraSpec {
   readonly far: number;
 }
 
-export interface ReliefThrelteSceneSpec {
-  readonly camera: OrthographicCameraSpec;
-  readonly gridSize: readonly [number, number];
-  readonly terraces: readonly {
-    readonly key: string;
-    readonly position: readonly [number, number, number];
-    readonly height: number;
-    readonly proofRef: string;
-    readonly state: string;
-  }[];
-  readonly curtains: readonly {
-    readonly subjectId: string;
-    readonly fixedAxis: 'x' | 'y';
-    readonly fixedIndex: number;
-    readonly zMin: number;
-    readonly zMax: number;
-    readonly proofRef: string;
-    readonly reason: string;
-  }[];
-}
-
 export interface ReliefLegendItem {
   readonly key: string;
   readonly glyph: string;
@@ -191,7 +170,6 @@ export interface ReliefModel {
   readonly profileCells: readonly ReliefValidatedGridCell[];
   readonly curtains: readonly ReliefCurtainGeometry[];
   readonly cliffMarkers: readonly ReliefCliffMarker[];
-  readonly threlteScene: ReliefThrelteSceneSpec;
   readonly legendItems: readonly ReliefLegendItem[];
   readonly width: number;
   readonly height: number;
@@ -481,43 +459,6 @@ export function buildReliefModel(
   const sliceYIndex = rawSlice >= 0 && rawSlice < yStops.length ? rawSlice : 0;
   const profileCells = gridCells.filter((c) => c.iy === sliceYIndex);
 
-  const threlteScene: ReliefThrelteSceneSpec = Object.freeze({
-    camera: Object.freeze({
-      cameraType: 'OrthographicCamera' as const,
-      projection: 'orthographic' as const,
-      position: Object.freeze([8, 8, 8] as const),
-      target: Object.freeze([1.5, 0.5, 1.5] as const),
-      zoom: 64,
-      near: 0.1,
-      far: 100
-    }),
-    gridSize: Object.freeze([xStops.length, yStops.length] as const),
-    terraces: Object.freeze(
-      gridCells.map((c) =>
-        Object.freeze({
-          key: `cell:${c.ix}-${c.iy}`,
-          position: Object.freeze([c.ix, c.zNorm, c.iy] as const),
-          height: c.zNorm,
-          proofRef: c.opaque.proofRef,
-          state: c.opaque.state
-        })
-      )
-    ),
-    curtains: Object.freeze(
-      curtains.map((c) =>
-        Object.freeze({
-          subjectId: c.subjectId,
-          fixedAxis: c.fixedAxis,
-          fixedIndex: c.fixedIndex,
-          zMin: c.zMin,
-          zMax: c.zMax,
-          proofRef: c.proofRef,
-          reason: c.reason
-        })
-      )
-    )
-  });
-
   // Collect exact drawn signs across SVG & Table Twin in deterministic order
   const drawnSignKeys: string[] = [];
   const seenSigns = new Set<string>();
@@ -582,7 +523,6 @@ export function buildReliefModel(
     profileCells: Object.freeze(profileCells),
     curtains: Object.freeze(curtains),
     cliffMarkers: Object.freeze(cliffMarkers),
-    threlteScene,
     legendItems: Object.freeze(legendItems),
     width: SVG_W,
     height: SVG_H
