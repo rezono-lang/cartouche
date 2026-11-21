@@ -1,0 +1,27 @@
+{
+  "fixture_id": "02-platform-tenant-a",
+  "manifest": {
+    "id": "sha256:4c2e80a1b9d4f7e2a1c3d5e7f90123456789",
+    "epoch": 42,
+    "knowledge_time": "2026-11-20T21:40:00Z",
+    "role": "tenant_a",
+    "witness_check": "green",
+    "trust_tier": "sealed"
+  },
+  "horizon": {
+    "complete": false,
+    "reason": "not_read_in_full"
+  },
+  "nodes": [
+    { "id": "svc-gateway", "label": "Gateway", "zone": "ingress", "sign": "design", "state": "valid", "layer": "both", "proof_ref": "proof:gw-01" },
+    { "id": "svc-keycloak", "label": "Keycloak", "zone": "platform", "sign": "decision", "state": "valid", "layer": "both", "proof_ref": "proof:kc-01" },
+    { "id": "svc-orders", "label": "Orders API", "zone": "consumers", "sign": "design", "state": "valid", "layer": "both", "proof_ref": "proof:ord-19" },
+    { "id": "svc-postgres", "label": "Postgres", "zone": "storage", "sign": "observation", "state": "valid", "layer": "both", "proof_ref": "proof:pg-42" }
+  ],
+  "edges": [
+    { "id": "e1", "from": "svc-gateway", "to": "svc-keycloak", "layer": "both", "kind": "standard", "proof_ref": "proof:e1" },
+    { "id": "e2", "from": "svc-gateway", "to": "svc-orders", "layer": "both", "kind": "standard", "proof_ref": "proof:e2" },
+    { "id": "e4", "from": "svc-orders", "to": "svc-postgres", "layer": "both", "kind": "standard", "proof_ref": "proof:e4" }
+  ],
+  "forbidden_leaks_check": ["svc-vault", "svc-backup", "e-drift-vault"]
+}

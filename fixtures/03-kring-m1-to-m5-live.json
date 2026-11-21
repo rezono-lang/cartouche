@@ -1,0 +1,38 @@
+{
+  "fixture_id": "03-kring-m1-to-m5-live",
+  "manifest": {
+    "id": "sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0",
+    "epoch": 42,
+    "knowledge_time": "2026-11-20T21:40:00Z",
+    "role": "platform_admin",
+    "witness_check": "green",
+    "trust_tier": "sealed"
+  },
+  "rounds": [
+    { "id": "m-1", "time": "2026-11-20T21:10:00Z", "cert_hash": "sha256:1a0c90", "sealed": true },
+    { "id": "m-2", "time": "2026-11-20T21:20:00Z", "cert_hash": "sha256:4b8e12", "sealed": true },
+    { "id": "m-3", "time": "2026-11-20T21:30:00Z", "cert_hash": "sha256:7d214f", "sealed": true },
+    { "id": "m-4", "time": "2026-11-20T21:40:00Z", "cert_hash": "sha256:8f4ac2", "sealed": true }
+  ],
+  "sealed_rows": [
+    { "key": "step:vault-rule-patch", "lane": "needed", "label": "vault-rule-patch", "sign": "decision", "state": "valid", "proof_ref": "round:m-4#needed-1" },
+    { "key": "step:canary-smoke", "lane": "waiting", "label": "canary-smoke", "sign": "observation", "state": "changed", "reason": "awaiting_probe", "proof_ref": "round:m-4#wait-1" },
+    { "key": "step:policy-push", "lane": "ready", "label": "policy-push", "sign": "decision", "state": "valid", "proof_ref": "round:m-4#ready-1" },
+    { "key": "step:cert-issuer", "lane": "done", "label": "cert-issuer", "sign": "derived", "state": "valid", "proof_ref": "round:m-4#done-1" },
+    { "key": "step:ingress-sync", "lane": "done", "label": "ingress-sync", "sign": "derived", "state": "valid", "proof_ref": "round:m-4#done-2" },
+    { "key": "step:pg-replica", "lane": "done", "label": "pg-replica", "sign": "derived", "state": "valid", "proof_ref": "round:m-4#done-3" },
+    { "key": "target:legacy-proxy", "lane": "absent", "label": "legacy-proxy-01", "sign": "derived", "state": "absent", "proof_ref": "round:m-4#absent-1", "completeness_witness_ref": "sweep:complete-m4" },
+    { "key": "target:edge-node-04", "lane": "unknown", "label": "edge-node-04", "sign": "derived", "state": "unknown", "reason": "telemetry_timeout", "display": null, "proof_ref": "round:m-4#unk-1" }
+  ],
+  "live_provisional_delta": {
+    "round_id": "m-5",
+    "latency_ms": 142,
+    "trust_tier": "provisional_engine",
+    "changes": [
+      {
+        "weight": 1,
+        "row": { "key": "step:worker-07", "lane": "ready", "label": "worker-07", "sign": "observation", "state": "changed", "proof_ref": "stream:m5-draft-142ms" }
+      }
+    ]
+  }
+}

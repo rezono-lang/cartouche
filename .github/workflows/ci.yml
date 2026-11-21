@@ -1,0 +1,74 @@
+name: Cartouche Fast Diff-Aware CI
+
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Lesson 3 from Rezono: immediately cancel superseded PR runs to save runners!
+concurrency:
+  group: cartouche-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      core: ${{ steps.filter.outputs.core }}
+      scene: ${{ steps.filter.outputs.scene }}
+      ui: ${{ steps.filter.outputs.ui }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "merge_group" ]; then
+            echo "core=true" >> "$GITHUB_OUTPUT"
+            echo "scene=true" >> "$GITHUB_OUTPUT"
+            echo "ui=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only HEAD~1 HEAD || true)
+          echo "$CHANGED" | grep -qE '^(packages/reader-core|contracts|fixtures|scripts)/' && echo "core=true" >> "$GITHUB_OUTPUT" || echo "core=false" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED" | grep -qE '^(packages/scene-ir|packages/reader-core|contracts|fixtures)/' && echo "scene=true" >> "$GITHUB_OUTPUT" || echo "scene=false" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED" | grep -qE '^(packages/slip|packages/atlas|decisions)/' && echo "ui=true" >> "$GITHUB_OUTPUT" || echo "ui=false" >> "$GITHUB_OUTPUT"
+
+  # Ultra-lightweight universal gate (runs in <30s on 1 runner, zero backend needed!)
+  fast-guards-and-green:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Run complete fast-check (tsc + AST zero-compute lint + mutation & invariant tests)
+        run: npm run fast-check
+
+  # Visual / 3D verification ONLY runs when UI/Scene actually changes (never blocks core PRs!)
+  scene-and-specimen:
+    needs: [detect-changes, fast-guards-and-green]
+    if: needs.detect-changes.outputs.scene == 'true' || needs.detect-changes.outputs.ui == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify geometric invariants & red-board integrity
+        run: |
+          node --experimental-strip-types --no-warnings --test tests/green/geometry-invariants.test.mjs tests/green/xd-discipline-guard.test.mjs
+          npm run red-board -- --json > /dev/null

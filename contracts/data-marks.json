@@ -1,0 +1,15 @@
+{
+  "sheet": "data-sheet",
+  "part": "data-part",
+  "sign": "data-sign",
+  "state": "data-state",
+  "reason": "data-reason",
+  "verb": "data-verb",
+  "key": "data-key",
+  "trust_tier": "data-trust-tier",
+  "proof_ref": "data-proof-ref",
+  "legend_table": "table[data-part=legend]",
+  "table_twin": "table[data-part=twin]",
+  "unserved": "[data-part=unserved]",
+  "propose_action": "button[data-verb=p]"
+}

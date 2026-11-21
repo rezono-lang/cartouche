@@ -1,0 +1,10 @@
+{
+  "fixture_id": "07-unserved-410",
+  "http_status": 410,
+  "unserved": {
+    "code": "publication_withdrawn",
+    "superseded_by": "sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0",
+    "reason_message_id": "unserved.withdrawn.policy_revision",
+    "withdrawn_by_decision_ref": "decision:2026-099"
+  }
+}

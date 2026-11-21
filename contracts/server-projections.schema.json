@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rezono.org/schemas/cartouche/server-projections-v2.json",
+  "title": "Cartouche Five Minimal Server Projections",
+  "type": "object",
+  "properties": {
+    "layer_tag": {
+      "type": "string",
+      "enum": ["stated", "observed", "both"]
+    },
+    "cut_set": {
+      "type": "object",
+      "required": ["load_bearing", "redundancy_margin", "gate"],
+      "properties": {
+        "load_bearing": { "type": "boolean" },
+        "redundancy_margin": { "type": "integer", "minimum": 0 },
+        "gate": { "type": "string", "enum": ["FACT", "AND", "OR"] }
+      }
+    },
+    "sweep_2d": {
+      "type": "object",
+      "required": ["x_axis", "y_axis", "z_axis", "cells"],
+      "properties": {
+        "x_axis": { "type": "object", "required": ["label", "stops", "kind"] },
+        "y_axis": { "type": "object", "required": ["label", "stops", "kind"] },
+        "z_axis": { "type": "object", "required": ["label", "unit", "kind"] },
+        "cells": { "type": "array" },
+        "unknown_manifolds": { "type": "array" }
+      }
+    },
+    "bitemporal_grid": {
+      "type": "object",
+      "required": ["valid_times", "epochs", "matrix"],
+      "properties": {
+        "valid_times": { "type": "array", "items": { "type": "string" } },
+        "epochs": { "type": "array", "items": { "type": "string" } },
+        "matrix": { "type": "array" }
+      }
+    },
+    "slip_enrichment": {
+      "type": "object",
+      "required": ["prism_5", "missing_levers", "adjacent_worlds_delta1"],
+      "properties": {
+        "prism_5": { "type": "array", "minItems": 5, "maxItems": 5 },
+        "missing_levers": { "type": "array" },
+        "adjacent_worlds_delta1": { "type": "array" }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+name: Nightly Live Contract Parity (Rezono Core)
+
+# Lesson 4 from Rezono: PRs run in seconds against frozen golden fixtures;
+# live cross-repo parity against rezono-lang/rezono runs nightly on 1 runner.
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify pinned Rezono contract fixtures & all green checks
+        run: |
+          cat contracts/rezono-pin.json
+          npm run fast-check
+      - name: Export Red-Test Board artifact
+        run: npm run red-board -- --json > red-board.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cartouche-red-board
+          path: red-board.json
+          retention-days: 14

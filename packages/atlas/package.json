@@ -1,0 +1,14 @@
+{
+  "name": "@rezono/cartouche-atlas",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@rezono/reader-core": "0.1.0",
+    "@rezono/scene-ir": "0.1.0",
+    "@rezono/slip": "0.1.0"
+  }
+}

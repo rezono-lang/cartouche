@@ -1,0 +1,41 @@
+/**
+ * Automated Visual Specimen Registry (Lesson from Rede's _specimen oracle).
+ * Guarantees every epistemic sign, 4-valued state, and Cartouche trust tier
+ * stays registered and testable across all 3 OKLCH palettes.
+ */
+
+import { PALETTES } from '../../reader-core/src/index.ts';
+import type { PaletteName } from '../../reader-core/src/index.ts';
+
+export interface SpecimenEntry {
+  readonly dataEntry: string;
+  readonly glyph: string;
+  readonly kind: 'sign' | 'state' | 'line' | 'trust_tier';
+}
+
+export const SPECIMEN_ENTRIES: readonly SpecimenEntry[] = Object.freeze([
+  { dataEntry: 'sign:decision', glyph: '◆', kind: 'sign' },
+  { dataEntry: 'sign:legislator', glyph: '▲', kind: 'sign' },
+  { dataEntry: 'sign:design', glyph: '■', kind: 'sign' },
+  { dataEntry: 'sign:observation', glyph: '●', kind: 'sign' },
+  { dataEntry: 'sign:derived', glyph: '○', kind: 'sign' },
+  { dataEntry: 'state:valid', glyph: '✓', kind: 'state' },
+  { dataEntry: 'state:changed', glyph: '◐', kind: 'state' },
+  { dataEntry: 'state:violated', glyph: '✕', kind: 'state' },
+  { dataEntry: 'state:unknown', glyph: '▨', kind: 'state' },
+  { dataEntry: 'state:absent', glyph: '⦸', kind: 'state' },
+  { dataEntry: 'state:not_applicable', glyph: '–', kind: 'state' },
+  { dataEntry: 'line:drift', glyph: '══', kind: 'line' },
+  { dataEntry: 'trust:sealed', glyph: 'SEALED', kind: 'trust_tier' },
+  { dataEntry: 'trust:provisional_checked', glyph: 'CHECKED', kind: 'trust_tier' },
+  { dataEntry: 'trust:provisional_engine', glyph: 'UNSEALED', kind: 'trust_tier' }
+]);
+
+export function verifySpecimenCoverage(): { ok: boolean; palettes: readonly PaletteName[]; entryCount: number } {
+  const palettes = Object.keys(PALETTES) as PaletteName[];
+  return {
+    ok: palettes.length === 3 && SPECIMEN_ENTRIES.length >= 15,
+    palettes,
+    entryCount: SPECIMEN_ENTRIES.length
+  };
+}

@@ -1,0 +1,54 @@
+{
+  "fixture_id": "04-subsidy-a001-a003",
+  "manifest": {
+    "id": "sha256:3e9b7104a1f8c2d9e4b5a6c7d8e9f0a1b2c3",
+    "epoch": 42,
+    "knowledge_time": "2026-11-20T21:40:00Z",
+    "role": "caseworker",
+    "witness_check": "green",
+    "trust_tier": "sealed"
+  },
+  "subjects": [
+    {
+      "id": "A001",
+      "state": "valid",
+      "amount_cell": { "state": "known", "display": "€ 2.694", "unit": "EUR", "proof_ref": "witness:sub-A001" },
+      "income_cell": { "state": "known", "display": "€ 34.000", "unit": "EUR", "proof_ref": "fact:tax-A001" },
+      "assets_cell": { "state": "known", "display": "€ 18.000", "unit": "EUR", "proof_ref": "fact:assets-A001" },
+      "cliff_distance_display": "€ 2.000 to Art. 5 cliff",
+      "citation": "Article 5 · Council Decision 2026-047"
+    },
+    {
+      "id": "A003",
+      "state": "unknown",
+      "amount_cell": { "state": "unknown", "display": null, "reason": "income_statement_not_received", "proof_ref": "witness:sub-A003-missing" },
+      "income_cell": { "state": "unknown", "display": null, "reason": "income_statement_not_received", "proof_ref": "fact:tax-A003-missing" },
+      "assets_cell": { "state": "known", "display": "€ 24.000", "unit": "EUR", "proof_ref": "fact:assets-A003" },
+      "citation": "Article 3 · Council Decision 2026-047"
+    }
+  ],
+  "sweep_2d": {
+    "projection": "orthographic",
+    "x_axis": { "dim": "D7", "kind": "metric", "label": "Taxable Income", "stops": ["€ 18k", "€ 28k", "€ 34k", "€ 42k"] },
+    "y_axis": { "dim": "D7", "kind": "metric", "label": "Household Assets", "stops": ["€ 0k", "€ 18k", "€ 36k", "€ 45k"] },
+    "z_axis": { "dim": "D7", "kind": "metric", "label": "Subsidy Amount", "unit": "EUR" },
+    "cells": [
+      { "ix": 0, "iy": 0, "z_norm": 1.0, "cell": { "state": "known", "display": "€ 5.000", "proof_ref": "sw:0-0" } },
+      { "ix": 1, "iy": 1, "z_norm": 0.89, "cell": { "state": "known", "display": "€ 4.450", "proof_ref": "sw:1-1" } },
+      { "ix": 2, "iy": 1, "z_norm": 0.54, "cell": { "state": "known", "display": "€ 2.694", "proof_ref": "sw:2-1" } },
+      { "ix": 3, "iy": 1, "z_norm": 0.0, "cell": { "state": "known", "display": "€ 0", "proof_ref": "sw:3-1" } },
+      { "ix": 2, "iy": 3, "z_norm": 0.0, "cell": { "state": "known", "display": "€ 0", "proof_ref": "sw:2-3" } }
+    ],
+    "unknown_manifolds": [
+      {
+        "subject_id": "A003",
+        "kind": "uncertainty_curtain",
+        "fixed_axis": "y",
+        "fixed_index": 1,
+        "span_axis": "x",
+        "reason": "income_statement_not_received",
+        "proof_ref": "witness:sub-A003-missing"
+      }
+    ]
+  }
+}

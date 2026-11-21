@@ -1,0 +1,26 @@
+{
+  "name": "cartouche-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "fast-check": "node scripts/fast-check.mjs",
+    "test:green": "node --experimental-strip-types --no-warnings --test tests/green/*.test.mjs",
+    "lint:zero-compute": "node scripts/zero-compute-lint.mjs",
+    "lint:decisions": "node scripts/decision-red-guard.mjs",
+    "lint:leaks": "node scripts/leak-and-domain-check.mjs",
+    "lint:licenses": "node scripts/license-check.mjs",
+    "red-board": "node scripts/red-board.mjs"
+  },
+  "devDependencies": {
+    "oxc-parser": "^0.159.0",
+    "typescript": "^7.0.2"
+  }
+}

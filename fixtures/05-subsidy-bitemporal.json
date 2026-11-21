@@ -1,0 +1,42 @@
+{
+  "fixture_id": "05-subsidy-bitemporal",
+  "manifest": {
+    "id": "sha256:9d11a0b2c3d4e5f60718293a4b5c6d7e8f90",
+    "epoch": 42,
+    "knowledge_time": "2026-11-20T21:40:00Z",
+    "role": "auditor",
+    "witness_check": "green",
+    "trust_tier": "sealed"
+  },
+  "bitemporal_grid": {
+    "projection": "orthographic",
+    "valid_times": ["2026-11-10", "2026-11-14", "2026-11-18", "2026-11-20"],
+    "epochs": ["ep-39", "ep-40", "ep-41", "ep-42"],
+    "matrix": [
+      [
+        { "state": "unknown", "display": null, "reason": "income_statement_not_received", "proof_ref": "bt:39-10" },
+        { "state": "not_applicable", "display": null, "reason": "valid_after_knowledge", "proof_ref": "bt:39-14" },
+        { "state": "not_applicable", "display": null, "reason": "valid_after_knowledge", "proof_ref": "bt:39-18" },
+        { "state": "not_applicable", "display": null, "reason": "valid_after_knowledge", "proof_ref": "bt:39-20" }
+      ],
+      [
+        { "state": "known", "display": "€ 2.694", "z_norm": 0.9, "proof_ref": "bt:40-10" },
+        { "state": "known", "display": "€ 2.694", "z_norm": 0.9, "proof_ref": "bt:40-14" },
+        { "state": "not_applicable", "display": null, "reason": "valid_after_knowledge", "proof_ref": "bt:40-18" },
+        { "state": "not_applicable", "display": null, "reason": "valid_after_knowledge", "proof_ref": "bt:40-20" }
+      ],
+      [
+        { "state": "known", "display": "€ 1.920", "previous_display": "€ 2.694", "revised": true, "z_norm": 0.64, "proof_ref": "bt:41-10" },
+        { "state": "known", "display": "€ 1.920", "previous_display": "€ 2.694", "revised": true, "z_norm": 0.64, "proof_ref": "bt:41-14" },
+        { "state": "unknown", "display": null, "reason": "review_pending", "proof_ref": "bt:41-18" },
+        { "state": "not_applicable", "display": null, "reason": "valid_after_knowledge", "proof_ref": "bt:41-20" }
+      ],
+      [
+        { "state": "known", "display": "€ 1.920", "revised": true, "z_norm": 0.64, "proof_ref": "bt:42-10" },
+        { "state": "known", "display": "€ 1.920", "revised": true, "z_norm": 0.64, "proof_ref": "bt:42-14" },
+        { "state": "known", "display": "€ 1.920", "z_norm": 0.64, "proof_ref": "bt:42-18" },
+        { "state": "known", "display": "€ 1.920", "z_norm": 0.64, "proof_ref": "bt:42-20" }
+      ]
+    ]
+  }
+}

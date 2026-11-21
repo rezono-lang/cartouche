@@ -1,0 +1,21 @@
+{
+  "fixture_id": "06-keycloak-dense-28",
+  "manifest": {
+    "id": "sha256:77c1d2e3f4a5b6c7d8e9f01234567890abcd",
+    "epoch": 42,
+    "knowledge_time": "2026-11-20T21:40:00Z",
+    "role": "platform_admin",
+    "witness_check": "green",
+    "trust_tier": "provisional_checked"
+  },
+  "focal_id": "svc-keycloak",
+  "horizon": { "complete": false, "reason": "depth_limit_hop_2" },
+  "dependent_count": 28,
+  "nodes": [
+    { "id": "svc-keycloak", "label": "Keycloak A", "hop": 0, "sign": "decision", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "FACT" }, "proof_ref": "p:kc" },
+    { "id": "svc-failover", "label": "Failover B", "hop": 0, "sign": "observation", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "FACT" }, "proof_ref": "p:fb" },
+    { "id": "g-quorum", "label": "IAM Quorum", "hop": 1, "sign": "derived", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "OR" }, "proof_ref": "p:quorum" },
+    { "id": "obs-tls", "label": "Hubble TLS", "hop": 1, "sign": "observation", "state": "valid", "cut_set": { "load_bearing": true, "redundancy_margin": 0, "gate": "FACT" }, "proof_ref": "p:tls" },
+    { "id": "g-rpo", "label": "DR RPO 15m", "hop": 2, "sign": "derived", "state": "violated", "previous_display": "valid", "display": "violated", "cut_set": { "load_bearing": true, "redundancy_margin": 0, "gate": "AND" }, "proof_ref": "p:rpo" }
+  ]
+}

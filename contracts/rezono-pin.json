@@ -1,0 +1,18 @@
+{
+  "rezono_repo": "https://github.com/rezono-lang/rezono",
+  "pinned_commit": "bce08a52",
+  "contract_version": "0.1.0-day0",
+  "std_view_pack": "packs/std-view",
+  "std_loop_pack": "packs/std-loop",
+  "allowed_runtime_licences": [
+    "MIT",
+    "ISC",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Apache-2.0",
+    "PSF-2.0",
+    "CC0-1.0",
+    "MPL-2.0",
+    "EPL-2.0"
+  ]
+}

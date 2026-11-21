@@ -1,0 +1,55 @@
+{
+  "fixture_id": "01-platform-drift",
+  "manifest": {
+    "id": "sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0",
+    "epoch": 42,
+    "knowledge_time": "2026-11-20T21:40:00Z",
+    "role": "platform_admin",
+    "witness_check": "green",
+    "trust_tier": "sealed"
+  },
+  "horizon": { "complete": true, "reason": null },
+  "nodes": [
+    { "id": "svc-gateway", "label": "Gateway", "zone": "ingress", "sign": "design", "state": "valid", "layer": "both", "proof_ref": "proof:gw-01" },
+    { "id": "svc-keycloak", "label": "Keycloak", "zone": "platform", "sign": "decision", "state": "valid", "layer": "both", "proof_ref": "proof:kc-01" },
+    { "id": "svc-orders", "label": "Orders API", "zone": "consumers", "sign": "design", "state": "changed", "layer": "both", "proof_ref": "proof:ord-19" },
+    { "id": "svc-vault", "label": "Vault", "zone": "storage", "sign": "decision", "state": "violated", "layer": "both", "proof_ref": "proof:vlt-88" },
+    { "id": "svc-postgres", "label": "Postgres", "zone": "storage", "sign": "observation", "state": "valid", "layer": "both", "proof_ref": "proof:pg-42" },
+    { "id": "svc-backup", "label": "Backup Store", "zone": "recovery", "sign": "decision", "state": "absent", "layer": "stated", "proof_ref": "proof:dr-05", "completeness_witness_ref": "sweep:complete-ns-12-of-12" },
+    { "id": "svc-edge-04", "label": "Edge-04", "zone": "recovery", "sign": "design", "state": "unknown", "reason": "telemetry_timeout", "display": null, "layer": "both", "proof_ref": "proof:edge-04-timeout" }
+  ],
+  "edges": [
+    { "id": "e1", "from": "svc-gateway", "to": "svc-keycloak", "layer": "both", "kind": "standard", "proof_ref": "proof:e1" },
+    { "id": "e2", "from": "svc-gateway", "to": "svc-orders", "layer": "both", "kind": "standard", "proof_ref": "proof:e2" },
+    { "id": "e3", "from": "svc-keycloak", "to": "svc-vault", "layer": "both", "kind": "standard", "proof_ref": "proof:e3" },
+    { "id": "e4", "from": "svc-orders", "to": "svc-postgres", "layer": "both", "kind": "standard", "proof_ref": "proof:e4" },
+    { "id": "e-backup", "from": "svc-keycloak", "to": "svc-backup", "layer": "stated", "kind": "absent", "proof_ref": "proof:dr-policy", "completeness_witness_ref": "sweep:complete-ns-12-of-12" },
+    {
+      "id": "e-drift-vault",
+      "from": "svc-orders",
+      "to": "svc-vault",
+      "layer": "both",
+      "kind": "drift",
+      "label": "TCP/8200",
+      "stated_proof_ref": "policy:netpol-04#L42",
+      "observed_proof_ref": "obs:hubble-ep42#L419"
+    }
+  ],
+  "slip_enrichment": {
+    "prism_5": [
+      { "key": "norm", "label": "Policy", "ratio_display": "100%", "bar_units": 100, "state": "valid" },
+      { "key": "observed", "label": "Hubble", "ratio_display": "72%", "bar_units": 72, "state": "violated" },
+      { "key": "fog", "label": "Unknown", "ratio_display": "14%", "bar_units": 14, "state": "unknown" },
+      { "key": "cliff", "label": "Margin", "ratio_display": "0", "bar_units": 10, "state": "changed" },
+      { "key": "role", "label": "Role", "ratio_display": "Full", "bar_units": 100, "state": "valid" }
+    ],
+    "missing_levers": [
+      { "id": "lever-edge04", "label": "Restore Edge-04 probe", "unblocks": ["svc-edge-04"], "redundant": false }
+    ],
+    "adjacent_worlds_delta1": [
+      { "id": "w-deny-8200", "sector": "repair", "label": "Deny orders-api -> vault:8200", "outcome_display": "0 Drift", "proof_ref": "suppose:deny-8200" },
+      { "id": "w-probe-edge04", "sector": "certainty", "label": "Receive Edge-04 heartbeat", "outcome_display": "Clears Unknown", "proof_ref": "suppose:edge04-ok" },
+      { "id": "w-failover-down", "sector": "cliff", "label": "Failover B offline", "outcome_display": "Margin drops to 0", "proof_ref": "suppose:failover-down" }
+    ]
+  }
+}
