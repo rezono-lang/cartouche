@@ -5,6 +5,7 @@
   import SlipSeal from './SlipSeal.svelte';
   import SlipUnserved from './SlipUnserved.svelte';
   import SlipValueCell from './SlipValueCell.svelte';
+  import { isLineVerbDisabled, resolveLineVerbs } from './slip-verbs.ts';
 
   interface UnservedInfo {
     readonly code: string;
@@ -230,10 +231,7 @@
   });
 
   function verbsForLine(line: SlipGroundLine): readonly StdVerbSpec[] {
-    const answered = line.answered_verbs ?? [];
-    if (answered.length === 0) return [];
-    const allowed = new Set(answered);
-    return STD_VERBS.filter((spec) => allowed.has(spec.verb) || allowed.has(spec.question));
+    return resolveLineVerbs(line.answered_verbs);
   }
 
   function resolveSignSpec(signName: string): SignSpec {
@@ -465,11 +463,14 @@
               <SlipValueCell cell={line.cell} fold={folded ? (activeSweepStop?.fold_display ?? null) : null} />
               <td>
                 {#each lineVerbs as spec (spec.verb)}
+                  {@const lineLocked = isLineVerbDisabled(spec, proposeAllowed)}
                   <button
                     type="button"
                     data-verb={spec.verb}
                     data-key={spec.key}
                     data-proof-ref={line.cell.proof_ref}
+                    aria-disabled={lineLocked ? 'true' : undefined}
+                    disabled={lineLocked}
                     onclick={() => activateVerb(spec)}
                   >
                     <kbd>{spec.key.toUpperCase()}</kbd>

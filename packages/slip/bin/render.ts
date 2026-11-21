@@ -19,6 +19,7 @@ import { createSlipModel, selectSlipVerb } from '../src/slip-controller.ts';
 import type { AdjacentWorldHop, MissingLever, PrismSpectrum, SlipModel, VerbKey } from '../src/slip-controller.ts';
 import { resolveSlipShortcut } from '../src/slip-element.ts';
 import type { SealCheckItem, UnservedInfo } from '../src/slip-element.ts';
+import { buildAnswerTable, mergeLineAnsweredVerbs, resolveReaderExtraVerbs } from '../src/slip-verbs.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SLIP_SRC_DIR = path.resolve(HERE, '..', 'src');
@@ -207,6 +208,7 @@ function buildFilesHashMap(compiledSlipCode: string): Readonly<Record<string, st
     ['packages/slip/src/SlipValueCell.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SlipValueCell.svelte'), 'utf8')],
     ['packages/slip/src/slip-controller.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-controller.ts'), 'utf8')],
     ['packages/slip/src/slip-element.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-element.ts'), 'utf8')],
+    ['packages/slip/src/slip-verbs.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-verbs.ts'), 'utf8')],
     ['packages/slip/dist/Slip.ssr.mjs', compiledSlipCode]
   ];
   const sortedNames = assetEntries.map(([name]) => name).sort();
@@ -252,56 +254,6 @@ function sealFromManifest(manifest: ManifestMeta, roleOverride?: string): Cartou
     provisionalCount: manifest.trust_tier === 'sealed' ? 0 : 1,
     canPropose
   });
-}
-
-function extraReaderVerbs(reader?: ReaderCapabilityConfig): readonly string[] {
-  if (!reader) return [];
-  const out: string[] = [];
-  const seen = new Set<string>();
-  const addVerb = (verbName: string) => {
-    if (!seen.has(verbName)) {
-      seen.add(verbName);
-      out.push(verbName);
-    }
-  };
-  for (const v of reader.answeredVerbs ?? []) {
-    const spec = STD_VERBS.find((s) => s.verb === v || s.key === v || s.question === v);
-    if (spec) addVerb(spec.verb);
-  }
-  for (const q of reader.answeredQuestions ?? []) {
-    const spec = STD_VERBS.find((s) => s.question === q || s.verb === q);
-    if (spec) addVerb(spec.verb);
-  }
-  return out;
-}
-
-function synthesizeAnswerTable(
-  question: string,
-  verb: string,
-  row: ConformanceRowPayload | null,
-  reader?: ReaderCapabilityConfig
-): AnswerTableSpec {
-  const explicit = reader?.answersByQuestion?.[question];
-  if (explicit) return explicit;
-
-  if (question === 'grounds' && row?.grounds_distance_1) {
-    return {
-      question,
-      verb,
-      headers: ['Relation', 'Key', 'State', 'Proof'],
-      rows: row.grounds_distance_1.map((line) => ({
-        cells: [line.relation, canonicalJson(line.key), line.cell.state, line.cell.proof_ref],
-        proof_ref: line.cell.proof_ref,
-        sign: line.sign
-      }))
-    };
-  }
-  return {
-    question,
-    verb,
-    headers: ['Question', 'Status'],
-    rows: []
-  };
 }
 
 export async function render(request: SlipRenderRequest): Promise<SlipRenderResponse> {
@@ -364,7 +316,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
 
   let conformanceRow: ConformanceRowPayload | null = null;
   let sweepStops: readonly SweepStopPayload[] = [];
-  const addedVerbs = extraReaderVerbs(request.reader);
+  const addedVerbs = resolveReaderExtraVerbs(request.reader);
 
   if (payload?.slip_conformance) {
     const conf = payload.slip_conformance;
@@ -379,10 +331,9 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
       const template = langMessages[rawRow.rule_id] ?? rawRow.rule_id;
       const mergedGrounds: readonly SlipGroundLine[] | undefined = rawRow.grounds_distance_1?.map((line) => {
         if (addedVerbs.length === 0) return line;
-        const mergedSet = new Set<string>([...(line.answered_verbs ?? []), ...addedVerbs]);
         return {
           ...line,
-          answered_verbs: STD_VERBS.filter((s) => mergedSet.has(s.verb)).map((s) => s.verb)
+          answered_verbs: mergeLineAnsweredVerbs(line.answered_verbs, addedVerbs)
         };
       });
 
@@ -434,7 +385,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
   const openAnswers: AnswerTableSpec[] = [];
   for (const spec of STD_VERBS) {
     if (openedQuestions.has(spec.question)) {
-      openAnswers.push(synthesizeAnswerTable(spec.question, spec.verb, conformanceRow, request.reader));
+      openAnswers.push(buildAnswerTable(spec, conformanceRow, request.reader));
     }
   }
 
