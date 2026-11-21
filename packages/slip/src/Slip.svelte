@@ -88,6 +88,7 @@
     readonly headers: readonly string[];
     readonly rows: readonly AnswerTableRow[];
     readonly note?: string | undefined;
+    readonly hiddenCount?: number | undefined;
   }
 
   // The published stops of one sweep, on the line of the cell it moves (built from the reader's answers).

@@ -637,16 +637,24 @@ export function buildAnswerTable(
 				? 'negative'
 				: 'positive';
 			const keyParts = parseKey(node.key);
-			const formatted = formatLineValue(
-				bundle,
-				lang,
-				stdPacks,
-				catalog,
-				node.relation,
-				keyParts,
-				polarity,
-				steps[0]?.value,
-			);
+			const formatted =
+				node.state && node.state !== 'known'
+					? {
+							state: node.state,
+							value: formatNonKnownText(bundle, stdPacks, lang, node.state, node.reason ?? ''),
+							reason: node.reason ?? '',
+							valueSign: stateSign(catalog, node.state),
+						}
+					: formatLineValue(
+							bundle,
+							lang,
+							stdPacks,
+							catalog,
+							node.relation,
+							keyParts,
+							polarity,
+							steps[0]?.value,
+						);
 			const originInfo = formatOrigin(bundle, lang, stdPacks, catalog, node, answer, polarity, true);
 			const conclusionDetails = node.distance === 0 ? buildConclusionDetails(node) : {};
 			const alreadyLinked = new Set<number>();
@@ -682,7 +690,15 @@ export function buildAnswerTable(
 				],
 			};
 		});
-		return { question: questionTerm, shape, heading, headers, rows, moreLabel };
+		return {
+			question: questionTerm,
+			shape,
+			heading,
+			headers,
+			rows,
+			moreLabel,
+			...(typeof answer.hidden_count === 'number' ? { hiddenCount: answer.hidden_count } : {}),
+		};
 	}
 
 	if (shape === 'rings') {
@@ -716,7 +732,15 @@ export function buildAnswerTable(
 				],
 			};
 		});
-		return { question: questionTerm, shape, heading, headers, rows, moreLabel };
+		return {
+			question: questionTerm,
+			shape,
+			heading,
+			headers,
+			rows,
+			moreLabel,
+			...(typeof answer.hidden_count === 'number' ? { hiddenCount: answer.hidden_count } : {}),
+		};
 	}
 
 	if (shape === 'gap') {
@@ -790,7 +814,15 @@ export function buildAnswerTable(
 				{ text: viewMessage(stdPacks, lang, `impact.${entry.change}`) },
 			],
 		}));
-		return { question: questionTerm, shape, heading, headers, rows, moreLabel };
+		return {
+			question: questionTerm,
+			shape,
+			heading,
+			headers,
+			rows,
+			moreLabel,
+			...(typeof answer.hidden_count === 'number' ? { hiddenCount: answer.hidden_count } : {}),
+		};
 	}
 
 	// series (or fallback tabular form)

@@ -53,6 +53,7 @@
     readonly headers: readonly string[];
     readonly rows: readonly ProofTreeRow[];
     readonly note?: string | undefined;
+    readonly hiddenCount?: number | undefined;
   }
 
   let { answer }: { answer: ProofTreeAnswer } = $props();
@@ -244,6 +245,15 @@
       </tr>
     {/each}
   </tbody>
+  {#if answer.hiddenCount !== undefined && answer.hiddenCount !== 0}
+    <tfoot>
+      <tr>
+        <td colspan={answer.headers.length} {...{ [M.reason]: 'hidden_premises' }}>
+          {answer.hiddenCount} hidden
+        </td>
+      </tr>
+    </tfoot>
+  {/if}
 </table>
 {#if answer.note}
   <p class="slip-answer-note">{answer.note}</p>

@@ -6,15 +6,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Why not and why unknown in the slip: a missing premise is a ghost row with its published reason, the conclusion stays unknown (never no), and a premise the role may not read says not readable for your role, with n premises hidden only as the reader publishes it (proof map requirements 5 and 6)',
-  waits_on: [
-    'm1-sheet-reads-gate-output'
-  ]
-};
-
 // Decision 0012 §2 (3c) and §3a (proof map requirements 5 and 6). Unique to Rezono's 4-valued truth:
 // missing premises appear as ghost rows with their published reason (zero digits), unknown conclusions stay unknown,
 // and role-screened premises say "not readable for your role" without leaking key, value, or source.
