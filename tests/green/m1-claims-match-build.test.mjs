@@ -3,18 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Claims match what is built: breathing, 60fps, under 250 ms and cryptographic proof per mark leave README, AGENTS, docs and packages unless the same line names a green test that measures or verifies them (issue #23 §1 and §5)',
-  waits_on: []
-};
-
 // Decision 0012 §2 (5b), issue #23 §1 ("cryptographic proof per mark" is only string references) and §5 (breathing
-// sheets, 60 fps and under 250 ms are not built; radial rings are, in ripple-layout.ts). The M4 work of #31 removed the
-// README claims; AGENTS.md and a delta-store comment still claim under 250 ms. A claim may stay only on a line that names the green test that
-// measures or verifies it, as `tests/green/<id>.test.mjs`, and that test mentions the claim too. Decisions keep their
-// history and are not scanned; Decision 0012 supersedes their claims.
+// sheets, 60 fps and under 250 ms are not built; radial rings are, in ripple-layout.ts). A claim may stay only on a
+// line that names the green test that measures or verifies it, as `tests/green/<id>.test.mjs`, and that test mentions
+// the claim too. Decisions keep their history and are not scanned; Decision 0012 supersedes their claims.
 
 const ROOT = process.cwd();
 const CLAIMS = [
