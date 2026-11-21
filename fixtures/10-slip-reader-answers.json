@@ -1,7 +1,7 @@
 {
   "fixture_id": "10-slip-reader-answers",
   "manifest": {
-    "id": "sha256:d9c42987dc4d60d5a6bc4b73d3b09a0425d14c043602321d30d3652fe7ad4ba8",
+    "id": "sha256:b301e58c0708d277add32d884f9bb0f4b27f9f85c317b7d605f3cfc7e8b9dad3",
     "epoch": 1,
     "knowledge_time": "2026-01-01T00:00:00Z",
     "role": "reader",
@@ -11,14 +11,14 @@
   "source": {
     "decision": "decisions/0009-slip-reads-rezono-reader.md",
     "repository": "rezono-lang/rezono",
-    "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+    "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
     "pack": "tests/fixtures/slip",
     "stores": {
       "main": "tests/slip/slip_support.py publish_main",
       "sweeps": "tests/slip/slip_support.py publish_sweeps, then drop_variant(v-item_amount-03-3)"
     },
     "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the commit by .github/workflows/rezono-reader-parity.yml: every request packages/slip/src/model.ts sends for the slip tests' pages, with the reader's status and body as served. Git dates of the sweeps repository fixed at 2026-01-01T00:00:00Z.",
-    "recorded_by": "https://github.com/rezono-lang/cartouche/actions/runs/44931077317"
+    "recorded_by": null
   },
   "reader_answers": {
     "main": {
@@ -2026,7 +2026,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "d9c42987dc4d60d5a6bc4b73d3b09a0425d14c043602321d30d3652fe7ad4ba8",
+            "manifest_sha256": "b301e58c0708d277add32d884f9bb0f4b27f9f85c317b7d605f3cfc7e8b9dad3",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
@@ -2425,7 +2425,7 @@
                     "relation": "busy"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -2433,7 +2433,7 @@
                     "relation": "group_size"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -2613,7 +2613,7 @@
                     "relation": "recorded_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -2621,7 +2621,7 @@
                     "relation": "calc__capped_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -2694,7 +2694,7 @@
                     "relation": "calc__capped_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -2806,7 +2806,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -2957,7 +2957,7 @@
                     "relation": "group_size"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -3094,7 +3094,7 @@
                     "relation": "recorded_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -3345,7 +3345,7 @@
                     "relation": "group_size"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -3353,7 +3353,7 @@
                     "relation": "may_read"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -3361,7 +3361,7 @@
                     "relation": "may_read"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -3369,7 +3369,7 @@
                     "relation": "busy"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -3486,7 +3486,7 @@
                     "relation": "group_size"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -3494,7 +3494,7 @@
                     "relation": "busy"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -3702,7 +3702,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -3710,7 +3710,7 @@
                     "relation": "recorded_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -3718,7 +3718,7 @@
                     "relation": "calc__capped_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -3859,7 +3859,7 @@
                     "relation": "group_size"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -3867,7 +3867,7 @@
                     "relation": "busy"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -4008,7 +4008,7 @@
                     "relation": "group_size"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -4016,7 +4016,7 @@
                     "relation": "busy"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -4148,7 +4148,7 @@
                     "relation": "recorded_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -4156,7 +4156,7 @@
                     "relation": "calc__capped_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -5271,7 +5271,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "d9c42987dc4d60d5a6bc4b73d3b09a0425d14c043602321d30d3652fe7ad4ba8",
+            "manifest_sha256": "b301e58c0708d277add32d884f9bb0f4b27f9f85c317b7d605f3cfc7e8b9dad3",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
@@ -5593,7 +5593,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 }
               ]
             }
@@ -5807,7 +5807,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 },
                 {
                   "conclusion": {
@@ -5815,7 +5815,7 @@
                     "relation": "recorded_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 },
                 {
                   "conclusion": {
@@ -5823,7 +5823,7 @@
                     "relation": "calc__capped_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 }
               ]
             }
@@ -7965,7 +7965,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "67b0d60777e473d24974033d10f131863b7062d1d2dd2fcde75c94252e1dae8d",
+            "manifest_sha256": "24d54ebc06c4e0afef5309c34058fc5f49157db3c40a20a196dfc2145fd49946",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
@@ -8287,7 +8287,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -8501,7 +8501,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -8509,7 +8509,7 @@
                     "relation": "recorded_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 },
                 {
                   "conclusion": {
@@ -8517,7 +8517,7 @@
                     "relation": "calc__capped_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "46cd4c4543540bfe5319865c3ab7549dc5a39f4a2a6d25222350cad424a4d302"
+                  "piece_sha256": "f390fdff0ace7c263b1fb241fb92ae5bdf48f1253e17618d1a2a3d27c8b05b50"
                 }
               ]
             }
@@ -10860,7 +10860,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "67b0d60777e473d24974033d10f131863b7062d1d2dd2fcde75c94252e1dae8d",
+            "manifest_sha256": "24d54ebc06c4e0afef5309c34058fc5f49157db3c40a20a196dfc2145fd49946",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
@@ -11182,7 +11182,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 }
               ]
             }
@@ -11396,7 +11396,7 @@
                     "relation": "flagged"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 },
                 {
                   "conclusion": {
@@ -11404,7 +11404,7 @@
                     "relation": "recorded_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 },
                 {
                   "conclusion": {
@@ -11412,7 +11412,7 @@
                     "relation": "calc__capped_amount"
                   },
                   "status": "green",
-                  "piece_sha256": "dca0742aec44300b3fe4e7f32dfbb02c0887a26a8935f521d1660e0a70f90a8a"
+                  "piece_sha256": "e01efa49c93f457b8417f7652bf166fb0538a90a4ada6ed0e6ee6315f0d515c9"
                 }
               ]
             }

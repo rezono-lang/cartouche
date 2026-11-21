@@ -27,7 +27,7 @@
     "contracts/rezono-pin.json": {
       "contract_id": "rezono.core-pin/1",
       "decision": "decisions/0006-slip-conformance-boundary.md",
-      "sha256": "90da62f942dae6eaaaa1edecea02d2cb2fc1541b90872f15b74a6b805214a5f0"
+      "sha256": "80a304835aa34f2c17d68a7a564d21f5ad057dfd91e81bd804926fc8c643fe1b"
     }
   }
 }

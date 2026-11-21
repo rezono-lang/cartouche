@@ -1,7 +1,7 @@
 {
   "fixture_id": "11-zorgtoeslag-bitemporal-gate-answers",
   "manifest": {
-    "id": "sha256:a11e586942c01d965de15e13051c59910514cd45c757e104d999951f14bad083",
+    "id": "sha256:7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
     "epoch": 4,
     "knowledge_time": "2026-05-01T00:00:00Z",
     "role": "checker",
@@ -11,10 +11,10 @@
   "source": {
     "decision": "decisions/0012-proof-first-plan.md",
     "repository": "rezono-lang/rezono",
-    "commit": "dcc847c1fc33cba203e5ea23eb5cdda4bbad873e",
+    "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
     "pack": "examples/zorgtoeslag-slice",
     "store": "examples/zorgtoeslag_history_support.py publish_history",
-    "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the pinned commit by .github/workflows/rezono-reader-parity.yml: /zorgtoeslag-slice/head, /zorgtoeslag-slice/head?m=m-1..m-4, and /zorgtoeslag-slice/m-1..m-4/rows/<allowance_relation>, with each HTTP status and JSON body as served.",
+    "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the pinned commit by .github/workflows/rezono-reader-parity.yml for both complete (`checker`) and restricted (`limited`) roles, with each HTTP status and JSON body as served.",
     "recorded_by": null
   },
   "epochs": [
@@ -389,10 +389,199 @@
                   "name": "reason"
                 }
               ]
+            },
+            {
+              "id": "may_read",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "role"
+                },
+                {
+                  "name": "kind"
+                },
+                {
+                  "name": "element"
+                }
+              ]
+            },
+            {
+              "id": "may_read_full",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "role"
+                },
+                {
+                  "name": "kind"
+                }
+              ]
             }
           ],
           "enums": [],
-          "rules": [],
+          "rules": [
+            {
+              "id": "may_read_1",
+              "stable_id": "may_read~4e4f6814e7dd",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "7",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_1",
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "household",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?x",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "household",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?x",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "7"
+              }
+            },
+            {
+              "id": "may_read_2",
+              "stable_id": "may_read~c5364c21c8cf",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "9",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_2",
+              "variables": [],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "limited",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "household",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "ann",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "household",
+                  "terms": [
+                    {
+                      "kind": "constant",
+                      "value": "ann",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "9"
+              }
+            },
+            {
+              "id": "may_read_full",
+              "stable_id": "may_read_full~e8dba2cfe565",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "8",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "household",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "household",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "8"
+              }
+            }
+          ],
           "labels": [
             {
               "element": "household",
@@ -438,15 +627,15 @@
           "epoch": 4,
           "knowledge_time": "2026-05-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
-          "manifest_sha256": "a11e586942c01d965de15e13051c59910514cd45c757e104d999951f14bad083",
+          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
+          "manifest_sha256": "7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
             }
           ],
           "snapshots": [
@@ -557,6 +746,20 @@
             },
             {
               "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read_full",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -572,15 +775,15 @@
           "epoch": 1,
           "knowledge_time": "2025-11-15T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
-          "manifest_sha256": "30ec73d99589c27179dd1c759bf4f18266064e11a88a443daee0b3e960831f1b",
+          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
+          "manifest_sha256": "7135907bb439a1b0dccac947b26e7535ee3f1d4cde3ed888018ec415c7eb3e41",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
             }
           ],
           "snapshots": [
@@ -691,6 +894,20 @@
             },
             {
               "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read_full",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -706,15 +923,15 @@
           "epoch": 2,
           "knowledge_time": "2025-12-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
-          "manifest_sha256": "2c06c9dc9ac9916db724668a68bcc02e6480733a9b663506aeb1423664684514",
+          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
+          "manifest_sha256": "4ab3e38e7721df6b6127505b989e45b6fe336ed4629b6b5eef1483d38ae34d49",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
             }
           ],
           "snapshots": [
@@ -825,6 +1042,20 @@
             },
             {
               "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read_full",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -840,15 +1071,15 @@
           "epoch": 3,
           "knowledge_time": "2026-02-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
-          "manifest_sha256": "33f9f459493bd1fe31b8881a6fbf98bebc7c345cf1042d803aa4ac13b6f2e515",
+          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
+          "manifest_sha256": "7a868055d80f41c90ea717cad306b2a0daaf93dcadf4c3447f9c5736ccf6ea30",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
             }
           ],
           "snapshots": [
@@ -959,6 +1190,20 @@
             },
             {
               "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read_full",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -974,15 +1219,15 @@
           "epoch": 4,
           "knowledge_time": "2026-05-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "8de45a82365c9f074d84ad9e8760d1f672011ebbe32f8cc3157454386282ac02",
-          "manifest_sha256": "a11e586942c01d965de15e13051c59910514cd45c757e104d999951f14bad083",
+          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
+          "manifest_sha256": "7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "5b1ce4a012c6659bdf375a29db855ad34924460e5425cc04d0942bddc08d2800"
+              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
             }
           ],
           "snapshots": [
@@ -1093,6 +1338,20 @@
             },
             {
               "relation": "household__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "may_read_full",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1412,6 +1671,719 @@
                 "0",
                 "known",
                 ""
+              ]
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-4/rows/household": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann"
+              ]
+            },
+            {
+              "key": [
+                "bob"
+              ]
+            },
+            {
+              "key": [
+                "dex"
+              ]
+            },
+            {
+              "key": [
+                "eve"
+              ]
+            },
+            {
+              "key": [
+                "fay"
+              ]
+            },
+            {
+              "key": [
+                "gus"
+              ]
+            },
+            {
+              "key": [
+                "hal"
+              ]
+            },
+            {
+              "key": [
+                "ivy"
+              ]
+            },
+            {
+              "key": [
+                "kim"
+              ]
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-4/rows/household__joint_income": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann",
+                "2500000"
+              ]
+            },
+            {
+              "key": [
+                "bob",
+                "4300000"
+              ]
+            },
+            {
+              "key": [
+                "dex",
+                "400000"
+              ]
+            },
+            {
+              "key": [
+                "eve",
+                "2000000"
+              ]
+            },
+            {
+              "key": [
+                "fay",
+                "4500000"
+              ]
+            },
+            {
+              "key": [
+                "gus",
+                "3400000"
+              ]
+            },
+            {
+              "key": [
+                "ivy",
+                "2000000"
+              ]
+            },
+            {
+              "key": [
+                "kim",
+                "5100000"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "limited": {
+      "/zorgtoeslag-slice/bundle": {
+        "status": 200,
+        "body": {
+          "pack": {
+            "id": "zorgtoeslag-slice"
+          },
+          "kinds": [
+            {
+              "id": "household",
+              "class": "Household",
+              "world": "open"
+            }
+          ],
+          "attributes": [
+            {
+              "id": "household.insured",
+              "kind": "household",
+              "name": "insured",
+              "table": "household__insured",
+              "type": "boolean",
+              "schema_type": "boolean",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "scalar",
+                "base": "boolean",
+                "range": "boolean"
+              },
+              "world": "open"
+            },
+            {
+              "id": "household.joint_income",
+              "kind": "household",
+              "name": "joint_income",
+              "table": "household__joint_income",
+              "type": "integer",
+              "schema_type": "Cents",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "currency": "EUR",
+              "semantic": {
+                "case": "money",
+                "base": "integer",
+                "range": "Cents",
+                "currency": "EUR"
+              },
+              "world": "open"
+            },
+            {
+              "id": "household.partner",
+              "kind": "household",
+              "name": "partner",
+              "table": "household__partner",
+              "type": "boolean",
+              "schema_type": "boolean",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "scalar",
+                "base": "boolean",
+                "range": "boolean"
+              },
+              "world": "open"
+            }
+          ],
+          "arrows": [],
+          "relations": [
+            {
+              "id": "calc__income_limit_partner",
+              "world": "open",
+              "calc": "income_limit_partner",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "income_limit_partner"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__income_limit_single",
+              "world": "open",
+              "calc": "income_limit_single",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "income_limit_single"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__rate_above",
+              "world": "open",
+              "calc": "rate_above",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "1",
+                "derived": "rate_above"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__standard_premium",
+              "world": "open",
+              "calc": "standard_premium",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "standard_premium"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__threshold_income",
+              "world": "open",
+              "calc": "threshold_income",
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "threshold_income"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "may_read",
+              "world": "open",
+              "columns": [
+                {
+                  "name": "role"
+                },
+                {
+                  "name": "kind"
+                },
+                {
+                  "name": "element"
+                }
+              ]
+            },
+            {
+              "id": "may_read_full",
+              "world": "open",
+              "columns": [
+                {
+                  "name": "role"
+                },
+                {
+                  "name": "kind"
+                }
+              ]
+            }
+          ],
+          "enums": [],
+          "rules": [
+            {
+              "id": "may_read_1",
+              "stable_id": "may_read~4e4f6814e7dd",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "7",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_1",
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "household",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?x",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "household",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?x",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "7"
+              }
+            },
+            {
+              "id": "may_read_2",
+              "stable_id": "may_read~c5364c21c8cf",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "9",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_2",
+              "variables": [],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "limited",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "household",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "ann",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "household",
+                  "terms": [
+                    {
+                      "kind": "constant",
+                      "value": "ann",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "9"
+              }
+            },
+            {
+              "id": "may_read_full",
+              "stable_id": "may_read_full~e8dba2cfe565",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "8",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "household",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "household",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "8"
+              }
+            }
+          ],
+          "labels": [
+            {
+              "element": "household",
+              "lang": "en",
+              "text": "household"
+            },
+            {
+              "element": "household.insured",
+              "lang": "en",
+              "text": "health insurance cover"
+            },
+            {
+              "element": "household.joint_income",
+              "lang": "en",
+              "text": "joint income"
+            },
+            {
+              "element": "household.partner",
+              "lang": "en",
+              "text": "has toeslagpartner"
+            }
+          ],
+          "messages": [
+            {
+              "lang": "en",
+              "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\narrow.total = {{Every {$kind} has exactly one {$arrow}.}}\narrow.partial = {{Every {$kind} has at most one {$arrow}.}}\nattribute.total = {{Every {$kind} has exactly one {$attribute}.}}\nattribute.partial = {{Every {$kind} has at most one {$attribute}.}}\nis_a = {{Every {$kind} is a {$parent}.}}\nunique_key = {{{$key} belongs to at most one {$kind}.}}\npath_equation = {{For every {$kind}: {$equation}.}}\n"
+            },
+            {
+              "lang": "nl",
+              "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\n"
+            }
+          ],
+          "home": {
+            "claim": []
+          },
+          "questions": []
+        }
+      },
+      "/zorgtoeslag-slice/head": {
+        "status": 200,
+        "body": {
+          "id": "m-4",
+          "epoch": 4,
+          "knowledge_time": "2026-05-01T00:00:00Z",
+          "access_semantics": 2,
+          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
+          "manifest_sha256": "7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
+          "witness_check": "green",
+          "trust_tier": "sealed",
+          "may_propose": false,
+          "compiled": [
+            {
+              "file": "bundle/schema-bundle.json",
+              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
+            }
+          ],
+          "snapshots": [
+            {
+              "relation": "calc__allowance",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__as_of",
+              "role": "limited",
+              "complete": false,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__household_premium",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_partner",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__income_limit_single",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__norm_premium",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__rate_above",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__standard_premium",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_income",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__threshold_rate",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__yearly_amount",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "household",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "household__insured",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "household__joint_income",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "household__partner",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "may_read",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "may_read_full",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-4/rows/calc__allowance": {
+        "status": 200,
+        "body": {
+          "rows": []
+        }
+      },
+      "/zorgtoeslag-slice/m-4/rows/household": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann"
+              ]
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-4/rows/household__joint_income": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "ann",
+                "2500000"
               ]
             }
           ]

@@ -3,73 +3,34 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DATA_MARKS, canonicalJson } from '../../packages/reader-core/src/index.ts';
-import { compileFlowSplitScene } from '../../packages/scene-ir/src/index.ts';
-import { exportFlowSplitSvg } from '../../packages/atlas/src/flow-split-svg.ts';
 import { render as renderSlip } from '../../packages/slip/bin/render.ts';
-import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
+import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
 const ROOT = process.cwd();
-const FLOW_SHEET = path.join(ROOT, 'packages', 'atlas', 'src', 'FlowSplitSheet.svelte');
+const PACK = 'zorgtoeslag-slice';
 
-test('Role-safe zero-leak projection: tenant_a contains zero traces of restricted nodes and declares not_read_in_full', () => {
-  const fx = JSON.parse(
-    fs.readFileSync(path.join(ROOT, 'fixtures', '02-platform-tenant-a.json'), 'utf8')
+test('Role-safe zero-leak projection (recorded gate -> restricted role): limited recording contains zero complete-only subjects or withheld allowance rows and marks household full=false', () => {
+  const recording = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'fixtures', '11-zorgtoeslag-bitemporal-gate-answers.json'), 'utf8')
   );
-  const scene = compileFlowSplitScene(fx);
-  const serialized = canonicalJson(scene);
+  const checkerSubjects = recording.reader_answers.checker[`/${PACK}/m-4/rows/household`].body.rows.map((r) => String(r.key[0]));
+  const limitedSubjects = new Set(
+    recording.reader_answers.limited[`/${PACK}/m-4/rows/household`].body.rows.map((r) => String(r.key[0]))
+  );
+  const restrictedIds = checkerSubjects.filter((id) => !limitedSubjects.has(id));
+  assert.ok(restrictedIds.length > 0, 'complete role must contain subjects hidden from limited role');
 
-  assert.equal(scene.seal.role, 'tenant_a');
-  assert.equal(scene.horizon.complete, false);
-  assert.equal(scene.horizon.reason, 'not_read_in_full');
-  assert.equal(scene.driftEdges.length, 0);
+  const limitedHead = recording.reader_answers.limited[`/${PACK}/head`].body;
+  const limitedHhSnap = limitedHead.snapshots.find((s) => s.relation === 'household');
+  assert.equal(limitedHhSnap?.full, false, 'restricted role must mark household snapshot full=false');
 
-  for (const forbidden of fx.forbidden_leaks_check) {
-    assert.equal(serialized.includes(forbidden), false, `Restricted identifier "${forbidden}" leaked into tenant_a scene!`);
-  }
-});
+  const limitedRels = new Set(recording.reader_answers.limited[`/${PACK}/bundle`].body.relations.map((r) => r.id));
+  assert.equal(limitedRels.has('calc__allowance'), false, 'withheld calc__allowance must not appear in restricted bundle');
+  assert.deepEqual(recording.reader_answers.limited[`/${PACK}/m-4/rows/calc__allowance`].body.rows, []);
 
-test('Role-safe zero-leak projection (complete -> restricted): published tenant_a fixture leaves zero complete-only IDs, labels, placeholders, or count leaks in scene, SVG, and DOM', async () => {
-  const complete = JSON.parse(fs.readFileSync(path.join(ROOT, 'fixtures', '01-platform-drift.json'), 'utf8'));
-  const projected = JSON.parse(fs.readFileSync(path.join(ROOT, 'fixtures', '02-platform-tenant-a.json'), 'utf8'));
-  const visibleIds = new Set(projected.nodes.map((n) => n.id));
-  const restrictedIds = new Set(complete.nodes.map((n) => n.id).filter((id) => !visibleIds.has(id)));
-  assert.ok(restrictedIds.size > 0, 'complete fixture must contain nodes absent from tenant_a publication');
-  const restrictedTokens = [
-    ...restrictedIds,
-    ...(projected.forbidden_leaks_check ?? []),
-    'e-drift-vault',
-    'e-absent-backup'
-  ];
-
-  const scene = compileFlowSplitScene(projected);
-  const sceneJson = canonicalJson(scene);
-  const svg = exportFlowSplitSvg(projected);
-  const { html } = await renderSvelte(FLOW_SHEET, { fixture: projected });
-
-  assert.equal(scene.nodes.length, projected.nodes.length, 'scene node count must equal visible count (no placeholder nodes)');
-  assert.equal(scene.horizon.complete, false);
-  assert.equal(scene.horizon.reason, 'not_read_in_full');
-
-  for (const token of restrictedTokens) {
-    assert.equal(sceneJson.includes(token), false, `restricted token "${token}" leaked into scene JSON`);
-    assert.equal(svg.includes(token), false, `restricted token "${token}" leaked into exported SVG`);
-    assert.equal(html.includes(token), false, `restricted token "${token}" leaked into rendered HTML`);
-  }
-
-  const { window, document } = parseHtml(html);
-  try {
-    const drawnNodes = document.querySelectorAll(`svg g[${DATA_MARKS.key}]`);
-    // Each visible node is drawn on stated/observed curtain layers; zero restricted keys exist
-    for (const g of drawnNodes) {
-      const k = g.getAttribute(DATA_MARKS.key) ?? '';
-      for (const bad of restrictedIds) {
-        assert.equal(k.includes(bad), false, `restricted key "${bad}" leaked into SVG DOM`);
-      }
-    }
-    const twinRows = document.querySelectorAll(`table[${DATA_MARKS.part}="twin"] tbody tr`);
-    assert.equal(twinRows.length, projected.nodes.length, 'table twin must contain only visible rows, zero hidden placeholders');
-  } finally {
-    await window.happyDOM.close();
+  const limitedJson = canonicalJson(recording.reader_answers.limited);
+  for (const hiddenId of restrictedIds) {
+    assert.equal(limitedJson.includes(`"${hiddenId}"`), false, `restricted subject "${hiddenId}" leaked into limited gate output`);
   }
 });
 
