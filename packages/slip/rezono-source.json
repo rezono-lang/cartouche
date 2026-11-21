@@ -1,8 +1,7 @@
 {
   "decision": "decisions/0009-slip-reads-rezono-reader.md",
-  "description": "The Rezono sources @rezono/slip consumes at build time: read at this commit, verified by SHA-256 (LF bytes as stored in git), never copied into Cartouche.",
+  "description": "The Rezono sources @rezono/slip consumes at build time, read at the one Rezono commit pinned in contracts/rezono-pin.json (pinned_commit) and verified by SHA-256 (LF bytes as stored in git); never copied into Cartouche.",
   "repository": "rezono-lang/rezono",
-  "commit": "f15c89d665e2815b02e12665203a9d48dd6abc40",
   "files": {
     "viewer/messages/src/fill.ts": "36e705467780dec48c9c70ec6d28271a7362b7d15f82e61c8b07b13ee7995560",
     "packs/std-view/sheets.yaml": "e391af70ff416e9844a98abc3a53466c1fa0cd548efb8667dc4b07185de3e6d3",

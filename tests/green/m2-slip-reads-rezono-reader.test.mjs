@@ -282,8 +282,14 @@ test('Decision 0009: the view model runs at build time only, from pinned Rezono 
   const page = fs.readFileSync(path.join(ROOT, 'packages', 'slip', 'src', 'Slip.svelte'), 'utf8');
   assert.equal(/from '\.\/model\.ts'|from '\.\/slip-props\.ts'/.test(page), false, 'the page imports no view-model code');
   assert.equal(/\{\\\$|split\(/.test(page), false, 'the page fills no message itself');
-  const pin = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'slip', 'rezono-source.json'), 'utf8'));
-  assert.equal(load().source.commit, pin.commit, 'the reader answers are of the pinned Rezono commit');
+  // One pin, in one place: contracts/rezono-pin.json. Bumping it without re-recording the reader answers is red.
+  const pin = JSON.parse(fs.readFileSync(path.join(ROOT, 'contracts', 'rezono-pin.json'), 'utf8'));
+  assert.match(pin.pinned_commit, /^[0-9a-f]{40}$/);
+  assert.equal(load().source.commit, pin.pinned_commit, 'the reader answers are of the pinned Rezono commit');
+  const sources = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'slip', 'rezono-source.json'), 'utf8'));
+  assert.equal('commit' in sources, false, 'the slip sources carry no second pin');
+  const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'rezono-reader-parity.yml'), 'utf8');
+  assert.match(workflow, /jq -r \.pinned_commit cartouche\/contracts\/rezono-pin\.json/, 'the recording job reads the same pin');
   // Dutch through Rezono's own std-view messages and fill.ts, from the same answers.
   const nl = await render({ fixture: FX, role: 'reader', pack: 'slip', lang: 'nl' });
   assert.notEqual(nl.html, a.html);
