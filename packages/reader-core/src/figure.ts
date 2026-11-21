@@ -1,7 +1,7 @@
 /**
  * Deterministic ICU-free Figure view helper (Decision 0001 & 0004).
  * Never calls Intl.NumberFormat and never reformats numeric values client-side.
- * Emits exact canonical data-* attributes for tests and screen readers.
+ * Emits exact canonical data-* attributes aligned with contracts/data-marks.json & SIGNS.
  */
 
 import type { OpaqueDisplayCell } from './opaque.ts';
@@ -23,9 +23,12 @@ export function renderFigure(cell: OpaqueDisplayCell): RenderedFigure {
     'data-proof-ref': cell.proofRef
   };
   if (cell.reason) attrs['data-reason'] = cell.reason;
-  if (cell.state === 'unknown') attrs['data-sign'] = 'hatch';
-  if (cell.state === 'absent') attrs['data-sign'] = 'absent';
-  if (folded) attrs['data-sign'] = 'replaced';
+  if (cell.completenessWitnessRef) attrs['data-completeness-ref'] = cell.completenessWitnessRef;
+  if (cell.state === 'unknown') attrs['data-sign'] = 'unknown';
+  else if (cell.state === 'absent') attrs['data-sign'] = 'absent';
+  else if (cell.state === 'not_applicable') attrs['data-sign'] = 'not_applicable';
+  else if (cell.state === 'invalid') attrs['data-sign'] = 'violated';
+  else if (folded) attrs['data-sign'] = 'changed';
 
   return Object.freeze({
     text,

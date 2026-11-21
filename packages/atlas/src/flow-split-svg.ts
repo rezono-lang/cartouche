@@ -11,7 +11,7 @@ import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 
 export type FlowLayer = 'stated' | 'observed' | 'both';
 export type FlowNodeSign = 'origin_decision' | 'origin_design' | 'origin_observation' | 'derived';
-export type FlowNodeState = 'valid' | 'changed' | 'violated' | 'absent' | 'unknown';
+export type FlowNodeState = 'valid' | 'changed' | 'violated' | 'absent' | 'unknown' | 'invalid';
 
 export interface FlowSplitNodeInput {
   readonly id: string;
@@ -80,7 +80,7 @@ export interface FlowSplitEdgeLayout {
   readonly layer: FlowLayer;
   readonly kind: 'standard' | 'absent' | 'drift';
   readonly label: string;
-  readonly proofRef: string;
+  readonly proofRef: string | null;
   readonly completenessWitnessRef: string | null;
   readonly statedProofRef: string | null;
   readonly observedProofRef: string | null;
@@ -161,8 +161,16 @@ function edgeKindOf(rawKind: string): 'standard' | 'absent' | 'drift' {
   return 'standard';
 }
 
+function hasOwnSign(key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(SIGNS, key);
+}
+
+function stateSignKey(state: FlowNodeState): string {
+  return state === 'invalid' ? 'violated' : state;
+}
+
 function strokeForState(state: FlowNodeState, palette: PaletteTokens): string {
-  if (state === 'violated') return palette.violated;
+  if (state === 'violated' || state === 'invalid') return palette.violated;
   if (state === 'changed') return palette.caution;
   if (state === 'valid') return palette.valid;
   if (state === 'unknown') return palette.hatchStroke;
@@ -182,7 +190,21 @@ export function buildFlowSplitModel(
   const theme: PaletteName = options.theme ?? 'swisstopo';
   const palette = PALETTES[theme];
   const curtainSplit = clampCurtainSplit(options.curtainSplit);
-  const scene = compileFlowSplitScene(fixture);
+  const scene = compileFlowSplitScene({
+    manifest: fixture.manifest,
+    horizon: fixture.horizon,
+    nodes: fixture.nodes.map((n) => ({
+      id: n.id,
+      label: n.label,
+      zone: n.zone,
+      sign: n.sign,
+      state: n.state === 'invalid' ? 'violated' : n.state,
+      ...(n.reason !== undefined ? { reason: n.reason } : {}),
+      proof_ref: n.proof_ref,
+      ...(n.completeness_witness_ref !== undefined ? { completeness_witness_ref: n.completeness_witness_ref } : {})
+    })),
+    edges: fixture.edges
+  });
 
   const violations = checkGeometricInvariants(scene);
   if (violations.length > 0) {
@@ -199,18 +221,19 @@ export function buildFlowSplitModel(
   >();
 
   for (const node of fixture.nodes) {
-    if (!SIGNS[node.sign]) {
+    if (!hasOwnSign(node.sign)) {
       throw new Error(`FlowSplit epistemic invariant violation: unrecognized sign "${String(node.sign)}" on node "${node.id}".`);
     }
-    if (!SIGNS[node.state]) {
+    const mappedStateSign = stateSignKey(node.state);
+    if (!hasOwnSign(mappedStateSign)) {
       throw new Error(`FlowSplit epistemic invariant violation: unrecognized state "${String(node.state)}" on node "${node.id}".`);
     }
     requireNonEmpty(node.proof_ref, `proof_ref on node "${node.id}"`);
     if (node.state === 'absent') {
       requireNonEmpty(node.completeness_witness_ref, `completeness_witness_ref on absent node "${node.id}"`);
     }
-    if (node.state === 'unknown') {
-      requireNonEmpty(node.reason, `reason on unknown node "${node.id}"`);
+    if (node.state === 'unknown' || node.state === 'invalid') {
+      requireNonEmpty(node.reason, `reason on ${node.state} node "${node.id}"`);
     }
 
     let bucket = zoneBuckets.get(node.zone);
@@ -273,7 +296,7 @@ export function buildFlowSplitModel(
         const nx = zx + ZONE_PAD;
         const ny = baseY + rowIdx * (NODE_H + NODE_GAP_Y);
         const signSpec = SIGNS[raw.sign]!;
-        const stateSpec = SIGNS[raw.state]!;
+        const stateSpec = SIGNS[stateSignKey(raw.state)]!;
         const layoutNode: FlowSplitNodeLayout = {
           id: raw.id,
           label: raw.label,
@@ -281,7 +304,7 @@ export function buildFlowSplitModel(
           sign: raw.sign,
           signGlyph: signSpec.glyph,
           state: raw.state,
-          stateGlyph: stateSpec.glyph,
+          stateGlyph: raw.state === 'invalid' ? '!' : stateSpec.glyph,
           layer: raw.layer ?? 'both',
           reason: raw.reason ?? null,
           proofRef: raw.proof_ref,
@@ -313,12 +336,13 @@ export function buildFlowSplitModel(
     let statedRef: string | null = null;
     let observedRef: string | null = null;
     let completenessRef: string | null = null;
-    let primaryProof: string;
+    let primaryProof: string | null;
 
     if (kind === 'drift') {
       statedRef = requireNonEmpty(rawEdge.stated_proof_ref, `stated_proof_ref on drift edge "${rawEdge.id}"`);
       observedRef = requireNonEmpty(rawEdge.observed_proof_ref, `observed_proof_ref on drift edge "${rawEdge.id}"`);
-      primaryProof = rawEdge.proof_ref && rawEdge.proof_ref.trim().length > 0 ? rawEdge.proof_ref : statedRef;
+      // Decision 0011 §1: drift edge carries stated & observed proofs; NEVER borrow stated_proof_ref as generic proof_ref.
+      primaryProof = rawEdge.proof_ref && rawEdge.proof_ref.trim().length > 0 ? rawEdge.proof_ref : null;
     } else if (kind === 'absent') {
       primaryProof = requireNonEmpty(rawEdge.proof_ref, `proof_ref on absent edge "${rawEdge.id}"`);
       completenessRef = requireNonEmpty(
@@ -475,21 +499,22 @@ export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): s
       const observedRef = e.observedProofRef!;
       const dStated = edgePathFor(e, -DRIFT_TRACK_OFFSET);
       const dObserved = edgePathFor(e, DRIFT_TRACK_OFFSET);
+      const ownProofAttr = e.proofRef ? ` ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}"` : '';
       lines.push(
-        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="drift" ${DATA_MARKS.sign}="drift" ${DATA_MARKS.state}="violated" ${DATA_MARKS.layer}="both" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
+        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="drift" ${DATA_MARKS.sign}="drift" ${DATA_MARKS.state}="violated" ${DATA_MARKS.layer}="both"${ownProofAttr} ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
       );
       lines.push(
-        `      <g ${DATA_MARKS.layer}="stated" ${DATA_MARKS.proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}">`
+        `      <g ${DATA_MARKS.layer}="stated" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}">`
       );
       lines.push(
-        `        <path d="${dStated}" fill="none" stroke="${escapeXml(palette.proof)}" stroke-width="2" stroke-dasharray="6 3" ${DATA_MARKS.proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" />`
+        `        <path d="${dStated}" fill="none" stroke="${escapeXml(palette.proof)}" stroke-width="2" stroke-dasharray="6 3" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" />`
       );
       lines.push('      </g>');
       lines.push(
-        `      <g ${DATA_MARKS.layer}="observed" ${DATA_MARKS.proof_ref}="${escapeXml(observedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
+        `      <g ${DATA_MARKS.layer}="observed" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
       );
       lines.push(
-        `        <path d="${dObserved}" fill="none" stroke="${escapeXml(palette.violated)}" stroke-width="2.5" ${DATA_MARKS.proof_ref}="${escapeXml(observedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}" />`
+        `        <path d="${dObserved}" fill="none" stroke="${escapeXml(palette.violated)}" stroke-width="2.5" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}" />`
       );
       lines.push('      </g>');
       lines.push(
@@ -503,7 +528,7 @@ export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): s
       const d = edgePathFor(e, 0);
       const compRef = e.completenessWitnessRef!;
       lines.push(
-        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="absent" ${DATA_MARKS.sign}="absent" ${DATA_MARKS.state}="absent" ${DATA_MARKS.layer}="${escapeXml(e.layer)}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.completeness_ref}="${escapeXml(compRef)}">`
+        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="absent" ${DATA_MARKS.sign}="absent" ${DATA_MARKS.state}="absent" ${DATA_MARKS.layer}="${escapeXml(e.layer)}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef!)}" ${DATA_MARKS.completeness_ref}="${escapeXml(compRef)}">`
       );
       lines.push(
         `      <path d="${d}" fill="none" stroke="${escapeXml(palette.inkSoft)}" stroke-width="1.5" stroke-dasharray="5 5" />`
@@ -515,7 +540,7 @@ export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): s
     } else {
       const d = edgePathFor(e, 0);
       lines.push(
-        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="standard" ${DATA_MARKS.layer}="${escapeXml(e.layer)}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}">`
+        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="standard" ${DATA_MARKS.layer}="${escapeXml(e.layer)}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef!)}">`
       );
       lines.push(
         `      <path d="${d}" fill="none" stroke="${escapeXml(palette.ruleStrong)}" stroke-width="1.5" />`
@@ -529,7 +554,7 @@ export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): s
   lines.push('  <g>');
   for (const n of model.nodes) {
     const strokeColor = strokeForState(n.state, palette);
-    const dashAttr = n.state === 'absent' ? ' stroke-dasharray="5 4"' : '';
+    const dashAttr = n.state === 'absent' ? ' stroke-dasharray="5 4"' : n.state === 'invalid' ? ' stroke-dasharray="3 2"' : '';
     const compAttr = n.completenessWitnessRef
       ? ` ${DATA_MARKS.completeness_ref}="${escapeXml(n.completenessWitnessRef)}"`
       : '';
@@ -558,6 +583,15 @@ export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): s
       );
       lines.push(
         `        <text x="${n.x + 10}" y="${n.y + 56}" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(absentGlyph)} absent</text>`
+      );
+      lines.push('      </g>');
+    } else if (n.state === 'invalid') {
+      const reason = n.reason!;
+      lines.push(
+        `      <g ${DATA_MARKS.sign}="violated" ${DATA_MARKS.state}="invalid" ${DATA_MARKS.reason}="${escapeXml(reason)}">`
+      );
+      lines.push(
+        `        <text x="${n.x + 10}" y="${n.y + 56}" fill="${escapeXml(palette.violated)}" font-family="ui-monospace, monospace" font-size="10" font-weight="700">! invalid · ${escapeXml(reason)}</text>`
       );
       lines.push('      </g>');
     } else {

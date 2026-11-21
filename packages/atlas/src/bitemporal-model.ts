@@ -4,6 +4,10 @@
  * `z_norm` / `revised` flags straight from the fixture as opaque pass-through values:
  * heights are scaled by CSS (`calc(var(--z) * ...)`), never by script.
  * Only integer grid indices take part in layout arithmetic.
+ *
+ * Decision 0011 (§1):
+ *  - `unknown` encodes NO height/magnitude (`zToken: null`) and renders as a flat hatched band.
+ *  - `invalid` (`!`) is supported without throwing, mapped to contract sign `'violated'` and `zToken: null`.
  */
 
 import { compileBitemporalScene } from '../../scene-ir/src/compile-bitemporal.ts';
@@ -16,10 +20,8 @@ export const TILE_HALF_H = 27;
 export const STEP_X = 60;
 export const STEP_Y = 30;
 export const Z_FULL = 90;
-/** Unknown cells are drawn as a full-height hatched curtain: never z = 0. */
-export const UNKNOWN_Z_TOKEN = '1';
 
-export type BitemporalSign = 'valid' | 'changed' | 'unknown' | 'not_applicable';
+export type BitemporalSign = 'valid' | 'changed' | 'unknown' | 'not_applicable' | 'violated';
 
 export interface BitemporalCellModel {
   readonly id: string;
@@ -27,13 +29,13 @@ export interface BitemporalCellModel {
   readonly row: number;
   readonly epoch: string;
   readonly validTime: string;
-  readonly state: 'known' | 'changed' | 'unknown' | 'not_applicable';
+  readonly state: 'known' | 'changed' | 'unknown' | 'not_applicable' | 'invalid';
   readonly sign: BitemporalSign;
   readonly reason: string | null;
   readonly proofRef: string;
   readonly display: string | null;
   readonly previousDisplay: string | null;
-  /** Opaque published height token, or null for hollow cells. */
+  /** Opaque published height token for known/changed prisms, or null for non-magnitude cells (unknown, N/A, invalid). */
   readonly zToken: string | null;
   readonly screenX: number;
   readonly screenY: number;
@@ -77,11 +79,17 @@ export function buildBitemporalModel(fixture: BitemporalFixtureInput): Bitempora
         if (DIGIT.test(raw.reason)) throw new Error(`unknown cell reason must not contain digits: ${raw.proof_ref}`);
         state = 'unknown';
         sign = 'unknown';
-        zToken = UNKNOWN_Z_TOKEN;
+        // Decision 0011 §1: unknown never encodes a height/magnitude.
+        zToken = null;
       } else if (raw.state === 'not_applicable') {
         if (!raw.reason) throw new Error(`not_applicable cell without published reason: ${raw.proof_ref}`);
         state = 'not_applicable';
         sign = 'not_applicable';
+      } else if (raw.state === 'invalid') {
+        if (!raw.reason) throw new Error(`invalid cell without published reason: ${raw.proof_ref}`);
+        state = 'invalid';
+        sign = 'violated';
+        zToken = null;
       } else if (raw.state === 'known') {
         if (raw.z_norm === undefined || raw.z_norm === null) {
           throw new Error(`known cell without published z_norm: ${raw.proof_ref}`);

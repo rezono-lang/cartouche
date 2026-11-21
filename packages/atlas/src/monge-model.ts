@@ -14,7 +14,7 @@ import { checkGeometricInvariants } from '../../scene-ir/src/geometry-invariants
 import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 import type { ManifestMeta } from '../../reader-core/src/index.ts';
 
-export type MongeNodeState = 'valid' | 'violated' | 'absent' | 'unknown';
+export type MongeNodeState = 'valid' | 'violated' | 'absent' | 'unknown' | 'invalid';
 
 export interface MongeServiceInput {
   readonly id: string;
@@ -27,6 +27,7 @@ export interface MongeServiceInput {
   readonly reason?: string | null;
   readonly display?: string | null;
   readonly round_states?: readonly MongeNodeState[];
+  readonly round_proof_refs?: readonly (string | null)[];
   readonly proof_ref: string;
   readonly completeness_witness_ref?: string | null;
 }
@@ -36,6 +37,7 @@ export interface MongeDriftArcInput {
   readonly from: string;
   readonly to: string;
   readonly label: string;
+  readonly proof_ref?: string | null;
   readonly stated_proof_ref: string;
   readonly observed_proof_ref: string;
 }
@@ -58,6 +60,8 @@ export interface Point2D {
 export interface MongeRoundMark {
   readonly roundId: string;
   readonly state: MongeNodeState;
+  readonly sign: string;
+  readonly proofRef: string | null;
   readonly plane2: Point2D;
   readonly plane3: Point2D;
 }
@@ -84,6 +88,7 @@ export interface MongeDriftProjection {
   readonly from: string;
   readonly to: string;
   readonly label: string;
+  readonly proofRef: string | null;
   readonly statedProofRef: string;
   readonly observedProofRef: string;
   readonly statedPath: string;
@@ -125,6 +130,10 @@ function assertValidSign(name: string): void {
   if (!Object.prototype.hasOwnProperty.call(SIGNS, name)) {
     throw new Error(`Unknown std-view sign: ${name}`);
   }
+}
+
+function stateToSign(state: MongeNodeState): string {
+  return state === 'invalid' ? 'violated' : state;
 }
 
 export function normalizeFoldAngle(angleDeg: number | undefined): number {
@@ -237,7 +246,7 @@ export function buildMongeFoldingModel(
       sign: s.sign,
       x: s.x,
       y: s.y,
-      state: s.state,
+      state: s.state === 'invalid' ? 'violated' : s.state,
       proof_ref: s.proof_ref,
       ...(s.completeness_witness_ref ? { completeness_witness_ref: s.completeness_witness_ref } : {})
     })),
@@ -260,9 +269,10 @@ export function buildMongeFoldingModel(
 
   for (const s of fixture.services) {
     assertValidSign(s.sign);
-    assertValidSign(s.state);
+    const serviceSignForState = stateToSign(s.state);
+    assertValidSign(serviceSignForState);
     signSet.add(s.sign);
-    signSet.add(s.state);
+    signSet.add(serviceSignForState);
 
     let publishedReason: string | null = s.reason?.trim() ? s.reason.trim() : null;
     if (s.state === 'unknown') {
@@ -283,6 +293,14 @@ export function buildMongeFoldingModel(
         proof_ref: s.proof_ref,
         completeness_witness_ref: s.completeness_witness_ref ?? null
       });
+    } else if (s.state === 'invalid') {
+      const cell = asOpaqueCell({
+        state: 'invalid',
+        display: s.display ?? null,
+        reason: s.reason ?? null,
+        proof_ref: s.proof_ref
+      });
+      publishedReason = cell.reason;
     }
 
     const p1 = projectOrtho(s.x, s.y, 0, trig);
@@ -293,15 +311,22 @@ export function buildMongeFoldingModel(
 
     const roundMarks: MongeRoundMark[] = [];
     const states = s.round_states ?? [];
+    const roundProofs = s.round_proof_refs ?? [];
     for (let i = 0; i < rounds.length; i++) {
       const st = states[i];
       if (!st) continue;
-      assertValidSign(st);
-      signSet.add(st);
+      const roundSign = stateToSign(st);
+      assertValidSign(roundSign);
+      signSet.add(roundSign);
+      const rawRoundProof = roundProofs[i];
+      const ownProof =
+        typeof rawRoundProof === 'string' && rawRoundProof.trim().length > 0 ? rawRoundProof.trim() : null;
       const h = ((i + 1) / (rounds.length + 1)) * WALL_DEPTH;
       roundMarks.push({
         roundId: rounds[i]!,
         state: st,
+        sign: roundSign,
+        proofRef: ownProof,
         plane2: plane2Point(s.x, h, trig),
         plane3: plane3Point(s.y, h, trig)
       });
@@ -360,11 +385,14 @@ export function buildMongeFoldingModel(
     const o1: Point2D = { x: p1.x - nx, y: p1.y - ny };
     const mid: Point2D = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
 
+    const ownArcProof =
+      typeof arc.proof_ref === 'string' && arc.proof_ref.trim().length > 0 ? arc.proof_ref.trim() : null;
     return {
       id: arc.id,
       from: arc.from,
       to: arc.to,
       label: arc.label,
+      proofRef: ownArcProof,
       statedProofRef: arc.stated_proof_ref,
       observedProofRef: arc.observed_proof_ref,
       statedPath: `M ${fmtPt(s0)} L ${fmtPt(s1)}`,

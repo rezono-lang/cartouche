@@ -31,9 +31,10 @@
   let axisLabel = $derived((axis: string): string => model.scene.axes.find((a) => a.axis === axis)?.label ?? axis);
 
   function glyph(sign: string): string {
-    const spec = SIGNS[sign];
-    if (!spec) throw new Error('no std-view sign: ' + sign);
-    return spec.glyph;
+    if (!Object.prototype.hasOwnProperty.call(SIGNS, sign)) {
+      throw new Error('no std-view sign: ' + sign);
+    }
+    return SIGNS[sign]!.glyph;
   }
   function cellOf(id: string): BitemporalCellModel {
     const c = byId.get(id);
@@ -83,7 +84,7 @@
             <th scope="row">{model.epochs[r]}</th>
             {#each line as c (c.id)}
               <td
-                class={c.state === 'not_applicable' ? 'hollow' : c.state === 'unknown' ? 'hatched' : c.state === 'changed' ? 'revised' : 'known'}
+                class={c.state === 'not_applicable' ? 'hollow' : c.state === 'unknown' ? 'hatched' : c.state === 'invalid' ? 'invalid' : c.state === 'changed' ? 'revised' : 'known'}
                 {...{
                   [M.part]: 'value',
                   [M.state]: c.state,
@@ -91,10 +92,10 @@
                   [M.proof_ref]: c.proofRef
                 }}
               >
-                <span class="cartouche-sign" role="img" aria-label={c.sign} {...{ [M.sign]: c.sign }}>
-                  <span aria-hidden="true">{glyph(c.sign)}</span>
+                <span class="cartouche-sign" role="img" aria-label={c.state === 'invalid' ? 'invalid' : c.sign} {...{ [M.sign]: c.sign }}>
+                  <span aria-hidden="true">{c.state === 'invalid' ? '!' : glyph(c.sign)}</span>
                 </span>
-                {#if c.state === 'unknown' || c.state === 'not_applicable'}
+                {#if c.state === 'unknown' || c.state === 'not_applicable' || c.state === 'invalid'}
                   <span>{c.reason}</span>
                 {:else if c.previousDisplay}
                   <del>{c.previousDisplay}</del> <ins>{c.display}</ins>
@@ -131,7 +132,7 @@
             [M.proof_ref]: c.proofRef
           }}
         >
-          {#if c.zToken === null}
+          {#if c.state === 'not_applicable'}
             <path
               class="hollow"
               d={`M0 ${-TILE_HALF_H} L${TILE_HALF_W} 0 L0 ${TILE_HALF_H} L${-TILE_HALF_W} 0 Z`}
@@ -139,25 +140,49 @@
               stroke="var(--c-ink-faint)"
               stroke-dasharray="4 3"
             />
+          {:else if c.state === 'unknown'}
+            <!-- Flat hatched uncertainty band: encodes NO height or magnitude (Decision 0011 §1) -->
+            <path
+              class="hatched-band"
+              d={`M0 ${-TILE_HALF_H} L${TILE_HALF_W} 0 L0 ${TILE_HALF_H} L${-TILE_HALF_W} 0 Z`}
+              fill="url(#bt-hatch)"
+              stroke="var(--c-hatch)"
+            />
+            <text x="0" y="4" text-anchor="middle" font-size="11" fill="var(--c-ink)">
+              {glyph('unknown')}
+            </text>
+          {:else if c.state === 'invalid'}
+            <!-- Invalid cell (!): flat violated border with no fabricated magnitude -->
+            <path
+              class="invalid-tile"
+              d={`M0 ${-TILE_HALF_H} L${TILE_HALF_W} 0 L0 ${TILE_HALF_H} L${-TILE_HALF_W} 0 Z`}
+              fill="var(--c-paper-elev)"
+              stroke="var(--c-violated)"
+              stroke-width="2"
+              stroke-dasharray="3 2"
+            />
+            <text x="0" y="4" text-anchor="middle" font-size="11" font-weight="700" fill="var(--c-violated)">
+              !
+            </text>
           {:else}
             <g style={`--z: ${c.zToken}`}>
               <g transform={`translate(${-TILE_HALF_W} 0) skewY(26.56505)`}>
                 <rect class="zs" x="0" y={-Z_FULL} width={TILE_HALF_W} height={Z_FULL}
-                  fill={c.state === 'unknown' ? 'url(#bt-hatch)' : 'var(--c-paper-tint)'} stroke="var(--c-ink)" />
+                  fill="var(--c-paper-tint)" stroke="var(--c-ink)" />
               </g>
               <g transform={`translate(0 ${TILE_HALF_H}) skewY(-26.56505)`}>
                 <rect class="zs" x="0" y={-Z_FULL} width={TILE_HALF_W} height={Z_FULL}
-                  fill={c.state === 'unknown' ? 'url(#bt-hatch)' : 'var(--c-limestone)'} stroke="var(--c-ink)" />
+                  fill="var(--c-limestone)" stroke="var(--c-ink)" />
               </g>
               <g class="zlift">
                 <path
                   d={`M0 ${-TILE_HALF_H} L${TILE_HALF_W} 0 L0 ${TILE_HALF_H} L${-TILE_HALF_W} 0 Z`}
-                  fill={c.state === 'unknown' ? 'url(#bt-hatch)' : c.state === 'changed' ? 'var(--c-caution)' : 'var(--c-paper-elev)'}
+                  fill={c.state === 'changed' ? 'var(--c-caution)' : 'var(--c-paper-elev)'}
                   stroke="var(--c-ink)"
                   stroke-dasharray={c.state === 'changed' ? '6 2' : undefined}
                 />
                 <text x="0" y="4" text-anchor="middle" font-size="11" fill="var(--c-ink)">
-                  {c.state === 'unknown' ? glyph('unknown') : c.display}
+                  {c.display}
                 </text>
               </g>
             </g>
@@ -198,4 +223,5 @@
   .zlift { transform: translateY(calc(var(--z) * -90px)); }
   .hollow { background: transparent; border: 1px dashed currentColor; }
   .hatched { background: repeating-linear-gradient(45deg, transparent 0 4px, var(--c-hatch) 4px 5px); }
+  .invalid { border: 2px dashed var(--c-violated); }
 </style>

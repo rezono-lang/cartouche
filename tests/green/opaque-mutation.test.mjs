@@ -114,5 +114,5 @@ test('Monge & Unknown Boundary Mutation Test: unknown forbids digits and absent 
   assert.equal(folded.folded, true);
   assert.equal(folded.text, '§NEW_TOK§');
   assert.equal(folded.previousText, '§OLD_TOK§');
-  assert.equal(folded.attrs['data-sign'], 'replaced');
+  assert.equal(folded.attrs['data-sign'], 'changed');
 });
