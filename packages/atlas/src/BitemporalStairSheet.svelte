@@ -14,9 +14,19 @@
     fixture: BitemporalFixtureInput;
     theme?: PaletteName;
     view?: '2d' | 'orthographic';
+    activeValidAt?: string;
+    activeKnownAt?: string;
+    activeManifestId?: string;
   }
 
-  let { fixture, theme = 'swisstopo', view = '2d' }: Props = $props();
+  let {
+    fixture,
+    theme = 'swisstopo',
+    view = '2d',
+    activeValidAt,
+    activeKnownAt,
+    activeManifestId
+  }: Props = $props();
 
   const M = DATA_MARKS;
   let current = $state<'2d' | 'orthographic' | null>(null);
@@ -57,7 +67,10 @@
   <h2 id="bt-title">{axisLabel('x')} × {axisLabel('y')}</h2>
 
   <div {...{ [M.part]: 'seal', [M.trust_tier]: model.scene.seal.trustTier }}>
-    <span {...{ [M.part]: 'manifest-hash' }}>{model.scene.seal.manifestId}</span>
+    <span {...{ [M.part]: 'manifest-hash' }}>{activeManifestId ?? model.scene.seal.manifestId}</span>
+    {#if activeValidAt}
+      <span>{activeValidAt}</span>
+    {/if}
     <span {...{ [M.check]: 'witness', [M.status]: model.scene.seal.witnessCheck === 'green' ? 'green' : 'red' }}>
       {model.scene.seal.witnessCheck}
     </span>
@@ -85,8 +98,10 @@
             {#each line as c (c.id)}
               <td
                 class={c.state === 'not_applicable' ? 'hollow' : c.state === 'unknown' ? 'hatched' : c.state === 'invalid' ? 'invalid' : c.state === 'changed' ? 'revised' : 'known'}
+                aria-current={activeKnownAt === model.epochs[r] && activeValidAt === model.validTimes[c.col] ? 'true' : undefined}
                 {...{
                   [M.part]: 'value',
+                  [M.key]: `${model.epochs[r]}@${model.validTimes[c.col]}`,
                   [M.state]: c.state,
                   [M.reason]: c.reason ?? undefined,
                   [M.proof_ref]: c.proofRef
@@ -125,7 +140,9 @@
         {@const c = cellOf(id)}
         <g
           transform={`translate(${c.screenX} ${c.screenY})`}
+          aria-current={activeKnownAt === model.epochs[c.row] && activeValidAt === model.validTimes[c.col] ? 'true' : undefined}
           {...{
+            [M.key]: `${model.epochs[c.row]}@${model.validTimes[c.col]}`,
             [M.state]: c.state,
             [M.sign]: c.sign,
             [M.reason]: c.reason ?? undefined,

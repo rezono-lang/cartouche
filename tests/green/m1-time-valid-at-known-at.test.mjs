@@ -4,15 +4,6 @@ import path from 'node:path';
 import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Two global controls, valid at and known at, apply to every sheet and the slip; each sheet states the valid time and the epoch it shows, and the bitemporal staircase is their detail view',
-  waits_on: [
-    'm1-sheet-reads-gate-output'
-  ]
-};
-
 // Decision 0012 §2 (4). Time is the main control. Rezono facts are bitemporal: valid time (when it holds) and
 // knowledge time (which epoch, which manifest). An earlier epoch stays citable (publication-supersession-and-withdrawal).
 

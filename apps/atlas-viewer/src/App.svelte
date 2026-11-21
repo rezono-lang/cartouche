@@ -1,6 +1,7 @@
 <script lang="ts">
   import { PALETTES, paletteCss } from '../../../packages/reader-core/src/palette.ts';
   import type { PaletteName } from '../../../packages/reader-core/src/palette.ts';
+  import { formatAtlasMessage } from '../../../packages/atlas/src/i18n-mf2.ts';
   import type { AtlasLocale } from '../../../packages/atlas/src/i18n-mf2.ts';
 
   import viewerData from '../../../fixtures/viewer/prerendered.json' with { type: 'json' };
@@ -25,6 +26,8 @@
     initialSlipRow?: string;
     initialSlipUnserved?: boolean;
     initialTypstSheet?: TypstSheetKey;
+    initialValidAt?: string;
+    initialKnownAt?: string;
   }
 
   let {
@@ -34,7 +37,9 @@
     initialFlowRole = 'full',
     initialSlipRow = 'flagged::item-a::12',
     initialSlipUnserved = false,
-    initialTypstSheet = 'relief'
+    initialTypstSheet = 'relief',
+    initialValidAt,
+    initialKnownAt
   }: Props = $props();
 
   const TABS: readonly { readonly id: ViewerTab; readonly label: string }[] = [
@@ -52,6 +57,8 @@
   const LOCALE_LIST: readonly AtlasLocale[] = ['en', 'nl'];
   const TYPST_SHEETS: readonly TypstSheetKey[] = ['relief', 'flow', 'kringstand', 'ripple', 'bitemporal', 'monge'];
   const SLIP_ROW_KEYS: readonly string[] = viewerData.slip.rowKeys;
+  const VALID_TIMES: readonly string[] = viewerData.timeControl.validTimes;
+  const SERVED_EPOCHS: readonly string[] = viewerData.timeControl.servedEpochs;
 
   let activeTab = $state<ViewerTab>(initialTab);
   let theme = $state<PaletteName>(initialTheme in PALETTES ? initialTheme : 'swisstopo');
@@ -62,11 +69,21 @@
   );
   let slipUnserved = $state<boolean>(initialSlipUnserved);
   let typstSheet = $state<TypstSheetKey>(initialTypstSheet);
+  let validAt = $state<string>(initialValidAt ?? VALID_TIMES[0] ?? '2026-01-01');
+  let knownAt = $state<string>(initialKnownAt ?? SERVED_EPOCHS[SERVED_EPOCHS.length - 1] ?? 'm-4');
+  let epochServed = $derived(SERVED_EPOCHS.includes(knownAt));
+  let permalinkHref = $derived(
+    `?tab=${encodeURIComponent(activeTab)}&valid_at=${encodeURIComponent(validAt)}&known_at=${encodeURIComponent(knownAt)}`
+  );
 
   let themeCss = $derived(paletteCss(theme));
 
   // Build-time prerendered Atlas sheets (zero browser scene compilers, layout models, or fixtures).
   let activeSheetHtml = $derived.by((): string => {
+    if (!epochServed) {
+      const byTheme = viewerData.slip.unservedHtml as Record<string, string>;
+      return byTheme[theme] ?? byTheme.swisstopo ?? '';
+    }
     const sheets = viewerData.sheetsHtml;
     if (activeTab === 'relief') {
       const byTheme = sheets.relief as Record<string, Record<string, string>>;
@@ -86,8 +103,10 @@
       return byLoc[locale] ?? byLoc.en ?? '';
     }
     if (activeTab === 'bitemporal') {
-      const byTheme = sheets.bitemporal as Record<string, string>;
-      return byTheme[theme] ?? byTheme.swisstopo ?? '';
+      const byTheme = viewerData.timeControl.bitemporalByTime as Record<string, Record<string, Record<string, string>>>;
+      const byEpoch = byTheme[theme] ?? byTheme.swisstopo ?? {};
+      const byValid = byEpoch[knownAt] ?? {};
+      return byValid[validAt] ?? (sheets.bitemporal as Record<string, string>)[theme] ?? '';
     }
     if (activeTab === 'monge') {
       const byTheme = sheets.monge as Record<string, string>;
@@ -133,6 +152,28 @@
     </div>
 
     <div class="viewer-controls">
+      <div class="control-group time-controls">
+        <label class="row-select-label" for="ctrl-valid-at">
+          <span>{formatAtlasMessage(locale, 'control.valid_at')}</span>
+          <select id="ctrl-valid-at" name="valid_at" bind:value={validAt}>
+            {#each VALID_TIMES as vt (vt)}
+              <option value={vt}>{vt}</option>
+            {/each}
+          </select>
+        </label>
+
+        <label class="row-select-label" for="ctrl-known-at">
+          <span>{formatAtlasMessage(locale, 'control.known_at')}</span>
+          <select id="ctrl-known-at" name="known_at" bind:value={knownAt}>
+            {#each SERVED_EPOCHS as ep (ep)}
+              <option value={ep}>{ep}</option>
+            {/each}
+          </select>
+        </label>
+
+        <a class="ctrl-btn" href={permalinkHref}>{formatAtlasMessage(locale, 'control.permalink')}</a>
+      </div>
+
       <div class="control-group" role="group" aria-label="Color palette">
         {#each PALETTE_LIST as pal (pal)}
           <button
