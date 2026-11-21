@@ -1,8 +1,8 @@
 <script lang="ts">
   import { SIGNS } from '../../reader-core/src/index.ts';
-  import type { PaletteName, PaletteTokens } from '../../reader-core/src/index.ts';
-  import { buildFlowSplitModel, edgePathFor } from './flow-split-svg.ts';
-  import type { FlowNodeState, FlowSplitFixtureInput } from './flow-split-svg.ts';
+  import type { PaletteName } from '../../reader-core/src/index.ts';
+  import { buildFlowSplitModel, renderFlowSplitSvg } from './flow-split-svg.ts';
+  import type { FlowSplitFixtureInput } from './flow-split-svg.ts';
 
   interface Props {
     fixture: FlowSplitFixtureInput;
@@ -19,14 +19,7 @@
   }: Props = $props();
 
   let model = $derived(buildFlowSplitModel(fixture, { theme, curtainSplit }));
-
-  function nodeStroke(state: FlowNodeState, palette: PaletteTokens): string {
-    if (state === 'violated') return palette.violated;
-    if (state === 'changed') return palette.caution;
-    if (state === 'valid') return palette.valid;
-    if (state === 'unknown') return palette.hatchStroke;
-    return palette.inkSoft;
-  }
+  let svgMarkup = $derived(renderFlowSplitSvg(model, `${title} — stated parallel observed flow diagram`));
 </script>
 
 <section
@@ -69,243 +62,7 @@
   </header>
 
   <figure>
-    <svg
-      role="img"
-      aria-label={`${title} — stated parallel observed flow diagram`}
-      viewBox={`0 0 ${model.width} ${model.height}`}
-      width={model.width}
-      height={model.height}
-      data-sheet="flow-split"
-      data-projection="2d"
-      data-trust-tier={model.scene.seal.trustTier}
-    >
-      <defs>
-        <pattern
-          id="cartouche-hatch-45"
-          width="8"
-          height="8"
-          patternUnits="userSpaceOnUse"
-          patternTransform="rotate(45)"
-        >
-          <line x1="0" y1="0" x2="0" y2="8" stroke={model.palette.hatchStroke} stroke-width="2" />
-        </pattern>
-      </defs>
-
-      <rect x="0" y="0" width={model.width} height={model.height} fill={model.palette.paper} />
-
-      <g data-part="curtain">
-        <g data-layer="stated">
-          <rect
-            x="0"
-            y="56"
-            width={model.curtainX}
-            height={model.height - 120}
-            fill={model.palette.paperTint}
-            opacity="0.45"
-          />
-        </g>
-        <g data-layer="observed">
-          <rect
-            x={model.curtainX}
-            y="56"
-            width={model.width - model.curtainX}
-            height={model.height - 120}
-            fill={model.palette.paper}
-            opacity="0.45"
-          />
-        </g>
-        <line
-          x1={model.curtainX}
-          y1="56"
-          x2={model.curtainX}
-          y2={model.height - 64}
-          stroke={model.palette.proof}
-          stroke-width="1.5"
-          stroke-dasharray="4 4"
-        />
-      </g>
-
-      <g>
-        {#each model.zones as z (z.name)}
-          <g data-key={z.name}>
-            <rect
-              x={z.x}
-              y={z.y}
-              width={z.w}
-              height={z.h}
-              rx="4"
-              fill={model.palette.paperElev}
-              stroke={model.palette.rule}
-              stroke-width="1"
-            />
-            <text x={z.x + 12} y={z.y + 19} fill={model.palette.inkSoft} font-size="11" font-weight="600">
-              {z.name}
-            </text>
-          </g>
-        {/each}
-      </g>
-
-      <g>
-        {#each model.edges as e (e.id)}
-          {#if e.kind === 'drift'}
-            <g
-              data-key={e.id}
-              data-relation="drift"
-              data-sign="drift"
-              data-state="violated"
-              data-layer="both"
-              data-proof-ref={e.statedProofRef ?? ''}
-              data-stated-proof-ref={e.statedProofRef ?? ''}
-              data-observed-proof-ref={e.observedProofRef ?? ''}
-            >
-              <g
-                data-layer="stated"
-                data-proof-ref={e.statedProofRef ?? ''}
-                data-stated-proof-ref={e.statedProofRef ?? ''}
-              >
-                <path
-                  d={edgePathFor(e, -5)}
-                  fill="none"
-                  stroke={model.palette.proof}
-                  stroke-width="2"
-                  stroke-dasharray="6 3"
-                  data-proof-ref={e.statedProofRef ?? ''}
-                  data-stated-proof-ref={e.statedProofRef ?? ''}
-                />
-              </g>
-              <g
-                data-layer="observed"
-                data-proof-ref={e.observedProofRef ?? ''}
-                data-observed-proof-ref={e.observedProofRef ?? ''}
-              >
-                <path
-                  d={edgePathFor(e, 5)}
-                  fill="none"
-                  stroke={model.palette.violated}
-                  stroke-width="2.5"
-                  data-proof-ref={e.observedProofRef ?? ''}
-                  data-observed-proof-ref={e.observedProofRef ?? ''}
-                />
-              </g>
-              <rect
-                x={e.midX - 46}
-                y={e.midY - 12}
-                width="92"
-                height="24"
-                rx="3"
-                fill={model.palette.paperElev}
-                stroke={model.palette.violated}
-                stroke-width="1.5"
-              />
-              <text
-                x={e.midX}
-                y={e.midY + 4}
-                text-anchor="middle"
-                fill={model.palette.violated}
-                font-size="10"
-                font-weight="700"
-              >
-                {SIGNS.drift.glyph} {e.label}
-              </text>
-            </g>
-          {:else if e.kind === 'absent'}
-            <g
-              data-key={e.id}
-              data-relation="absent"
-              data-sign="absent"
-              data-state="absent"
-              data-layer={e.layer}
-              data-proof-ref={e.proofRef}
-              data-completeness-ref={e.completenessWitnessRef ?? undefined}
-            >
-              <path
-                d={edgePathFor(e, 0)}
-                fill="none"
-                stroke={model.palette.inkSoft}
-                stroke-width="1.5"
-                stroke-dasharray="5 5"
-              />
-              <text x={e.midX} y={e.midY - 4} text-anchor="middle" fill={model.palette.inkSoft} font-size="11">
-                {SIGNS.absent.glyph}
-              </text>
-            </g>
-          {:else}
-            <g data-key={e.id} data-relation="standard" data-layer={e.layer} data-proof-ref={e.proofRef}>
-              <path
-                d={edgePathFor(e, 0)}
-                fill="none"
-                stroke={model.palette.ruleStrong}
-                stroke-width="1.5"
-              />
-            </g>
-          {/if}
-        {/each}
-      </g>
-
-      <g>
-        {#each model.nodes as n (n.id)}
-          <g
-            data-key={n.id}
-            data-sign={n.sign}
-            data-state={n.state}
-            data-layer={n.layer}
-            data-proof-ref={n.proofRef}
-            data-completeness-ref={n.completenessWitnessRef ?? undefined}
-            data-reason={n.reason ?? undefined}
-          >
-            <rect
-              x={n.x}
-              y={n.y}
-              width={n.w}
-              height={n.h}
-              rx="4"
-              fill={model.palette.paper}
-              stroke={nodeStroke(n.state, model.palette)}
-              stroke-width="1.5"
-              stroke-dasharray={n.state === 'absent' ? '5 4' : undefined}
-            />
-            {#if n.state === 'unknown'}
-              <rect
-                x={n.x + 2}
-                y={n.y + 42}
-                width={n.w - 4}
-                height={n.h - 44}
-                rx="2"
-                fill="url(#cartouche-hatch-45)"
-              />
-              <g
-                data-sign="unknown"
-                data-state="unknown"
-                data-proof-ref={n.proofRef}
-                data-reason={n.reason ?? undefined}
-              >
-                <text x={n.x + 10} y={n.y + 62} fill={model.palette.ink} font-size="10">
-                  {SIGNS.unknown.glyph} unknown{#if n.reason} · {n.reason}{/if}
-                </text>
-              </g>
-            {:else if n.state === 'absent'}
-              <g
-                data-sign="absent"
-                data-state="absent"
-                data-proof-ref={n.proofRef}
-                data-completeness-ref={n.completenessWitnessRef ?? undefined}
-              >
-                <text x={n.x + 10} y={n.y + 56} fill={model.palette.inkSoft} font-size="10">
-                  {SIGNS.absent.glyph} absent
-                </text>
-              </g>
-            {:else}
-              <text x={n.x + 10} y={n.y + 56} fill={nodeStroke(n.state, model.palette)} font-size="10">
-                {n.stateGlyph} {n.state}
-              </text>
-            {/if}
-            <text x={n.x + 10} y={n.y + 24} fill={model.palette.ink} font-size="12" font-weight="600">
-              {n.signGlyph} {n.label}
-            </text>
-          </g>
-        {/each}
-      </g>
-    </svg>
+    {@html svgMarkup}
   </figure>
 
   <aside aria-label="Sheet legend">
@@ -368,11 +125,11 @@
             >
               {#if n.state === 'unknown'}
                 <span data-sign="unknown" data-reason={n.reason ?? undefined}>
-                  {SIGNS.unknown.glyph} unknown{#if n.reason} · {n.reason}{/if}
+                  {SIGNS.unknown?.glyph ?? '▨'} unknown · {n.reason}
                 </span>
               {:else if n.state === 'absent'}
                 <span data-sign="absent">
-                  {SIGNS.absent.glyph} absent
+                  {SIGNS.absent?.glyph ?? '⦸'} absent
                 </span>
               {:else}
                 {n.stateGlyph} {n.state}
@@ -405,16 +162,16 @@
               data-sign="drift"
               data-state="violated"
               data-layer="both"
-              data-proof-ref={e.statedProofRef ?? ''}
-              data-stated-proof-ref={e.statedProofRef ?? ''}
-              data-observed-proof-ref={e.observedProofRef ?? ''}
+              data-proof-ref={e.proofRef}
+              data-stated-proof-ref={e.statedProofRef ?? undefined}
+              data-observed-proof-ref={e.observedProofRef ?? undefined}
             >
               <td>{e.id}</td>
               <td>{e.from}</td>
               <td>{e.to}</td>
-              <td>{SIGNS.drift.glyph} {e.label}</td>
-              <td>{e.statedProofRef ?? ''}</td>
-              <td>{e.observedProofRef ?? ''}</td>
+              <td>{SIGNS.drift?.glyph ?? '══'} {e.label}</td>
+              <td>{e.statedProofRef}</td>
+              <td>{e.observedProofRef}</td>
             </tr>
           {/each}
         </tbody>

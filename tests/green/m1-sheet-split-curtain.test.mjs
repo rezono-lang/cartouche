@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DATA_MARKS, SIGNS } from '../../packages/reader-core/src/index.ts';
-import { exportFlowSplitSvg } from '../../packages/atlas/src/flow-split-svg.ts';
+import { buildFlowSplitModel, exportFlowSplitSvg } from '../../packages/atlas/src/flow-split-svg.ts';
 import { auditA11y, parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
 const FLOW_SPLIT_SHEET = path.join(process.cwd(), 'packages', 'atlas', 'src', 'FlowSplitSheet.svelte');
@@ -19,6 +19,15 @@ test('M1 Sheet 02: renders stated || observed curtain, dual-proof drift, absent 
   const { html } = await renderSvelte(FLOW_SPLIT_SHEET, { fixture: FX_DRIFT });
   const { html: htmlRepeat } = await renderSvelte(FLOW_SPLIT_SHEET, { fixture: FX_DRIFT });
   assert.equal(html, htmlRepeat, 'SSR HTML must be byte-for-byte deterministic');
+
+  // Verify layer-aware curtain placement: stated-only node (svc-backup) sits strictly in stated plane (above curtainY)
+  const model = buildFlowSplitModel(FX_DRIFT);
+  const backupLayout = model.nodes.find((n) => n.id === 'svc-backup');
+  assert.ok(backupLayout, 'expected svc-backup in layout');
+  assert.ok(
+    backupLayout.y + backupLayout.h <= model.curtainY,
+    `stated-only node svc-backup (y=${backupLayout.y}, h=${backupLayout.h}) must sit above curtainY=${model.curtainY}`
+  );
 
   const { window: win, document: doc } = parseHtml(html);
   try {
@@ -171,7 +180,7 @@ test('M1 Sheet 02: tenant_a role view leaks zero restricted entities, declares n
   assert.deepEqual(violations, [], `WCAG 2.1 AA violations on fixture 02: ${JSON.stringify(violations, null, 2)}`);
 });
 
-test('M1 Sheet 02: deterministic SVG export produces identical bytes and valid structural snapshots for fixtures 01 and 02', () => {
+test('M1 Sheet 02: deterministic SVG export matches component output and produces identical bytes for fixtures 01 and 02', async () => {
   const svg01a = exportFlowSplitSvg(FX_DRIFT);
   const svg01b = exportFlowSplitSvg(FX_DRIFT);
   assert.equal(svg01a, svg01b, 'fixture 01 SVG export must be byte-for-byte deterministic');
@@ -180,6 +189,13 @@ test('M1 Sheet 02: deterministic SVG export produces identical bytes and valid s
     0,
     'fixture 01 SVG UTF-8 buffers must match'
   );
+
+  // Component renders the exact same SVG exporter output (single source of truth)
+  const { html } = await renderSvelte(FLOW_SPLIT_SHEET, { fixture: FX_DRIFT });
+  const expectedEmbeddedSvg = exportFlowSplitSvg(FX_DRIFT, {
+    ariaLabel: 'Flow & Reality-Split Curtain — stated parallel observed flow diagram'
+  });
+  assert.ok(html.includes(expectedEmbeddedSvg), 'FlowSplitSheet.svelte must embed the exact exporter SVG output');
 
   const svg02a = exportFlowSplitSvg(FX_TENANT_A);
   const svg02b = exportFlowSplitSvg(FX_TENANT_A);
@@ -207,4 +223,46 @@ test('M1 Sheet 02: deterministic SVG export produces identical bytes and valid s
     crypto.createHash('sha256').update(svg02a).digest('hex'),
     'distinct fixtures must produce distinct SVG digests'
   );
+});
+
+test('M1 Sheet 02: rejects missing proofs, single-sided drift, unwitnessed absent, unreasoned unknown, and unrecognized signs/states', () => {
+  // Single-sided drift (missing observed_proof_ref)
+  const fxMissingObs = structuredClone(FX_DRIFT);
+  delete fxMissingObs.edges[5].observed_proof_ref;
+  assert.throws(() => exportFlowSplitSvg(fxMissingObs), /EPI_DRIFT_SINGLE_SIDED|observed_proof_ref/);
+
+  // Single-sided drift (missing stated_proof_ref)
+  const fxMissingStated = structuredClone(FX_DRIFT);
+  delete fxMissingStated.edges[5].stated_proof_ref;
+  assert.throws(() => exportFlowSplitSvg(fxMissingStated), /EPI_DRIFT_SINGLE_SIDED|stated_proof_ref/);
+
+  // Standard edge missing proof_ref
+  const fxMissingEdgeProof = structuredClone(FX_DRIFT);
+  delete fxMissingEdgeProof.edges[0].proof_ref;
+  assert.throws(() => exportFlowSplitSvg(fxMissingEdgeProof), /proof_ref/);
+
+  // Absent node missing completeness_witness_ref
+  const fxMissingNodeSweep = structuredClone(FX_DRIFT);
+  delete fxMissingNodeSweep.nodes[5].completeness_witness_ref;
+  assert.throws(() => exportFlowSplitSvg(fxMissingNodeSweep), /EPI_ABSENT_NO_SWEEP|completeness_witness_ref/);
+
+  // Absent edge missing completeness_witness_ref
+  const fxMissingEdgeSweep = structuredClone(FX_DRIFT);
+  delete fxMissingEdgeSweep.edges[4].completeness_witness_ref;
+  assert.throws(() => exportFlowSplitSvg(fxMissingEdgeSweep), /completeness_witness_ref/);
+
+  // Unknown node missing reason
+  const fxMissingReason = structuredClone(FX_DRIFT);
+  delete fxMissingReason.nodes[6].reason;
+  assert.throws(() => exportFlowSplitSvg(fxMissingReason), /reason/);
+
+  // Unrecognized state never falls back to valid
+  const fxBadState = structuredClone(FX_DRIFT);
+  fxBadState.nodes[0].state = 'mystery_state';
+  assert.throws(() => exportFlowSplitSvg(fxBadState), /unrecognized state/);
+
+  // Unrecognized sign never falls back to derived
+  const fxBadSign = structuredClone(FX_DRIFT);
+  fxBadSign.nodes[0].sign = 'mystery_sign';
+  assert.throws(() => exportFlowSplitSvg(fxBadSign), /unrecognized sign/);
 });

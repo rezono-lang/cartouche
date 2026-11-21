@@ -6,6 +6,7 @@
 import { DATA_MARKS, PALETTES, SIGNS } from '../../reader-core/src/index.ts';
 import type { ManifestMeta, PaletteName, PaletteTokens, SignSpec } from '../../reader-core/src/index.ts';
 import { compileFlowSplitScene } from '../../scene-ir/src/compilers.ts';
+import { checkGeometricInvariants } from '../../scene-ir/src/geometry-invariants.ts';
 import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 
 export type FlowLayer = 'stated' | 'observed' | 'both';
@@ -105,7 +106,7 @@ export interface FlowSplitModel {
   readonly curtainSplit: number;
   readonly width: number;
   readonly height: number;
-  readonly curtainX: number;
+  readonly curtainY: number;
   readonly zones: readonly FlowSplitZoneLayout[];
   readonly nodes: readonly FlowSplitNodeLayout[];
   readonly edges: readonly FlowSplitEdgeLayout[];
@@ -116,6 +117,7 @@ export interface FlowSplitModel {
 export interface FlowSplitRenderOptions {
   readonly theme?: PaletteName;
   readonly curtainSplit?: number;
+  readonly ariaLabel?: string;
 }
 
 const PAD_X = 32;
@@ -124,7 +126,7 @@ const ZONE_HEADER_H = 28;
 const ZONE_PAD = 12;
 const NODE_W = 180;
 const NODE_H = 78;
-const NODE_GAP_Y = 28;
+const NODE_GAP_Y = 24;
 const COL_W = NODE_W + ZONE_PAD * 2;
 const COL_GAP_X = 48;
 const FOOTER_H = 64;
@@ -132,9 +134,16 @@ const DRIFT_TRACK_OFFSET = 5;
 
 function clampCurtainSplit(raw: number | undefined): number {
   if (typeof raw !== 'number' || !Number.isFinite(raw)) return 50;
-  if (raw < 10) return 10;
-  if (raw > 90) return 90;
+  if (raw < 20) return 20;
+  if (raw > 80) return 80;
   return Math.trunc(raw);
+}
+
+function requireNonEmpty(text: string | undefined | null, label: string): string {
+  if (typeof text !== 'string' || text.trim().length === 0) {
+    throw new Error(`FlowSplit epistemic invariant violation: missing ${label}.`);
+  }
+  return text;
 }
 
 export function escapeXml(text: string): string {
@@ -162,7 +171,9 @@ function strokeForState(state: FlowNodeState, palette: PaletteTokens): string {
 
 /**
  * Builds the pure, deterministic layout model for Sheet 02 (Flow & Reality-Split Curtain).
- * Preserves server-projected zone and node order without client-side domain sorting.
+ * Enforces geometric & epistemic invariants (never fabricates proofs, reasons, or fallback states).
+ * Places stated-only nodes in the upper stated plane, observed-only in the lower observed plane,
+ * and shared ("both") nodes on the central plane straddling the curtain rail.
  */
 export function buildFlowSplitModel(
   fixture: FlowSplitFixtureInput,
@@ -173,33 +184,72 @@ export function buildFlowSplitModel(
   const curtainSplit = clampCurtainSplit(options.curtainSplit);
   const scene = compileFlowSplitScene(fixture);
 
-  // Preserve exact first-seen zone order from server-projected nodes
-  const zoneOrder: string[] = [];
-  const zoneNodes = new Map<string, FlowSplitNodeInput[]>();
-  for (const node of fixture.nodes) {
-    let bucket = zoneNodes.get(node.zone);
-    if (!bucket) {
-      bucket = [];
-      zoneNodes.set(node.zone, bucket);
-      zoneOrder.push(node.zone);
-    }
-    bucket.push(node);
+  const violations = checkGeometricInvariants(scene);
+  if (violations.length > 0) {
+    throw new Error(
+      `FlowSplit invariant check failed: ${violations.map((v) => `[${v.code}] ${v.message}`).join('; ')}`
+    );
   }
 
-  let maxRows = 1;
-  for (const bucket of zoneNodes.values()) {
-    if (bucket.length > maxRows) {
-      maxRows = bucket.length;
+  // Validate nodes and preserve exact first-seen zone order from server-projected nodes
+  const zoneOrder: string[] = [];
+  const zoneBuckets = new Map<
+    string,
+    { stated: FlowSplitNodeInput[]; both: FlowSplitNodeInput[]; observed: FlowSplitNodeInput[] }
+  >();
+
+  for (const node of fixture.nodes) {
+    if (!SIGNS[node.sign]) {
+      throw new Error(`FlowSplit epistemic invariant violation: unrecognized sign "${String(node.sign)}" on node "${node.id}".`);
     }
+    if (!SIGNS[node.state]) {
+      throw new Error(`FlowSplit epistemic invariant violation: unrecognized state "${String(node.state)}" on node "${node.id}".`);
+    }
+    requireNonEmpty(node.proof_ref, `proof_ref on node "${node.id}"`);
+    if (node.state === 'absent') {
+      requireNonEmpty(node.completeness_witness_ref, `completeness_witness_ref on absent node "${node.id}"`);
+    }
+    if (node.state === 'unknown') {
+      requireNonEmpty(node.reason, `reason on unknown node "${node.id}"`);
+    }
+
+    let bucket = zoneBuckets.get(node.zone);
+    if (!bucket) {
+      bucket = { stated: [], both: [], observed: [] };
+      zoneBuckets.set(node.zone, bucket);
+      zoneOrder.push(node.zone);
+    }
+    const layer: FlowLayer = node.layer ?? 'both';
+    bucket[layer].push(node);
   }
+
+  let maxStated = 0;
+  let maxBoth = 0;
+  let maxObserved = 0;
+  for (const bucket of zoneBuckets.values()) {
+    if (bucket.stated.length > maxStated) maxStated = bucket.stated.length;
+    if (bucket.both.length > maxBoth) maxBoth = bucket.both.length;
+    if (bucket.observed.length > maxObserved) maxObserved = bucket.observed.length;
+  }
+
+  const statedBandH = maxStated > 0 ? maxStated * NODE_H + (maxStated - 1) * NODE_GAP_Y + NODE_GAP_Y : 0;
+  const bothBandH = maxBoth > 0 ? maxBoth * NODE_H + (maxBoth - 1) * NODE_GAP_Y : NODE_H;
+  const observedBandH = maxObserved > 0 ? NODE_GAP_Y + maxObserved * NODE_H + (maxObserved - 1) * NODE_GAP_Y : 0;
 
   const colCount = zoneOrder.length > 0 ? zoneOrder.length : 1;
   const contentW = colCount * COL_W + (colCount - 1) * COL_GAP_X;
   const width = PAD_X * 2 + contentW;
   const zoneTopY = HEADER_H + 16;
-  const zoneBodyH = ZONE_HEADER_H + ZONE_PAD * 2 + maxRows * NODE_H + (maxRows - 1) * NODE_GAP_Y;
+  const nodesStartY = zoneTopY + ZONE_HEADER_H + ZONE_PAD;
+  const zoneBodyH = ZONE_HEADER_H + ZONE_PAD * 2 + statedBandH + bothBandH + observedBandH;
   const height = zoneTopY + zoneBodyH + 24 + FOOTER_H;
-  const curtainX = Math.trunc((width * curtainSplit) / 100);
+
+  // Horizontal reality-split curtain rail: stated plane sits above curtainY, observed plane below.
+  const bothMidY = nodesStartY + statedBandH + Math.trunc(bothBandH / 2);
+  const curtainY =
+    curtainSplit === 50
+      ? bothMidY
+      : zoneTopY + Math.trunc((zoneBodyH * curtainSplit) / 100);
 
   const zones: FlowSplitZoneLayout[] = [];
   const nodes: FlowSplitNodeLayout[] = [];
@@ -216,33 +266,39 @@ export function buildFlowSplitModel(
       h: zoneBodyH
     });
 
-    const bucket = zoneNodes.get(zoneName) ?? [];
-    for (let rowIdx = 0; rowIdx < bucket.length; rowIdx++) {
-      const raw = bucket[rowIdx]!;
-      const nx = zx + ZONE_PAD;
-      const ny = zoneTopY + ZONE_HEADER_H + ZONE_PAD + rowIdx * (NODE_H + NODE_GAP_Y);
-      const signSpec = SIGNS[raw.sign] ?? SIGNS.derived;
-      const stateSpec = SIGNS[raw.state] ?? SIGNS.valid;
-      const layoutNode: FlowSplitNodeLayout = {
-        id: raw.id,
-        label: raw.label,
-        zone: raw.zone,
-        sign: raw.sign,
-        signGlyph: signSpec?.glyph ?? '○',
-        state: raw.state,
-        stateGlyph: stateSpec?.glyph ?? '✓',
-        layer: raw.layer ?? 'both',
-        reason: raw.reason ?? null,
-        proofRef: raw.proof_ref,
-        completenessWitnessRef: raw.completeness_witness_ref ?? null,
-        x: nx,
-        y: ny,
-        w: NODE_W,
-        h: NODE_H
-      };
-      nodes.push(layoutNode);
-      nodeIndex.set(raw.id, layoutNode);
-    }
+    const bucket = zoneBuckets.get(zoneName)!;
+    const placeBand = (items: readonly FlowSplitNodeInput[], baseY: number): void => {
+      for (let rowIdx = 0; rowIdx < items.length; rowIdx++) {
+        const raw = items[rowIdx]!;
+        const nx = zx + ZONE_PAD;
+        const ny = baseY + rowIdx * (NODE_H + NODE_GAP_Y);
+        const signSpec = SIGNS[raw.sign]!;
+        const stateSpec = SIGNS[raw.state]!;
+        const layoutNode: FlowSplitNodeLayout = {
+          id: raw.id,
+          label: raw.label,
+          zone: raw.zone,
+          sign: raw.sign,
+          signGlyph: signSpec.glyph,
+          state: raw.state,
+          stateGlyph: stateSpec.glyph,
+          layer: raw.layer ?? 'both',
+          reason: raw.reason ?? null,
+          proofRef: raw.proof_ref,
+          completenessWitnessRef: raw.completeness_witness_ref ?? null,
+          x: nx,
+          y: ny,
+          w: NODE_W,
+          h: NODE_H
+        };
+        nodes.push(layoutNode);
+        nodeIndex.set(raw.id, layoutNode);
+      }
+    };
+
+    placeBand(bucket.stated, nodesStartY);
+    placeBand(bucket.both, nodesStartY + statedBandH);
+    placeBand(bucket.observed, nodesStartY + statedBandH + bothBandH + NODE_GAP_Y);
   }
 
   const edges: FlowSplitEdgeLayout[] = [];
@@ -254,6 +310,25 @@ export function buildFlowSplitModel(
     if (!src || !dst) continue;
 
     const kind = edgeKindOf(rawEdge.kind);
+    let statedRef: string | null = null;
+    let observedRef: string | null = null;
+    let completenessRef: string | null = null;
+    let primaryProof: string;
+
+    if (kind === 'drift') {
+      statedRef = requireNonEmpty(rawEdge.stated_proof_ref, `stated_proof_ref on drift edge "${rawEdge.id}"`);
+      observedRef = requireNonEmpty(rawEdge.observed_proof_ref, `observed_proof_ref on drift edge "${rawEdge.id}"`);
+      primaryProof = rawEdge.proof_ref && rawEdge.proof_ref.trim().length > 0 ? rawEdge.proof_ref : statedRef;
+    } else if (kind === 'absent') {
+      primaryProof = requireNonEmpty(rawEdge.proof_ref, `proof_ref on absent edge "${rawEdge.id}"`);
+      completenessRef = requireNonEmpty(
+        rawEdge.completeness_witness_ref,
+        `completeness_witness_ref on absent edge "${rawEdge.id}"`
+      );
+    } else {
+      primaryProof = requireNonEmpty(rawEdge.proof_ref, `proof_ref on edge "${rawEdge.id}"`);
+    }
+
     const sameCol = src.x === dst.x;
     const forward = src.x < dst.x;
 
@@ -264,10 +339,6 @@ export function buildFlowSplitModel(
     const midX = sameCol ? x1 + 28 : Math.trunc((x1 + x2) / 2);
     const midY = Math.trunc((y1 + y2) / 2);
 
-    const statedRef = rawEdge.stated_proof_ref ?? null;
-    const observedRef = rawEdge.observed_proof_ref ?? null;
-    const primaryProof = rawEdge.proof_ref ?? statedRef ?? observedRef ?? '';
-
     const layoutEdge: FlowSplitEdgeLayout = {
       id: rawEdge.id,
       from: rawEdge.from,
@@ -276,7 +347,7 @@ export function buildFlowSplitModel(
       kind,
       label: rawEdge.label ?? (kind === 'drift' ? 'DRIFT' : ''),
       proofRef: primaryProof,
-      completenessWitnessRef: rawEdge.completeness_witness_ref ?? null,
+      completenessWitnessRef: completenessRef,
       statedProofRef: statedRef,
       observedProofRef: observedRef,
       x1,
@@ -312,7 +383,7 @@ export function buildFlowSplitModel(
     curtainSplit,
     width,
     height,
-    curtainX,
+    curtainY,
     zones: Object.freeze(zones),
     nodes: Object.freeze(nodes),
     edges: Object.freeze(edges),
@@ -334,19 +405,16 @@ export function edgePathFor(edge: FlowSplitEdgeLayout, offsetY = 0): string {
 }
 
 /**
- * Deterministic, pure SVG exporter for Sheet 02 (Flow & Reality-Split Curtain).
- * Same input always yields identical UTF-8 bytes.
+ * Renders the deterministic SVG markup from a pre-built FlowSplitModel.
+ * Shared as the single source of truth between FlowSplitSheet.svelte and exportFlowSplitSvg.
  */
-export function exportFlowSplitSvg(
-  fixture: FlowSplitFixtureInput,
-  options: FlowSplitRenderOptions = {}
-): string {
-  const model = buildFlowSplitModel(fixture, options);
+export function renderFlowSplitSvg(model: FlowSplitModel, ariaLabel?: string): string {
   const { palette, scene } = model;
   const lines: string[] = [];
+  const a11yAttrs = ariaLabel ? ` role="img" aria-label="${escapeXml(ariaLabel)}"` : '';
 
   lines.push(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${model.width} ${model.height}" width="${model.width}" height="${model.height}" ${DATA_MARKS.sheet}="flow-split" ${DATA_MARKS.projection}="2d" ${DATA_MARKS.trust_tier}="${escapeXml(scene.seal.trustTier)}">`
+    `<svg xmlns="http://www.w3.org/2000/svg"${a11yAttrs} viewBox="0 0 ${model.width} ${model.height}" width="${model.width}" height="${model.height}" ${DATA_MARKS.sheet}="flow-split" ${DATA_MARKS.projection}="2d" ${DATA_MARKS.trust_tier}="${escapeXml(scene.seal.trustTier)}">`
   );
 
   // Defs: 45-degree diagonal hatch for unknown (▨)
@@ -359,15 +427,17 @@ export function exportFlowSplitSvg(
   // Paper background
   lines.push(`  <rect x="0" y="0" width="${model.width}" height="${model.height}" fill="${escapeXml(palette.paper)}" />`);
 
-  // Curtain split plane backdrop (stated || observed)
+  // Curtain split plane backdrop (stated upper || observed lower)
+  const statedH = Math.max(0, model.curtainY - HEADER_H);
+  const observedH = Math.max(0, model.height - FOOTER_H - model.curtainY);
   lines.push(`  <g ${DATA_MARKS.part}="curtain">`);
   lines.push(`    <g ${DATA_MARKS.layer}="stated">`);
-  lines.push(`      <rect x="0" y="${HEADER_H}" width="${model.curtainX}" height="${model.height - HEADER_H - FOOTER_H}" fill="${escapeXml(palette.paperTint)}" opacity="0.45" />`);
+  lines.push(`      <rect x="0" y="${HEADER_H}" width="${model.width}" height="${statedH}" fill="${escapeXml(palette.paperTint)}" opacity="0.45" />`);
   lines.push('    </g>');
   lines.push(`    <g ${DATA_MARKS.layer}="observed">`);
-  lines.push(`      <rect x="${model.curtainX}" y="${HEADER_H}" width="${model.width - model.curtainX}" height="${model.height - HEADER_H - FOOTER_H}" fill="${escapeXml(palette.paper)}" opacity="0.45" />`);
+  lines.push(`      <rect x="0" y="${model.curtainY}" width="${model.width}" height="${observedH}" fill="${escapeXml(palette.paper)}" opacity="0.45" />`);
   lines.push('    </g>');
-  lines.push(`    <line x1="${model.curtainX}" y1="${HEADER_H}" x2="${model.curtainX}" y2="${model.height - FOOTER_H}" stroke="${escapeXml(palette.proof)}" stroke-width="1.5" stroke-dasharray="4 4" />`);
+  lines.push(`    <line x1="0" y1="${model.curtainY}" x2="${model.width}" y2="${model.curtainY}" stroke="${escapeXml(palette.proof)}" stroke-width="1.5" stroke-dasharray="4 4" />`);
   lines.push(`    <text x="${PAD_X}" y="34" fill="${escapeXml(palette.ink)}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="600">stated ∥ observed</text>`);
   lines.push('  </g>');
 
@@ -394,15 +464,19 @@ export function exportFlowSplitSvg(
   lines.push('  </g>');
 
   // Edges
+  const driftGlyph = SIGNS.drift?.glyph ?? '══';
+  const absentGlyph = SIGNS.absent?.glyph ?? '⦸';
+  const unknownGlyph = SIGNS.unknown?.glyph ?? '▨';
+
   lines.push('  <g>');
   for (const e of model.edges) {
     if (e.kind === 'drift') {
-      const statedRef = e.statedProofRef ?? '';
-      const observedRef = e.observedProofRef ?? '';
+      const statedRef = e.statedProofRef!;
+      const observedRef = e.observedProofRef!;
       const dStated = edgePathFor(e, -DRIFT_TRACK_OFFSET);
       const dObserved = edgePathFor(e, DRIFT_TRACK_OFFSET);
       lines.push(
-        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="drift" ${DATA_MARKS.sign}="drift" ${DATA_MARKS.state}="violated" ${DATA_MARKS.layer}="both" ${DATA_MARKS.proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
+        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="drift" ${DATA_MARKS.sign}="drift" ${DATA_MARKS.state}="violated" ${DATA_MARKS.layer}="both" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.observed_proof_ref}="${escapeXml(observedRef)}">`
       );
       lines.push(
         `      <g ${DATA_MARKS.layer}="stated" ${DATA_MARKS.proof_ref}="${escapeXml(statedRef)}" ${DATA_MARKS.stated_proof_ref}="${escapeXml(statedRef)}">`
@@ -422,22 +496,20 @@ export function exportFlowSplitSvg(
         `      <rect x="${e.midX - 46}" y="${e.midY - 12}" width="92" height="24" rx="3" fill="${escapeXml(palette.paperElev)}" stroke="${escapeXml(palette.violated)}" stroke-width="1.5" />`
       );
       lines.push(
-        `      <text x="${e.midX}" y="${e.midY + 4}" text-anchor="middle" fill="${escapeXml(palette.violated)}" font-family="ui-monospace, monospace" font-size="10" font-weight="700">${escapeXml(SIGNS.drift?.glyph ?? '══')} ${escapeXml(e.label)}</text>`
+        `      <text x="${e.midX}" y="${e.midY + 4}" text-anchor="middle" fill="${escapeXml(palette.violated)}" font-family="ui-monospace, monospace" font-size="10" font-weight="700">${escapeXml(driftGlyph)} ${escapeXml(e.label)}</text>`
       );
       lines.push('    </g>');
     } else if (e.kind === 'absent') {
       const d = edgePathFor(e, 0);
-      const compAttr = e.completenessWitnessRef
-        ? ` ${DATA_MARKS.completeness_ref}="${escapeXml(e.completenessWitnessRef)}"`
-        : '';
+      const compRef = e.completenessWitnessRef!;
       lines.push(
-        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="absent" ${DATA_MARKS.sign}="absent" ${DATA_MARKS.state}="absent" ${DATA_MARKS.layer}="${escapeXml(e.layer)}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}"${compAttr}>`
+        `    <g ${DATA_MARKS.key}="${escapeXml(e.id)}" ${DATA_MARKS.relation}="absent" ${DATA_MARKS.sign}="absent" ${DATA_MARKS.state}="absent" ${DATA_MARKS.layer}="${escapeXml(e.layer)}" ${DATA_MARKS.proof_ref}="${escapeXml(e.proofRef)}" ${DATA_MARKS.completeness_ref}="${escapeXml(compRef)}">`
       );
       lines.push(
         `      <path d="${d}" fill="none" stroke="${escapeXml(palette.inkSoft)}" stroke-width="1.5" stroke-dasharray="5 5" />`
       );
       lines.push(
-        `      <text x="${e.midX}" y="${e.midY - 4}" text-anchor="middle" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="11">${escapeXml(SIGNS.absent?.glyph ?? '⦸')}</text>`
+        `      <text x="${e.midX}" y="${e.midY - 4}" text-anchor="middle" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="11">${escapeXml(absentGlyph)}</text>`
       );
       lines.push('    </g>');
     } else {
@@ -469,14 +541,15 @@ export function exportFlowSplitSvg(
       `      <rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="4" fill="${escapeXml(palette.paper)}" stroke="${escapeXml(strokeColor)}" stroke-width="1.5"${dashAttr} />`
     );
     if (n.state === 'unknown') {
+      const reason = n.reason!;
       lines.push(
         `      <rect x="${n.x + 2}" y="${n.y + 42}" width="${n.w - 4}" height="${n.h - 44}" rx="2" fill="url(#cartouche-hatch-45)" />`
       );
       lines.push(
-        `      <g ${DATA_MARKS.sign}="unknown" ${DATA_MARKS.state}="unknown" ${DATA_MARKS.proof_ref}="${escapeXml(n.proofRef)}"${reasonAttr}>`
+        `      <g ${DATA_MARKS.sign}="unknown" ${DATA_MARKS.state}="unknown" ${DATA_MARKS.proof_ref}="${escapeXml(n.proofRef)}" ${DATA_MARKS.reason}="${escapeXml(reason)}">`
       );
       lines.push(
-        `        <text x="${n.x + 10}" y="${n.y + 62}" fill="${escapeXml(palette.ink)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(SIGNS.unknown?.glyph ?? '▨')} unknown${n.reason ? ` · ${escapeXml(n.reason)}` : ''}</text>`
+        `        <text x="${n.x + 10}" y="${n.y + 62}" fill="${escapeXml(palette.ink)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(unknownGlyph)} unknown · ${escapeXml(reason)}</text>`
       );
       lines.push('      </g>');
     } else if (n.state === 'absent') {
@@ -484,7 +557,7 @@ export function exportFlowSplitSvg(
         `      <g ${DATA_MARKS.sign}="absent" ${DATA_MARKS.state}="absent" ${DATA_MARKS.proof_ref}="${escapeXml(n.proofRef)}"${compAttr}>`
       );
       lines.push(
-        `        <text x="${n.x + 10}" y="${n.y + 56}" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(SIGNS.absent?.glyph ?? '⦸')} absent</text>`
+        `        <text x="${n.x + 10}" y="${n.y + 56}" fill="${escapeXml(palette.inkSoft)}" font-family="ui-monospace, monospace" font-size="10">${escapeXml(absentGlyph)} absent</text>`
       );
       lines.push('      </g>');
     } else {
@@ -523,4 +596,16 @@ export function exportFlowSplitSvg(
 
   lines.push('</svg>');
   return lines.join('\n');
+}
+
+/**
+ * Deterministic, pure SVG exporter for Sheet 02 (Flow & Reality-Split Curtain).
+ * Same input always yields identical UTF-8 bytes.
+ */
+export function exportFlowSplitSvg(
+  fixture: FlowSplitFixtureInput,
+  options: FlowSplitRenderOptions = {}
+): string {
+  const model = buildFlowSplitModel(fixture, options);
+  return renderFlowSplitSvg(model, options.ariaLabel);
 }
