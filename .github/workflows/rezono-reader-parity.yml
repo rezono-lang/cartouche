@@ -1,0 +1,141 @@
+name: Rezono Reader Parity (slip)
+
+# Decision 0009, point 3: record what Rezono's local reader answers for its slip fixture, at the Rezono commit
+# pinned in packages/slip/rezono-source.json, and compare it with fixtures/10-slip-reader-answers.json.
+# Rezono's publisher and reader run here, on a GitHub-hosted runner, from that public commit, with no secrets and
+# a read-only token. A difference opens an issue and fails the run; the fixture is re-recorded only in a pull
+# request that names the Rezono change behind the difference.
+on:
+  schedule:
+    - cron: '41 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rezono-reader-parity
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    outputs:
+      differs: ${{ steps.compare.outputs.differs }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: cartouche
+          persist-credentials: false
+      - name: Read the pinned Rezono commit
+        id: pin
+        run: |
+          set -euo pipefail
+          commit=$(jq -r .commit cartouche/packages/slip/rezono-source.json)
+          if ! [[ "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::packages/slip/rezono-source.json must pin a full 40-character commit, got '$commit'"
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: rezono-lang/rezono
+          ref: ${{ steps.pin.outputs.commit }}
+          path: rezono
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: rezono/.node-version
+      - name: Install Rezono's reader package from its lockfile
+        working-directory: rezono/rezono
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version-file: rezono/requirements/.python-version
+      - name: Install Rezono's publisher from its lockfile
+        working-directory: rezono
+        run: |
+          set -euo pipefail
+          python -m venv .venv
+          .venv/bin/python -m pip install -q --no-deps --require-hashes -r requirements/dev.txt
+          .venv/bin/python -m pip install -q --no-deps --no-build-isolation \
+            -e ./admission -e ./canon -e ./compiler -e ./checker -e ./edge/publisher
+          PATH="$PWD/.venv/bin:$PATH" contracts/gen-types.sh
+      - name: Install Cartouche
+        working-directory: cartouche
+        run: npm ci --no-audit --no-fund
+      - name: Publish Rezono's slip fixture as its slip tests do
+        env:
+          GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z'
+          GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z'
+        run: |
+          set -euo pipefail
+          PATH="$PWD/rezono/.venv/bin:$PATH" python cartouche/scripts/publish-rezono-slip-stores.py \
+            rezono "$RUNNER_TEMP/stores" > "$RUNNER_TEMP/stores.json"
+          cat "$RUNNER_TEMP/stores.json"
+      - name: Record the reader's answers
+        working-directory: cartouche
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/out"
+          node scripts/record-rezono-reader.mjs --rezono ../rezono --stores "$RUNNER_TEMP/stores.json" \
+            --run "$RUN_URL" --out "$RUNNER_TEMP/out/10-slip-reader-answers.json"
+      - name: Compare with the committed fixture
+        id: compare
+        working-directory: cartouche
+        run: |
+          set -euo pipefail
+          if node scripts/compare-reader-answers.mjs fixtures/10-slip-reader-answers.json \
+               "$RUNNER_TEMP/out/10-slip-reader-answers.json" > "$RUNNER_TEMP/out/diff.md"; then
+            echo "differs=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "differs=true" >> "$GITHUB_OUTPUT"
+          fi
+          cat "$RUNNER_TEMP/out/diff.md" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rezono-reader-answers
+          path: ${{ runner.temp }}/out/
+          retention-days: 30
+
+  # Runs no Rezono code; the only job that may write, and only issues.
+  report:
+    needs: record
+    if: needs.record.outputs.differs == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: rezono-reader-answers
+          path: out
+      - name: Open or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Rezono's reader answers differ from fixtures/10-slip-reader-answers.json"
+          {
+            cat out/diff.md
+            printf '\nRun: %s (artifact rezono-reader-answers holds the recording).\n' "$RUN_URL"
+            printf 'Re-record only in a pull request that names the Rezono change behind this difference (decisions/0009-slip-reads-rezono-reader.md).\n'
+          } > body.md
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file body.md
+          else
+            gh issue create --title "$title" --body-file body.md
+          fi
+      - name: Fail the run
+        run: |
+          echo "::error::Rezono's reader answers differ from the committed fixture; see the issue."
+          exit 1
