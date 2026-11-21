@@ -334,13 +334,13 @@ export function buildMongeFoldingModel(
 
     let unknownCurtain: readonly [Point2D, Point2D, Point2D, Point2D] | undefined;
     if (s.state === 'unknown') {
-      // Flat hatched uncertainty band on Plane I (never encodes a height/magnitude on unknown, Decision 0014).
-      const halfX = 0.16;
-      const halfY = 0.1;
-      const b0 = projectOrtho(s.x - halfX, s.y - halfY, 0, trig);
-      const b1 = projectOrtho(s.x + halfX, s.y - halfY, 0, trig);
-      const t1 = projectOrtho(s.x + halfX, s.y + halfY, 0, trig);
-      const t0 = projectOrtho(s.x - halfX, s.y + halfY, 0, trig);
+      // Vertical hatched uncertainty curtain spanning the full round axis (floor z=0 to wall top WALL_DEPTH;
+      // Decision 0002 §2, Decision 0012 6b, Decision 0015 §7 — carries no height/magnitude of its own).
+      const halfW = 0.16;
+      const b0 = projectOrtho(s.x - halfW, s.y, 0, trig);
+      const b1 = projectOrtho(s.x + halfW, s.y, 0, trig);
+      const t1 = projectOrtho(s.x + halfW, s.y, WALL_DEPTH, trig);
+      const t0 = projectOrtho(s.x - halfW, s.y, WALL_DEPTH, trig);
       unknownCurtain = [b0, b1, t1, t0];
     }
 

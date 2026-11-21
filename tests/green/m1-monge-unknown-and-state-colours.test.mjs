@@ -6,14 +6,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { buildMongeFoldingModel } from '../../packages/atlas/src/monge-model.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0015-quality-round-3.md',
-  priority: 2,
-  summary: '#46 point 10: on the Monge sheet an unknown curtain spans the whole round axis (no height of its own), and changed and not_applicable round dots never take the valid colour',
-  waits_on: []
-};
-
 // Decision 0015 §4 and §7, issue #46 point 10. The Monge sheet is parked (Decision 0012 §5), but a parked sheet may not
 // lie. Its z axis is the round axis: round i of n stands at (i + 1) / (n + 1) of the wall depth. The unknown curtain
 // rises to the fixed CURTAIN_HEIGHT (1.2 of a wall depth of 1.65), so with the four rounds of fixture 08 it covers
