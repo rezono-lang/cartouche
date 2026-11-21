@@ -131,7 +131,7 @@ export function resolveSlipShortcut(
 
   const spec = STD_VERBS.find((v) => v.key === pressed);
   if (!spec) return { status: 'ignored' };
-  if (allowedSet !== null && !allowedSet.has(spec.verb) && !allowedSet.has(spec.question)) {
+  if (allowedSet !== null && !allowedSet.has(spec.verb) && !(spec.question !== undefined && allowedSet.has(spec.question))) {
     return { status: 'ignored' };
   }
   if (spec.verb === 'propose' && !options.proposeAllowed) {
@@ -309,7 +309,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
     const verbs =
       allowedSet === null
         ? STD_VERBS
-        : STD_VERBS.filter((v) => allowedSet.has(v.verb) || allowedSet.has(v.question));
+        : STD_VERBS.filter((v) => allowedSet.has(v.verb) || (v.question !== undefined && allowedSet.has(v.question)));
 
     parts.push(`<nav class="slip-verb-bar" aria-label="Slip verbs">`);
     for (const spec of verbs) {
@@ -378,7 +378,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       const attr = (name: string, value: string | undefined): string =>
         value === undefined ? '' : ` ${name}="${escapeHtml(value)}"`;
       const allowedLine = new Set(line.answered_verbs ?? []);
-      const lineVerbs = STD_VERBS.filter((v) => allowedLine.has(v.verb) || allowedLine.has(v.question));
+      const lineVerbs = STD_VERBS.filter((v) => allowedLine.has(v.verb) || (v.question !== undefined && allowedLine.has(v.question)));
       const buttonsHtml = lineVerbs
         .map(
           (spec) =>

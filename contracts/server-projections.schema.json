@@ -68,7 +68,7 @@
   "$defs": {
     "EpistemicSign": {
       "type": "string",
-      "enum": ["decision", "legislator", "design", "observation", "derived"]
+      "enum": ["origin_decision", "origin_vendor", "origin_design", "origin_observation", "derived"]
     },
     "LayerTag": {
       "type": "string",

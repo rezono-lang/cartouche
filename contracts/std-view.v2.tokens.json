@@ -96,27 +96,30 @@
     "color_never_sole_channel": true
   },
   "signs": {
-    "decision": { "kind": "origin", "glyph": "◆", "pattern": "solid-diamond", "token": "proof" },
-    "legislator": { "kind": "origin", "glyph": "▲", "pattern": "solid-triangle", "token": "proof" },
-    "design": { "kind": "origin", "glyph": "■", "pattern": "solid-square", "token": "ink" },
-    "observation": { "kind": "origin", "glyph": "●", "pattern": "solid-circle", "token": "inkSoft" },
+    "origin_decision": { "kind": "origin", "glyph": "◆", "pattern": "solid-diamond", "token": "proof" },
+    "origin_vendor": { "kind": "origin", "glyph": "▲", "pattern": "solid-triangle", "token": "proof" },
+    "origin_design": { "kind": "origin", "glyph": "■", "pattern": "solid-square", "token": "ink" },
+    "origin_observation": { "kind": "origin", "glyph": "●", "pattern": "solid-circle", "token": "inkSoft" },
     "derived": { "kind": "origin", "glyph": "○", "pattern": "hollow-circle", "token": "proof" },
+    "assumption": { "kind": "sign", "glyph": "╌", "pattern": "dashed-underline", "token": "inkSoft" },
+    "drift": { "kind": "line", "glyph": "══", "pattern": "double-rail", "token": "violated" },
+    "screened": { "kind": "sign", "glyph": "▬", "pattern": "solid-bar", "token": "inkSoft" },
+    "proposal": { "kind": "sign", "glyph": "✎", "pattern": "dashed-frame", "token": "proof" },
+    "sealed": { "kind": "sign", "glyph": "◉", "pattern": "seal-stamp", "token": "proof" },
+    "supposed": { "kind": "state", "glyph": "◇", "pattern": "dashed-diamond", "token": "caution" },
     "valid": { "kind": "state", "glyph": "✓", "pattern": "solid-line", "token": "valid" },
     "changed": { "kind": "state", "glyph": "◐", "pattern": "half-fill", "token": "caution" },
     "violated": { "kind": "state", "glyph": "✕", "pattern": "cross-stroke", "token": "violated" },
-    "drift": { "kind": "line", "glyph": "══", "pattern": "double-rail", "token": "violated" },
-    "absent": { "kind": "state", "glyph": "⦸", "pattern": "dashed-hollow-strike", "token": "inkSoft" },
     "unknown": { "kind": "state", "glyph": "▨", "pattern": "diagonal-hatch-45", "token": "hatchStroke" },
     "not_applicable": { "kind": "state", "glyph": "–", "pattern": "hollow-void", "token": "inkFaint" },
-    "invalid": { "kind": "state", "glyph": "!", "pattern": "exclamation-border", "token": "violated" },
-    "supposed": { "kind": "state", "glyph": "◇", "pattern": "dashed-diamond", "token": "caution" }
+    "absent": { "kind": "state", "glyph": "⦸", "pattern": "dashed-hollow-strike", "token": "inkSoft" }
   },
   "verbs": [
     { "verb": "why", "key": "w", "question": "grounds" },
     { "verb": "depends", "key": "d", "question": "reach" },
     { "verb": "missing", "key": "m", "question": "gap" },
-    { "verb": "suppose", "key": "s", "question": "sweep" },
-    { "verb": "compare", "key": "c", "question": "scenario" },
-    { "verb": "propose", "key": "p", "question": "propose" }
+    { "verb": "suppose", "key": "s" },
+    { "verb": "compare", "key": "c" },
+    { "verb": "propose", "key": "p", "primary": true }
   ]
 }

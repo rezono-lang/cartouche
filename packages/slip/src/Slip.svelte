@@ -102,7 +102,6 @@
     answers?: Readonly<Record<string, AnswerTableSpec>>;
     openAnswer?: string | null;
     manifestHash?: string | null;
-    signsLeftOut?: readonly string[];
     sweeps?: readonly LineSweep[];
     openSweepLine?: number | null;
     selectedStopIndex?: number | null;
@@ -125,7 +124,6 @@
     answers = {},
     openAnswer = null,
     manifestHash = null,
-    signsLeftOut = [],
     sweeps = [],
     openSweepLine = null,
     selectedStopIndex = null,
@@ -173,7 +171,7 @@
   let visibleVerbs = $derived.by((): readonly StdVerbSpec[] => {
     if (availableVerbs === null) return STD_VERBS;
     const allowed = new Set(availableVerbs);
-    return STD_VERBS.filter((spec) => allowed.has(spec.verb) || allowed.has(spec.question));
+    return STD_VERBS.filter((spec) => allowed.has(spec.verb) || (spec.question !== undefined && allowed.has(spec.question)));
   });
 
   let groundsList = $derived<readonly SlipLine[]>(conformanceRow?.grounds_distance_1 ?? []);
@@ -659,10 +657,6 @@
       </table>
       {#if answer.note}<p class="slip-answer-note">{answer.note}</p>{/if}
     {/each}
-
-    {#if signsLeftOut.length > 0}
-      <p class="slip-signs-left-out">Signs not in this key, not drawn: {signsLeftOut.join(', ')}</p>
-    {/if}
 
     {#if drawnSigns.length > 0}
       <table class="slip-legend" data-part="legend" aria-label="Sign legend">

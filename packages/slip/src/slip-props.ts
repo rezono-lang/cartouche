@@ -5,8 +5,7 @@
  *  - each value becomes an opaque cell; a non-known value carries the publication's reason as given;
  *  - an absent line's completeness is the role's snapshot of that relation, read in full (`full` in the head);
  *  - each stop carries, per line, the fold the model computed from its variant's published difference;
- *  - a sign is drawn only when Cartouche's frozen key has it (Rezono's rule: a sign not in the key is not drawn);
- *    the ones left out are returned, so a page can say so (Decision 0009, point 6).
+ *  - every sign the reader's view names must exist in Cartouche's std-view key (Decision 0009, point 6).
  */
 
 import { SIGNS } from '../../reader-core/src/index.ts';
@@ -83,8 +82,6 @@ export interface SlipProps {
   readonly answers: Readonly<Record<string, SlipPropsAnswer>>;
   readonly sealChecks: readonly { readonly id: string; readonly status: 'green' | 'warning' | 'red' }[];
   readonly manifestHash: string;
-  /** Signs the reader's view uses that Cartouche's frozen key does not have: not drawn. */
-  readonly signsLeftOut: readonly string[];
 }
 
 function keyParts(raw: string): string[] {
@@ -127,12 +124,12 @@ export function slipPropsFromView(view: SlipView): SlipProps {
   if (view.kind !== 'slip' || !view.row) {
     throw new Error('slip props: the reader gave no row the role reads exactly once; the list of relations is not drawn yet');
   }
-  const leftOut = new Set<string>();
   const drawable = (sign: SignInfo | undefined): string | undefined => {
     if (!sign) return undefined;
-    if (Object.prototype.hasOwnProperty.call(SIGNS, sign.name)) return sign.name;
-    leftOut.add(sign.name);
-    return undefined;
+    if (!Object.prototype.hasOwnProperty.call(SIGNS, sign.name)) {
+      throw new Error(`slip props: unknown std-view sign "${sign.name}"`);
+    }
+    return sign.name;
   };
 
   const lineCell = (line: SlipLine): RawCellInput =>
@@ -219,8 +216,7 @@ export function slipPropsFromView(view: SlipView): SlipProps {
     sweeps,
     answers,
     sealChecks,
-    manifestHash: view.seal.manifestSha256,
-    signsLeftOut: [...leftOut]
+    manifestHash: view.seal.manifestSha256
   };
 }
 

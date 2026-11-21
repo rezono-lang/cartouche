@@ -142,7 +142,7 @@ test('M1 Sheet 04 (causal-ripple): compiles fixture 06 into valid CartoucheScene
     id: 'obs-unexplained',
     label: 'Unexplained Probe',
     hop: 2,
-    sign: 'observation',
+    sign: 'origin_observation',
     state: 'unknown',
     display: null,
     proof_ref: 'p:unexplained'

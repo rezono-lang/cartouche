@@ -12,10 +12,10 @@
   "horizon": { "complete": false, "reason": "depth_limit_hop_2" },
   "dependent_count": 28,
   "nodes": [
-    { "id": "svc-keycloak", "label": "Keycloak A", "hop": 0, "sign": "decision", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "FACT" }, "proof_ref": "p:kc" },
-    { "id": "svc-failover", "label": "Failover B", "hop": 0, "sign": "observation", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "FACT" }, "proof_ref": "p:fb" },
+    { "id": "svc-keycloak", "label": "Keycloak A", "hop": 0, "sign": "origin_decision", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "FACT" }, "proof_ref": "p:kc" },
+    { "id": "svc-failover", "label": "Failover B", "hop": 0, "sign": "origin_observation", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "FACT" }, "proof_ref": "p:fb" },
     { "id": "g-quorum", "label": "IAM Quorum", "hop": 1, "sign": "derived", "state": "valid", "cut_set": { "load_bearing": false, "redundancy_margin": 1, "gate": "OR" }, "proof_ref": "p:quorum" },
-    { "id": "obs-tls", "label": "Hubble TLS", "hop": 1, "sign": "observation", "state": "valid", "cut_set": { "load_bearing": true, "redundancy_margin": 0, "gate": "FACT" }, "proof_ref": "p:tls" },
+    { "id": "obs-tls", "label": "Hubble TLS", "hop": 1, "sign": "origin_observation", "state": "valid", "cut_set": { "load_bearing": true, "redundancy_margin": 0, "gate": "FACT" }, "proof_ref": "p:tls" },
     { "id": "g-rpo", "label": "DR RPO 15m", "hop": 2, "sign": "derived", "state": "violated", "previous_display": "valid", "display": "violated", "cut_set": { "load_bearing": true, "redundancy_margin": 0, "gate": "AND" }, "proof_ref": "p:rpo" }
   ]
 }

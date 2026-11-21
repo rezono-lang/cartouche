@@ -69,7 +69,7 @@ test('M1 conformance [tables-and-legend]: every table has th headers and table[d
     question: 'grounds',
     verb: 'why',
     headers: ['Line', 'Relation'],
-    rows: [{ cells: ['x', 'held'], sign: 'observation', proof_ref: 'witness:held-absent-item-a' }]
+    rows: [{ cells: ['x', 'held'], sign: 'origin_observation', proof_ref: 'witness:held-absent-item-a' }]
   };
   for (const key of Object.keys(ROWS)) {
     const html = await withDoc({ conformanceRow: ROWS[key], seal: sealOf(), openAnswers: [answer] }, (doc) => {

@@ -10,7 +10,7 @@ import { checkGeometricInvariants } from '../../scene-ir/src/geometry-invariants
 import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 
 export type FlowLayer = 'stated' | 'observed' | 'both';
-export type FlowNodeSign = 'decision' | 'design' | 'observation' | 'derived';
+export type FlowNodeSign = 'origin_decision' | 'origin_design' | 'origin_observation' | 'derived';
 export type FlowNodeState = 'valid' | 'changed' | 'violated' | 'absent' | 'unknown';
 
 export interface FlowSplitNodeInput {

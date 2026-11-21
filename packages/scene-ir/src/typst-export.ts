@@ -137,7 +137,7 @@ const PRELUDE = (): string => {
     '  } else if state == "absent" {',
     '    sign-glyph.absent',
     '  } else if state == "invalid" {',
-    '    sign-glyph.invalid',
+    '    sign-glyph.violated',
     '  } else if display != none {',
     '    if state in ("valid", "changed", "violated") { sign-glyph.at(state); h(3pt) }',
     '    display',
