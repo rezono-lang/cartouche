@@ -3,7 +3,7 @@
  * Decision 0005: Pure headless layout, zero client compute, proof per mark, deterministic SVG + PixiJS scene data.
  */
 
-import { DATA_MARKS, PALETTES, SIGNS } from '../../reader-core/src/index.ts';
+import { DATA_MARKS, PALETTES, SIGNS, signForState } from '../../reader-core/src/index.ts';
 import type { EpistemicSign, EpistemicState, PaletteName, PaletteTokens, SignSpec } from '../../reader-core/src/index.ts';
 import { compileCausalRippleScene } from '../../scene-ir/src/compile-causal-ripple.ts';
 import type {
@@ -237,7 +237,7 @@ export function buildCausalRippleModel(
         const nx = cx + COL_PAD;
         const ny = colTopY + COL_HEADER_H + COL_PAD + rowIdx * (NODE_H + NODE_GAP_Y);
         const signSpec = SIGNS[raw.sign]!;
-        const stateSpec = SIGNS[raw.state]!;
+        const stateSpec = SIGNS[signForState(raw.state)]!;
 
         const layoutNode: RippleNodeLayout = {
           id: raw.id,
@@ -293,7 +293,7 @@ export function buildCausalRippleModel(
         const raw = bucket[rowIdx]!;
         const ny = startY + rowIdx * (NODE_H + NODE_GAP_Y);
         const signSpec = SIGNS[raw.sign]!;
-        const stateSpec = SIGNS[raw.state]!;
+        const stateSpec = SIGNS[signForState(raw.state)]!;
 
         const layoutNode: RippleNodeLayout = {
           id: raw.id,

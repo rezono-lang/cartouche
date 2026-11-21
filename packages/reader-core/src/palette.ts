@@ -85,37 +85,48 @@ export interface SignSpec {
   readonly token: keyof PaletteTokens;
 }
 
+// Rezono's key of signs (packs/std-view/key.yaml: signs, then statuses), with Cartouche's non-colour glyphs where
+// Rezono draws a form instead (assumption, screened, sealed). An `invalid` value is drawn with `violated`, as Rezono does.
 export const SIGNS: Readonly<Record<string, SignSpec>> = Object.freeze({
-  decision: Object.freeze({ kind: 'origin', glyph: '◆', pattern: 'solid-diamond', token: 'proof' }),
-  legislator: Object.freeze({ kind: 'origin', glyph: '▲', pattern: 'solid-triangle', token: 'proof' }),
-  design: Object.freeze({ kind: 'origin', glyph: '■', pattern: 'solid-square', token: 'ink' }),
-  observation: Object.freeze({ kind: 'origin', glyph: '●', pattern: 'solid-circle', token: 'inkSoft' }),
+  origin_decision: Object.freeze({ kind: 'origin', glyph: '◆', pattern: 'solid-diamond', token: 'proof' }),
+  origin_vendor: Object.freeze({ kind: 'origin', glyph: '▲', pattern: 'solid-triangle', token: 'proof' }),
+  origin_design: Object.freeze({ kind: 'origin', glyph: '■', pattern: 'solid-square', token: 'ink' }),
+  origin_observation: Object.freeze({ kind: 'origin', glyph: '●', pattern: 'solid-circle', token: 'inkSoft' }),
   derived: Object.freeze({ kind: 'origin', glyph: '○', pattern: 'hollow-circle', token: 'proof' }),
+  assumption: Object.freeze({ kind: 'line', glyph: '‗', pattern: 'dashed-underline', token: 'caution' }),
+  drift: Object.freeze({ kind: 'line', glyph: '══', pattern: 'double-rail', token: 'violated' }),
+  screened: Object.freeze({ kind: 'state', glyph: '▬', pattern: 'fixed-bar', token: 'inkFaint' }),
+  proposal: Object.freeze({ kind: 'state', glyph: '✎', pattern: 'dashed-frame', token: 'proof' }),
+  sealed: Object.freeze({ kind: 'state', glyph: '⊛', pattern: 'stamp-frame', token: 'proof' }),
+  supposed: Object.freeze({ kind: 'state', glyph: '◇', pattern: 'dashed-diamond', token: 'caution' }),
   valid: Object.freeze({ kind: 'state', glyph: '✓', pattern: 'solid-line', token: 'valid' }),
   changed: Object.freeze({ kind: 'state', glyph: '◐', pattern: 'half-fill', token: 'caution' }),
   violated: Object.freeze({ kind: 'state', glyph: '✕', pattern: 'cross-stroke', token: 'violated' }),
-  drift: Object.freeze({ kind: 'line', glyph: '══', pattern: 'double-rail', token: 'violated' }),
-  absent: Object.freeze({ kind: 'state', glyph: '⦸', pattern: 'dashed-hollow-strike', token: 'inkSoft' }),
   unknown: Object.freeze({ kind: 'state', glyph: '▨', pattern: 'diagonal-hatch-45', token: 'hatchStroke' }),
   not_applicable: Object.freeze({ kind: 'state', glyph: '–', pattern: 'hollow-void', token: 'inkFaint' }),
-  invalid: Object.freeze({ kind: 'state', glyph: '!', pattern: 'exclamation-border', token: 'violated' }),
-  supposed: Object.freeze({ kind: 'state', glyph: '◇', pattern: 'dashed-diamond', token: 'caution' })
+  absent: Object.freeze({ kind: 'state', glyph: '⦸', pattern: 'dashed-hollow-strike', token: 'inkSoft' })
 });
+
+/** The sign a value's state is drawn with (Rezono's slip: `invalid` is drawn with `violated`). */
+export function signForState(state: string): string {
+  return state === 'invalid' ? 'violated' : state;
+}
 
 export interface StdVerbSpec {
   readonly verb: 'why' | 'depends' | 'missing' | 'suppose' | 'compare' | 'propose';
   readonly key: 'w' | 'd' | 'm' | 's' | 'c' | 'p';
-  readonly question: 'grounds' | 'reach' | 'gap' | 'sweep' | 'scenario' | 'propose';
+  /** The std-explain question that answers the verb; a verb without one is an action of the viewer (Rezono Sheets.verbs). */
+  readonly question?: 'grounds' | 'reach' | 'gap';
 }
 
 export const STD_VERBS: readonly StdVerbSpec[] = Object.freeze([
   Object.freeze({ verb: 'why', key: 'w', question: 'grounds' }),
   Object.freeze({ verb: 'depends', key: 'd', question: 'reach' }),
   Object.freeze({ verb: 'missing', key: 'm', question: 'gap' }),
-  Object.freeze({ verb: 'suppose', key: 's', question: 'sweep' }),
-  Object.freeze({ verb: 'compare', key: 'c', question: 'scenario' }),
-  Object.freeze({ verb: 'propose', key: 'p', question: 'propose' })
-]);
+  Object.freeze({ verb: 'suppose', key: 's' }),
+  Object.freeze({ verb: 'compare', key: 'c' }),
+  Object.freeze({ verb: 'propose', key: 'p' })
+] satisfies StdVerbSpec[]);
 
 export function paletteCss(name: PaletteName): string {
   const p = PALETTES[name];

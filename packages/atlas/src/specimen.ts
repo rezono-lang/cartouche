@@ -14,10 +14,10 @@ export interface SpecimenEntry {
 }
 
 export const SPECIMEN_ENTRIES: readonly SpecimenEntry[] = Object.freeze([
-  { dataEntry: 'sign:decision', glyph: '◆', kind: 'sign' },
-  { dataEntry: 'sign:legislator', glyph: '▲', kind: 'sign' },
-  { dataEntry: 'sign:design', glyph: '■', kind: 'sign' },
-  { dataEntry: 'sign:observation', glyph: '●', kind: 'sign' },
+  { dataEntry: 'sign:origin_decision', glyph: '◆', kind: 'sign' },
+  { dataEntry: 'sign:origin_vendor', glyph: '▲', kind: 'sign' },
+  { dataEntry: 'sign:origin_design', glyph: '■', kind: 'sign' },
+  { dataEntry: 'sign:origin_observation', glyph: '●', kind: 'sign' },
   { dataEntry: 'sign:derived', glyph: '○', kind: 'sign' },
   { dataEntry: 'state:valid', glyph: '✓', kind: 'state' },
   { dataEntry: 'state:changed', glyph: '◐', kind: 'state' },

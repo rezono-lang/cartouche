@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DATA_MARKS, PALETTES, SIGNS, paletteCss } from '../../reader-core/src/index.ts';
+  import { DATA_MARKS, PALETTES, SIGNS, paletteCss, signForState } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
   import type { BitemporalFixtureInput } from '../../scene-ir/src/compile-bitemporal.ts';
   import {
@@ -31,7 +31,7 @@
   let axisLabel = $derived((axis: string): string => model.scene.axes.find((a) => a.axis === axis)?.label ?? axis);
 
   function glyph(sign: string): string {
-    const spec = SIGNS[sign];
+    const spec = SIGNS[signForState(sign)];
     if (!spec) throw new Error('no std-view sign: ' + sign);
     return spec.glyph;
   }

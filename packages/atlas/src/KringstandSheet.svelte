@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DATA_MARKS, SIGNS, STD_VERBS } from '../../reader-core/src/index.ts';
+  import { DATA_MARKS, SIGNS, STD_VERBS, signForState } from '../../reader-core/src/index.ts';
 
   interface Row {
     key: string;
@@ -59,7 +59,7 @@
     return r.reason;
   }
   function glyph(s: string): string {
-    return SIGNS[s]?.glyph ?? SIGNS.derived.glyph;
+    return SIGNS[signForState(s)]?.glyph ?? SIGNS.derived.glyph;
   }
 </script>
 

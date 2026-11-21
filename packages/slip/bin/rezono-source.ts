@@ -1,7 +1,8 @@
 /**
  * Rezono sources consumed by @rezono/slip at build time (Decision 0009, point 2).
  *
- * Reads each file named in ../rezono-source.json at the pinned Rezono commit and refuses any other bytes.
+ * Reads each file named in ../rezono-source.json at the one Rezono commit pinned in contracts/rezono-pin.json
+ * (pinned_commit) and refuses any other bytes.
  * Files are cached under node_modules/.cache/rezono-source/<commit>/ (outside git); a missing file is fetched
  * from raw.githubusercontent.com at that commit. Nothing from Rezono is copied into the repository.
  * The message filler is imported from the verified cache file and used as Rezono ships it.
@@ -25,9 +26,18 @@ interface RezonoSourcePin {
   readonly files: Readonly<Record<string, string>>;
 }
 
-export const REZONO_SOURCE: RezonoSourcePin = JSON.parse(
-  fs.readFileSync(path.join(SLIP_DIR, 'rezono-source.json'), 'utf8')
-) as RezonoSourcePin;
+const sourceFiles = JSON.parse(fs.readFileSync(path.join(SLIP_DIR, 'rezono-source.json'), 'utf8')) as Omit<
+  RezonoSourcePin,
+  'commit'
+>;
+const contractPin = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'contracts', 'rezono-pin.json'), 'utf8')) as {
+  readonly pinned_commit: string;
+};
+if (!/^[0-9a-f]{40}$/.test(contractPin.pinned_commit)) {
+  throw new Error(`rezono-source: contracts/rezono-pin.json must pin a full commit, got ${contractPin.pinned_commit}`);
+}
+/** The Rezono files the slip reads, at the one pinned commit (contracts/rezono-pin.json). */
+export const REZONO_SOURCE: RezonoSourcePin = { ...sourceFiles, commit: contractPin.pinned_commit };
 
 const CACHE_DIR = path.join(REPO_ROOT, 'node_modules', '.cache', 'rezono-source', REZONO_SOURCE.commit);
 

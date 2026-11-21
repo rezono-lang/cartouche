@@ -101,7 +101,7 @@ test('M2: Sheet 01 renders orthographic Swisstopo 3D terrain, cliff markers, hat
       'must emit 0 SVG cliff markers when no dedicated cliff proof_ref is published'
     );
     assert.equal(
-      doc.querySelector(`table[${M.part}="legend"] tr[${M.sign}="legislator"]`),
+      doc.querySelector(`table[${M.part}="legend"] tr[${M.sign}="origin_vendor"]`),
       null,
       'legend must omit legislator when no cliff marker is drawn'
     );
@@ -254,7 +254,7 @@ test('M2: Sheet 01 enforces xD-Discipline Guard and epistemic honesty (rejects p
   const cliffSvg = renderReliefOrthographicSvg(cliffModel);
   const { window: winC, document: docC } = parseHtml(cliffSvg);
   try {
-    const marker = docC.querySelector(`svg g[${M.key}="cliff:A001"][${M.sign}="legislator"]`);
+    const marker = docC.querySelector(`svg g[${M.key}="cliff:A001"][${M.sign}="origin_vendor"]`);
     assert.ok(marker, 'expected SVG cliff marker when sweep_2d.cliff_distances is published');
     assert.equal(marker.getAttribute(M.proof_ref), 'cliff:art5-A001');
     assert.ok(marker.textContent.includes('€ 2.000 to Art. 5 cliff'));
@@ -262,7 +262,7 @@ test('M2: Sheet 01 enforces xD-Discipline Guard and epistemic honesty (rejects p
     await winC.happyDOM.close();
   }
   assert.ok(
-    cliffModel.legendItems.some((item) => item.key === 'legislator'),
+    cliffModel.legendItems.some((item) => item.key === 'origin_vendor'),
     'legend must include legislator when a cliff marker is drawn'
   );
 });

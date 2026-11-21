@@ -67,3 +67,16 @@ The frozen contracts (Decision 0007) also differ from Rezono's `packs/std-view` 
 - `tests/red/m2-slip-reads-rezono-reader.test.mjs` (points 1–4)
 - `tests/red/m2-slip-fixture-09-matches-reader.test.mjs` (point 5)
 - `tests/red/m3-std-view-matches-rezono.test.mjs` (point 6; waits on owner review of the contract bump)
+
+## The contract bump (point 6), proposed for owner review
+- One pin: `contracts/rezono-pin.json` `pinned_commit` is the full commit the slip reads
+  (f15c89d665e2815b02e12665203a9d48dd6abc40); `packages/slip/rezono-source.json` keeps only the files and their hashes,
+  and the reader-parity workflow reads the same pin.
+- Signs: Rezono's `key.yaml` signs and statuses, by name: `origin_decision`, `origin_vendor`, `origin_design`,
+  `origin_observation`, `derived`, `assumption`, `drift`, `screened`, `proposal`, `sealed`, `supposed`, `valid`,
+  `changed`, `violated`, `unknown`, `not_applicable`, `absent`. Rezono's glyph wherever it has one. Where Rezono draws a
+  form instead, Cartouche's non-colour glyphs are proposals: `assumption` ‗ (underline), `screened` ▬ (bar),
+  `sealed` ⊛ (stamp); `drift` ══ and `supposed` ◇ stay.
+- `invalid` is no sign: an invalid value is drawn with `violated` and its reason, as Rezono's slip does
+  (`signForState`). This answers the quality review's request for `!` on invalid differently: the owner chooses.
+- Verbs: `suppose`, `compare` and `propose` have no question (actions of the viewer), as `Sheets.verbs` says.

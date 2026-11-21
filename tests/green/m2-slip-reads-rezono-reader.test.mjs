@@ -282,8 +282,9 @@ test('Decision 0009: the view model runs at build time only, from pinned Rezono 
   const page = fs.readFileSync(path.join(ROOT, 'packages', 'slip', 'src', 'Slip.svelte'), 'utf8');
   assert.equal(/from '\.\/model\.ts'|from '\.\/slip-props\.ts'/.test(page), false, 'the page imports no view-model code');
   assert.equal(/\{\\\$|split\(/.test(page), false, 'the page fills no message itself');
-  const pin = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'slip', 'rezono-source.json'), 'utf8'));
-  assert.equal(load().source.commit, pin.commit, 'the reader answers are of the pinned Rezono commit');
+  // One pin: contracts/rezono-pin.json. Bumping it without re-recording the reader answers is red.
+  const pin = JSON.parse(fs.readFileSync(path.join(ROOT, 'contracts', 'rezono-pin.json'), 'utf8'));
+  assert.equal(load().source.commit, pin.pinned_commit, 'the reader answers are of the pinned Rezono commit');
   // Dutch through Rezono's own std-view messages and fill.ts, from the same answers.
   const nl = await render({ fixture: FX, role: 'reader', pack: 'slip', lang: 'nl' });
   assert.notEqual(nl.html, a.html);

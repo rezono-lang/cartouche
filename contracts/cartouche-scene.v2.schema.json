@@ -141,10 +141,10 @@
       "items": {
         "type": "string",
         "enum": [
-          "decision",
-          "legislator",
-          "design",
-          "observation",
+          "origin_decision",
+          "origin_vendor",
+          "origin_design",
+          "origin_observation",
           "derived",
           "valid",
           "changed",
@@ -213,7 +213,7 @@
         "label": { "type": "string", "minLength": 1 },
         "sign": {
           "type": "string",
-          "enum": ["decision", "legislator", "design", "observation", "derived"]
+          "enum": ["origin_decision", "origin_vendor", "origin_design", "origin_observation", "derived"]
         },
         "state": {
           "type": "string",

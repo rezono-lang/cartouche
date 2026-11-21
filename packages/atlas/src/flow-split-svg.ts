@@ -3,14 +3,14 @@
  * Decision 0003: Zero client compute, proof per mark, dual-proof drift tracks, zero-leak role projection.
  */
 
-import { DATA_MARKS, PALETTES, SIGNS } from '../../reader-core/src/index.ts';
+import { DATA_MARKS, PALETTES, SIGNS, signForState } from '../../reader-core/src/index.ts';
 import type { ManifestMeta, PaletteName, PaletteTokens, SignSpec } from '../../reader-core/src/index.ts';
 import { compileFlowSplitScene } from '../../scene-ir/src/compilers.ts';
 import { checkGeometricInvariants } from '../../scene-ir/src/geometry-invariants.ts';
 import type { CartoucheScene } from '../../scene-ir/src/types.ts';
 
 export type FlowLayer = 'stated' | 'observed' | 'both';
-export type FlowNodeSign = 'decision' | 'design' | 'observation' | 'derived';
+export type FlowNodeSign = 'origin_decision' | 'origin_design' | 'origin_observation' | 'derived';
 export type FlowNodeState = 'valid' | 'changed' | 'violated' | 'absent' | 'unknown';
 
 export interface FlowSplitNodeInput {
@@ -202,7 +202,7 @@ export function buildFlowSplitModel(
     if (!SIGNS[node.sign]) {
       throw new Error(`FlowSplit epistemic invariant violation: unrecognized sign "${String(node.sign)}" on node "${node.id}".`);
     }
-    if (!SIGNS[node.state]) {
+    if (!SIGNS[signForState(node.state)]) {
       throw new Error(`FlowSplit epistemic invariant violation: unrecognized state "${String(node.state)}" on node "${node.id}".`);
     }
     requireNonEmpty(node.proof_ref, `proof_ref on node "${node.id}"`);
@@ -273,7 +273,7 @@ export function buildFlowSplitModel(
         const nx = zx + ZONE_PAD;
         const ny = baseY + rowIdx * (NODE_H + NODE_GAP_Y);
         const signSpec = SIGNS[raw.sign]!;
-        const stateSpec = SIGNS[raw.state]!;
+        const stateSpec = SIGNS[signForState(raw.state)]!;
         const layoutNode: FlowSplitNodeLayout = {
           id: raw.id,
           label: raw.label,

@@ -624,7 +624,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
           const first = sweeps[0];
           if (first) openSweepLine = openSweepLine === null ? first.line : null;
         } else {
-          openedQuestions.add(res.spec.question);
+          if (res.spec.question !== undefined) openedQuestions.add(res.spec.question);
         }
       }
       const lineActions = (request.keys ?? []).filter((k): k is SlipLineAction => typeof k !== 'string');
@@ -656,7 +656,7 @@ export async function render(request: SlipRenderRequest): Promise<SlipRenderResp
 
   const openAnswers: AnswerTableSpec[] = [];
   for (const spec of STD_VERBS) {
-    if (openedQuestions.has(spec.question)) {
+    if (spec.question !== undefined && openedQuestions.has(spec.question)) {
       openAnswers.push(buildAnswerTable(spec, conformanceRow, capability));
     }
   }

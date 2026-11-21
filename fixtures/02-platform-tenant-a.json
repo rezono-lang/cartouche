@@ -13,10 +13,10 @@
     "reason": "not_read_in_full"
   },
   "nodes": [
-    { "id": "svc-gateway", "label": "Gateway", "zone": "ingress", "sign": "design", "state": "valid", "layer": "both", "proof_ref": "proof:gw-01" },
-    { "id": "svc-keycloak", "label": "Keycloak", "zone": "platform", "sign": "decision", "state": "valid", "layer": "both", "proof_ref": "proof:kc-01" },
-    { "id": "svc-orders", "label": "Orders API", "zone": "consumers", "sign": "design", "state": "valid", "layer": "both", "proof_ref": "proof:ord-19" },
-    { "id": "svc-postgres", "label": "Postgres", "zone": "storage", "sign": "observation", "state": "valid", "layer": "both", "proof_ref": "proof:pg-42" }
+    { "id": "svc-gateway", "label": "Gateway", "zone": "ingress", "sign": "origin_design", "state": "valid", "layer": "both", "proof_ref": "proof:gw-01" },
+    { "id": "svc-keycloak", "label": "Keycloak", "zone": "platform", "sign": "origin_decision", "state": "valid", "layer": "both", "proof_ref": "proof:kc-01" },
+    { "id": "svc-orders", "label": "Orders API", "zone": "consumers", "sign": "origin_design", "state": "valid", "layer": "both", "proof_ref": "proof:ord-19" },
+    { "id": "svc-postgres", "label": "Postgres", "zone": "storage", "sign": "origin_observation", "state": "valid", "layer": "both", "proof_ref": "proof:pg-42" }
   ],
   "edges": [
     { "id": "e1", "from": "svc-gateway", "to": "svc-keycloak", "layer": "both", "kind": "standard", "proof_ref": "proof:e1" },

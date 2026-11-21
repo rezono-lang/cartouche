@@ -95,7 +95,7 @@ test('M1: Sheet 03 unlocks [P] and approve only when sealed and green', async ()
 
 test('M1: Sheet 03 drops no row: stuck lane renders, live unknown rows go to the hatched band', async () => {
   const fx = structuredClone(fixture);
-  fx.sealed_rows.push({ key: 'step:s1', lane: 'stuck', label: 'stuck-one', sign: 'observation', state: 'violated', proof_ref: 'round:m-4#stuck-1' });
+  fx.sealed_rows.push({ key: 'step:s1', lane: 'stuck', label: 'stuck-one', sign: 'origin_observation', state: 'violated', proof_ref: 'round:m-4#stuck-1' });
   fx.sealed_rows.push({ key: 'step:u2', lane: 'unknown', label: 'unk-sealed', sign: 'derived', state: 'unknown', reason: 'r_a', proof_ref: 'round:m-4#unk-2' });
   fx.live_provisional_delta.changes.push({ weight: 1, row: { key: 'step:u3', lane: 'ready', label: 'unk-live', sign: 'derived', state: 'unknown', reason: 'r_b', proof_ref: 'stream:u3' } });
   const { html, window: win, document: doc } = await mount(fx);

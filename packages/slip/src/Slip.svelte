@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PALETTES, SIGNS, STD_VERBS, canonicalJson, paletteCss } from '../../reader-core/src/index.ts';
+  import { PALETTES, SIGNS, STD_VERBS, canonicalJson, paletteCss, signForState } from '../../reader-core/src/index.ts';
   import type { CartoucheSeal, PaletteName, RawCellInput, SignSpec, StdVerbSpec, TrustTier } from '../../reader-core/src/index.ts';
   import type { SlipModel, VerbKey } from './slip-controller.ts';
   import SlipSeal from './SlipSeal.svelte';
@@ -173,7 +173,7 @@
   let visibleVerbs = $derived.by((): readonly StdVerbSpec[] => {
     if (availableVerbs === null) return STD_VERBS;
     const allowed = new Set(availableVerbs);
-    return STD_VERBS.filter((spec) => allowed.has(spec.verb) || allowed.has(spec.question));
+    return STD_VERBS.filter((spec) => allowed.has(spec.verb) || (spec.question !== undefined && allowed.has(spec.question)));
   });
 
   let groundsList = $derived<readonly SlipLine[]>(conformanceRow?.grounds_distance_1 ?? []);
@@ -223,17 +223,17 @@
 
     if (conformanceRow) {
       if (conformanceRow.kind === 'calc' && conformanceRow.result_cell && conformanceRow.result_cell.state !== 'known') {
-        addSign(conformanceRow.result_cell.state);
+        addSign(signForState(conformanceRow.result_cell.state));
       }
       for (const [idx, line] of slipLines.entries()) {
         addSign(line.sign);
         if (line.cell.state !== 'known') {
-          addSign(line.cell.state);
+          addSign(signForState(line.cell.state));
         }
         const fold = foldForLine(idx);
         if (fold !== null) {
           addSign('supposed');
-          if (fold.state !== 'known') addSign(fold.state);
+          if (fold.state !== 'known') addSign(signForState(fold.state));
         }
       }
     } else if (model) {

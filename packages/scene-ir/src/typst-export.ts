@@ -10,7 +10,7 @@
  * rounded or defaulted. Malformed marks throw instead of being repaired.
  */
 
-import { SIGNS, renderOpaqueText } from '../../reader-core/src/index.ts';
+import { SIGNS, renderOpaqueText, signForState } from '../../reader-core/src/index.ts';
 import type { CartoucheScene, SceneNodeMark } from './types.ts';
 import { assertXDDiscipline } from './xd-guard.ts';
 
@@ -45,7 +45,7 @@ export function typstString(text: string): string {
 }
 
 function glyphOf(sign: string): string {
-  const spec = Object.prototype.hasOwnProperty.call(SIGNS, sign) ? SIGNS[sign] : undefined;
+  const spec = Object.prototype.hasOwnProperty.call(SIGNS, signForState(sign)) ? SIGNS[signForState(sign)] : undefined;
   if (!spec) throw new Error(`Typst export: no std-view sign for "${sign}".`);
   return spec.glyph;
 }

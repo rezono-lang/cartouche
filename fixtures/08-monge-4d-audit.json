@@ -12,12 +12,12 @@
   "fold_angle_deg": 40,
   "rounds": ["m-1", "m-2", "m-3", "m-4"],
   "services": [
-    { "id": "gw", "label": "Gateway", "short": "GW", "sign": "design", "x": -1.60, "y": 0.18, "state": "valid", "round_states": ["valid", "valid", "valid", "valid"], "proof_ref": "p:gw" },
-    { "id": "kc", "label": "Keycloak", "short": "KC", "sign": "decision", "x": -0.92, "y": -0.66, "state": "valid", "round_states": ["valid", "valid", "valid", "valid"], "proof_ref": "p:kc" },
-    { "id": "orders", "label": "Orders API", "short": "ORD", "sign": "design", "x": -0.30, "y": 0.60, "state": "violated", "round_states": ["valid", "valid", "valid", "violated"], "proof_ref": "p:ord" },
-    { "id": "vault", "label": "Vault", "short": "VLT", "sign": "decision", "x": 0.36, "y": -0.24, "state": "violated", "round_states": ["valid", "valid", "valid", "violated"], "proof_ref": "p:vlt" },
-    { "id": "dr", "label": "Backup Store", "short": "DR", "sign": "decision", "x": 1.02, "y": -1.08, "state": "absent", "round_states": ["valid", "valid", "absent", "absent"], "proof_ref": "p:dr", "completeness_witness_ref": "sweep:m3-m4" },
-    { "id": "ed", "label": "Edge-04", "short": "E04", "sign": "design", "x": 1.56, "y": 1.02, "state": "unknown", "reason": "telemetry_timeout", "display": null, "round_states": ["valid", "valid", "valid", "unknown"], "proof_ref": "p:ed" }
+    { "id": "gw", "label": "Gateway", "short": "GW", "sign": "origin_design", "x": -1.60, "y": 0.18, "state": "valid", "round_states": ["valid", "valid", "valid", "valid"], "proof_ref": "p:gw" },
+    { "id": "kc", "label": "Keycloak", "short": "KC", "sign": "origin_decision", "x": -0.92, "y": -0.66, "state": "valid", "round_states": ["valid", "valid", "valid", "valid"], "proof_ref": "p:kc" },
+    { "id": "orders", "label": "Orders API", "short": "ORD", "sign": "origin_design", "x": -0.30, "y": 0.60, "state": "violated", "round_states": ["valid", "valid", "valid", "violated"], "proof_ref": "p:ord" },
+    { "id": "vault", "label": "Vault", "short": "VLT", "sign": "origin_decision", "x": 0.36, "y": -0.24, "state": "violated", "round_states": ["valid", "valid", "valid", "violated"], "proof_ref": "p:vlt" },
+    { "id": "dr", "label": "Backup Store", "short": "DR", "sign": "origin_decision", "x": 1.02, "y": -1.08, "state": "absent", "round_states": ["valid", "valid", "absent", "absent"], "proof_ref": "p:dr", "completeness_witness_ref": "sweep:m3-m4" },
+    { "id": "ed", "label": "Edge-04", "short": "E04", "sign": "origin_design", "x": 1.56, "y": 1.02, "state": "unknown", "reason": "telemetry_timeout", "display": null, "round_states": ["valid", "valid", "valid", "unknown"], "proof_ref": "p:ed" }
   ],
   "drift_arcs": [
     { "id": "arc-8200", "from": "orders", "to": "vault", "label": "TCP/8200", "stated_proof_ref": "policy:netpol-04", "observed_proof_ref": "obs:hubble-ep42" }

@@ -74,7 +74,7 @@ test('Contract 2 (data-* DOM & SVG Marks): syncs with DATA_MARKS + std-view sign
   assert.deepEqual(validateDataMarksContract(marks, tokens, DATA_MARKS), []);
 
   const mutatedMarks = structuredClone(marks);
-  mutatedMarks.attributes.sign.values = ['decision'];
+  mutatedMarks.attributes.sign.values = ['origin_decision'];
   const errs = validateDataMarksContract(mutatedMarks, tokens, DATA_MARKS);
   assert.ok(errs.some((e) => e.includes('sign values mismatch')));
 });

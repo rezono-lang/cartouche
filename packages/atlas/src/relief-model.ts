@@ -497,7 +497,7 @@ export function buildReliefModel(
   };
 
   if (gridCells.length > 0 || subjects.length > 0) addSign('derived');
-  if (cliffMarkers.length > 0) addSign('legislator');
+  if (cliffMarkers.length > 0) addSign('origin_vendor');
   for (const sub of subjects) {
     if (sub.amountCell.state !== 'known') addSign(sub.amountCell.state);
   }
@@ -678,12 +678,12 @@ export function renderReliefOrthographicSvg(
   }
 
   // Cliff distance markers (every marker has a dedicated published proof_ref)
-  const legGlyph = resolveSignSpec('legislator').glyph;
+  const legGlyph = resolveSignSpec('origin_vendor').glyph;
   for (let idx = 0; idx < model.cliffMarkers.length; idx++) {
     const marker = model.cliffMarkers[idx]!;
     const my = 48 + idx * 24;
     parts.push(
-      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator" ` +
+      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="origin_vendor" ` +
         `${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}">`,
       `<rect x="16" y="${my - 14}" width="260" height="20" rx="3" fill="${p.paperElev}" stroke="${p.proof}" stroke-width="1" />`,
       `<text x="24" y="${my}" fill="${p.proof}" font-size="11">${escapeXml(`${legGlyph} ${marker.subjectId}: ${marker.display}`)}</text>`,
@@ -773,12 +773,12 @@ export function renderRelief2DProfileSvg(
   }
 
   // Cliff distance callouts (every marker has a dedicated published proof_ref)
-  const legGlyph = resolveSignSpec('legislator').glyph;
+  const legGlyph = resolveSignSpec('origin_vendor').glyph;
   for (let idx = 0; idx < model.cliffMarkers.length; idx++) {
     const marker = model.cliffMarkers[idx]!;
     const my = padTop + plotH + 44 + idx * 14;
     parts.push(
-      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="legislator" ` +
+      `<g ${DATA_MARKS.key}="cliff:${escapeXml(marker.subjectId)}" ${DATA_MARKS.sign}="origin_vendor" ` +
         `${DATA_MARKS.proof_ref}="${escapeXml(marker.proofRef)}">`,
       `<text x="${padLeft}" y="${my}" fill="${p.proof}" font-size="11">${escapeXml(`${legGlyph} ${marker.subjectId}: ${marker.display}`)}</text>`,
       `</g>`

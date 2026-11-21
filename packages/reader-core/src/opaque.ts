@@ -6,7 +6,7 @@
 
 export type EpistemicState = 'known' | 'unknown' | 'not_applicable' | 'invalid' | 'absent';
 
-export type EpistemicSign = 'decision' | 'legislator' | 'design' | 'observation' | 'derived';
+export type EpistemicSign = 'origin_decision' | 'origin_vendor' | 'origin_design' | 'origin_observation' | 'derived';
 
 export type OpaqueText = string & { readonly __opaqueBrand: 'RezonoDisplayToken' };
 
