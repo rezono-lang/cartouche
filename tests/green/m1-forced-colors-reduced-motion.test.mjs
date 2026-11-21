@@ -3,13 +3,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Forced colors and reduced motion: under forced-colors: active every colour token maps to a CSS system colour, and every animation or transition in packages sits inside prefers-reduced-motion: no-preference',
-  waits_on: []
-};
-
 // Decision 0012 §2 (7b). Under Windows High Contrast (forced-colors: active) the browser overrides author colours;
 // Cartouche maps each of its colour tokens to a system colour there, as Rezono's forced_colors theme does in
 // packs/std-view/palette.yaml, so the signs (glyphs, hatch, dashes) carry the meaning. Motion is opt-in: an
