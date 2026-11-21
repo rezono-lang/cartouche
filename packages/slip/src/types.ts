@@ -99,6 +99,7 @@ export interface HeadResponse {
   readonly id: string;
   readonly epoch: number;
   readonly knowledge_time?: string;
+  readonly dataset?: string;
   readonly manifest_sha256: string;
   readonly witness_check?: WitnessCheckStatus;
   readonly snapshots: readonly Snapshot[];
@@ -137,6 +138,7 @@ export interface RoleBundleResponse {
 export interface GroundsNode extends RowRef {
   readonly distance: number;
   readonly outside?: boolean;
+  readonly iri?: string;
   readonly sources?: readonly Source[];
   readonly state?: ValueState;
   readonly reason?: string;
@@ -403,6 +405,7 @@ export interface SlipLine {
   index: number;
   relation: string;
   key: string;
+  iri?: string | undefined;
   depth: number;
   polarity: 'positive' | 'negative';
   part?: 'total' | undefined;

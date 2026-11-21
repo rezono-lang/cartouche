@@ -6,15 +6,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary: 'Every mark on every sheet is a link to the slip opened on its conclusion address (Rezono conclusion IRI pinned to epoch and dataset hash); every target resolves in the slip to exactly that row, and a pin that does not match is refused',
-  waits_on: [
-    'm1-sheet-reads-gate-output'
-  ]
-};
-
 // Decision 0012 §2 (1). Every mark links to the slip at its pinned Rezono conclusion address:
 // <kind iri>/<spelled id>?pin=m-<epoch>@d-<64 hex> (decisions/publication-conclusion-addresses.md).
 // Cartouche reads the address from the reader; it never builds one from parts.
