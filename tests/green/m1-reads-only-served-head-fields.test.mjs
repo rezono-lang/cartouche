@@ -7,16 +7,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0015-quality-round-3.md',
-  priority: 2,
-  summary: 'N7 (#46 point 4): the slip reads no seal field Rezono does not serve; a guessed trust_tier or seal on /slip/head leaves the page byte-identical, and can_propose, rights or provisional_count never lift propose_locked_no_reader_grant, until rezono-lang/rezono#1451 names them',
-  waits_on: [
-    'm1-propose-locked-until-served'
-  ]
-};
-
 // Decision 0015 §2 N7, issue #46 point 4, Decision 0013 §3 ("Cartouche reads no field that Rezono does not serve").
 // render.ts sealFromReaderHead reads trust_tier, seal.trust_tier, can_propose, rights.can_propose, seal.can_propose,
 // provisional_count and seal.provisional_count: names Cartouche guessed, which Rezono's /slip/head does not have.
