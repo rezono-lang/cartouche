@@ -55,6 +55,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Run complete fast-check (tsc + AST zero-compute lint + contract freeze + tests)
         run: npm run fast-check
+        env:
+          CARTOUCHE_PRIVATE_PATTERNS: ${{ secrets.CARTOUCHE_PRIVATE_PATTERNS }}
 
   # Visual / 3D verification ONLY runs when UI/Scene actually changes (never blocks core PRs!)
   scene-and-specimen:

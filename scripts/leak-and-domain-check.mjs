@@ -10,13 +10,29 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 
-// Encoded private-environment patterns so this public guard never echoes private strings literally.
+// Machine paths are generic and live here. Names of private environments never appear in this public repo, not even
+// encoded: CI passes them in the secret CARTOUCHE_PRIVATE_PATTERNS, one case-insensitive regular expression per line.
 const PRIVATE_PATTERNS = [
   /C:\\Users\\/i,
   /\/Users\/[a-z0-9._-]+\//i,
-  new RegExp(Buffer.from('ZGMzMA==', 'base64').toString('utf8'), 'i'),
-  new RegExp(Buffer.from('c2NhbGRlcw==', 'base64').toString('utf8'), 'i')
+  ...privatePatternsFromEnv(process.env)
 ];
+
+export function privatePatternsFromEnv(env) {
+  const raw = env.CARTOUCHE_PRIVATE_PATTERNS ?? '';
+  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length === 0 && env.GITHUB_ACTIONS === 'true') {
+    // Fail closed in CI: a guard that silently loses its patterns would pass everything.
+    // Dependabot runs get no Actions secrets, so they only get a warning.
+    if (env.GITHUB_ACTOR === 'dependabot[bot]') {
+      console.warn('::warning::CARTOUCHE_PRIVATE_PATTERNS is not available to Dependabot; only machine paths are checked.');
+    } else {
+      console.error('❌ leak-and-domain-check: the CI secret CARTOUCHE_PRIVATE_PATTERNS is empty or missing.');
+      process.exit(1);
+    }
+  }
+  return lines.map((l) => new RegExp(l, 'i'));
+}
 
 // Hardcoded domain terms forbidden inside reusable packages/* (allowed only in fixtures/ and tests/).
 const DOMAIN_WORDS =
