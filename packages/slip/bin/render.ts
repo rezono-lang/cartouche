@@ -22,7 +22,7 @@ import type { Component } from 'svelte';
 import { compile } from 'svelte/compiler';
 import { render as svelteRender } from 'svelte/server';
 import { STD_VERBS, canonicalJson } from '../../reader-core/src/index.ts';
-import type { CartoucheSeal, ManifestMeta, PaletteName, RawCellInput, TrustTier } from '../../reader-core/src/index.ts';
+import type { CartoucheSeal, ManifestMeta, PaletteName, RawCellInput } from '../../reader-core/src/index.ts';
 import { createSlipModel, selectSlipVerb } from '../src/slip-controller.ts';
 import type { AdjacentWorldHop, MissingLever, PrismSpectrum, SlipModel, VerbKey } from '../src/slip-controller.ts';
 import { resolveSlipShortcut } from '../src/slip-element.ts';
@@ -292,43 +292,22 @@ function sealFromManifest(manifest: ManifestMeta & { readonly provisional_count?
   });
 }
 
-const VALID_TRUST_TIERS = new Set<TrustTier>(['sealed', 'provisional_checked', 'provisional_engine']);
-
-interface ReaderHeadWithSeal extends HeadResponse {
-  readonly trust_tier?: TrustTier;
-  readonly can_propose?: boolean;
-  readonly provisional_count?: number;
-  readonly rights?: { readonly can_propose?: boolean };
-  readonly seal?: {
-    readonly trust_tier?: TrustTier;
-    readonly can_propose?: boolean;
-    readonly provisional_count?: number;
-  };
-}
-
 /**
- * Derive the Slip seal strictly from what Rezono's reader published in /head (Decision 0011):
- * - NEVER hard-code `trustTier: 'sealed'` when the reader omitted `trust_tier`.
- * - NEVER derive `canPropose` from `witness_check === 'green'` alone; require an explicit reader grant.
+ * Derive the Slip seal strictly from the fields Rezono's reader actually serves in /head (Decision 0015 N7):
+ * `id`, `epoch`, `knowledge_time`, `witness_check`. Reads no unserved/guessed fields (`trust_tier`,
+ * `can_propose`, `rights`, `seal`, `provisional_count`) until rezono-lang/rezono#1451 names and serves them.
  */
-function sealFromReaderHead(head: ReaderHeadWithSeal, role: string): SlipSealInput {
+function sealFromReaderHead(head: HeadResponse, role: string): SlipSealInput {
   const green = head.witness_check === 'green';
-  const rawTier = head.trust_tier ?? head.seal?.trust_tier;
-  if (rawTier !== undefined && !VALID_TRUST_TIERS.has(rawTier)) {
-    throw new Error(`reader head: unknown trust_tier "${String(rawTier)}"`);
-  }
-  const readerGrant = head.can_propose ?? head.rights?.can_propose ?? head.seal?.can_propose;
-  const canPropose = readerGrant === true && green && rawTier !== 'provisional_engine';
-  const provisionalCount = head.provisional_count ?? head.seal?.provisional_count ?? 0;
+  const provisionalCount = 0;
   return Object.freeze({
     manifestId: head.id,
     epoch: head.epoch,
     knowledgeTime: head.knowledge_time ?? '',
     role,
     witnessCheck: green ? 'green' : 'failed',
-    ...(rawTier !== undefined ? { trustTier: rawTier } : {}),
     provisionalCount,
-    canPropose
+    canPropose: false
   });
 }
 
@@ -496,10 +475,10 @@ async function renderFromReader(
 
   const row = typeof request.row === 'object' ? request.row : undefined;
   let props: SlipProps;
-  let readerHead: ReaderHeadWithSeal;
+  let readerHead: HeadResponse;
   try {
     const view = await loadSlip(fetchFn, { pack, lang, row }, await rezonoStdPacks(), await rezonoMessageFiller());
-    readerHead = view.head as ReaderHeadWithSeal;
+    readerHead = view.head;
     props = slipPropsFromView(view);
   } catch (err) {
     const refused = refusals.at(-1);
