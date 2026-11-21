@@ -58,12 +58,39 @@ export interface SlipPropsAnswerCell {
   readonly sign?: string | undefined;
 }
 
+export interface SlipPropsAnswerBinding {
+  readonly variable: string;
+  readonly value: string;
+  readonly line?: number | undefined;
+}
+
+export interface SlipPropsAnswerPremiseLink {
+  readonly line: number;
+  readonly label: string;
+}
+
+export interface SlipPropsAnswerRow {
+  readonly cells: readonly SlipPropsAnswerCell[];
+  readonly depth?: number | undefined;
+  readonly line?: number | undefined;
+  readonly relation?: string | undefined;
+  readonly key?: string | undefined;
+  readonly polarity?: 'positive' | 'negative' | undefined;
+  readonly sentence?: readonly SlipPropsSentenceSegment[] | undefined;
+  readonly bindings?: readonly SlipPropsAnswerBinding[] | undefined;
+  readonly premiseLinks?: readonly SlipPropsAnswerPremiseLink[] | undefined;
+  readonly source?: string | undefined;
+  readonly state?: ValueState | undefined;
+  readonly reason?: string | undefined;
+  readonly proof_ref?: string | undefined;
+}
+
 export interface SlipPropsAnswer {
   readonly question: string;
   readonly verb: string;
   readonly heading?: string | undefined;
   readonly headers: readonly string[];
-  readonly rows: readonly { readonly cells: readonly SlipPropsAnswerCell[]; readonly depth?: number | undefined }[];
+  readonly rows: readonly SlipPropsAnswerRow[];
   readonly note?: string | undefined;
 }
 
@@ -200,7 +227,7 @@ export function slipPropsFromView(view: SlipView): SlipProps {
   const answers: Record<string, SlipPropsAnswer> = {};
   for (const [id, table] of Object.entries(view.answersByKey)) {
     const verb = id.slice(id.indexOf(':') + 1);
-    answers[id] = answerOf(table, verb, drawable);
+    answers[id] = answerOf(table, verb, view.manifestId, drawable);
   }
   if (view.supposedSign) drawable(view.supposedSign);
   drawable(view.seal.sealSign);
@@ -223,6 +250,7 @@ export function slipPropsFromView(view: SlipView): SlipProps {
 function answerOf(
   table: AnswerTable,
   verb: string,
+  manifestId: string,
   drawable: (sign: SignInfo | undefined) => string | undefined
 ): SlipPropsAnswer {
   const notes = [table.cutMessage, table.moreLabel].filter((text): text is string => typeof text === 'string');
@@ -233,6 +261,23 @@ function answerOf(
     headers: table.headers,
     rows: table.rows.map((row) => ({
       depth: row.depth,
+      ...(row.line !== undefined ? { line: row.line } : {}),
+      ...(row.relation !== undefined ? { relation: row.relation } : {}),
+      ...(row.key !== undefined ? { key: row.key } : {}),
+      ...(row.polarity !== undefined ? { polarity: row.polarity } : {}),
+      ...(row.sentence ? { sentence: row.sentence.map((seg) => ({ text: seg.text, line: seg.line })) } : {}),
+      ...(row.bindings
+        ? { bindings: row.bindings.map((b) => (b.line === undefined ? { variable: b.variable, value: b.value } : { variable: b.variable, value: b.value, line: b.line })) }
+        : {}),
+      ...(row.premiseLinks
+        ? { premiseLinks: row.premiseLinks.map((p) => ({ line: p.line, label: p.label })) }
+        : {}),
+      ...(row.source !== undefined ? { source: row.source } : {}),
+      ...(row.state !== undefined ? { state: row.state } : {}),
+      ...(row.reason !== undefined ? { reason: row.reason } : {}),
+      ...(row.relation !== undefined && row.key !== undefined
+        ? { proof_ref: rowProofRef(manifestId, row.relation, row.key) }
+        : {}),
       cells: row.cells.map((cell) => ({ text: cell.text, sign: drawable(cell.sign) }))
     })),
     note: notes.length > 0 ? notes.join(' ') : undefined

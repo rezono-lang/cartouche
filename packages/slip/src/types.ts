@@ -43,6 +43,7 @@ export interface Rule {
 }
 
 export interface Source {
+  readonly kind?: string;
   readonly name: string;
   readonly position?: string;
 }
@@ -336,8 +337,29 @@ export interface AnswerTableCell {
   readonly sign?: SignInfo | undefined;
 }
 
+export interface AnswerBinding {
+  readonly variable: string;
+  readonly value: string;
+  readonly line?: number | undefined;
+}
+
+export interface AnswerPremiseLink {
+  readonly line: number;
+  readonly label: string;
+}
+
 export interface AnswerTableRow {
   readonly depth?: number | undefined;
+  readonly line?: number | undefined;
+  readonly relation?: string | undefined;
+  readonly key?: string | undefined;
+  readonly polarity?: 'positive' | 'negative' | undefined;
+  readonly sentence?: readonly SentenceSegment[] | undefined;
+  readonly bindings?: readonly AnswerBinding[] | undefined;
+  readonly premiseLinks?: readonly AnswerPremiseLink[] | undefined;
+  readonly source?: string | undefined;
+  readonly state?: ValueState | undefined;
+  readonly reason?: string | undefined;
   readonly cells: readonly AnswerTableCell[];
 }
 
