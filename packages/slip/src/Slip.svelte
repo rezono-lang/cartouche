@@ -219,19 +219,20 @@
       ordered.push(signName);
     };
 
+    const stateSign = (state: string): string => (state === 'invalid' ? 'violated' : state);
     if (conformanceRow) {
       if (conformanceRow.kind === 'calc' && conformanceRow.result_cell && conformanceRow.result_cell.state !== 'known') {
-        addSign(conformanceRow.result_cell.state);
+        addSign(stateSign(conformanceRow.result_cell.state));
       }
       for (const [idx, line] of slipLines.entries()) {
         addSign(line.sign);
         if (line.cell.state !== 'known') {
-          addSign(line.cell.state);
+          addSign(stateSign(line.cell.state));
         }
         const fold = foldForLine(idx);
         if (fold !== null) {
           addSign('supposed');
-          if (fold.state !== 'known') addSign(fold.state);
+          if (fold.state !== 'known') addSign(stateSign(fold.state));
         }
       }
     } else if (model) {

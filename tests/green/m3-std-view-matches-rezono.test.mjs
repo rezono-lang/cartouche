@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DATA_MARKS, SIGNS, STD_VERBS } from '../../packages/reader-core/src/index.ts';
+import { compileFlowSplitScene } from '../../packages/scene-ir/src/index.ts';
+import { drawnSigns, exportTypst } from '../../packages/scene-ir/src/typst-export.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { REZONO_SOURCE, rezonoMessageFiller, rezonoStdPacks } from '../../packages/slip/bin/rezono-source.ts';
 import { loadSlip } from '../../packages/slip/src/model.ts';
+import { renderSlipElementHtml } from '../../packages/slip/src/slip-element.ts';
 import { slipPropsFromView } from '../../packages/slip/src/slip-props.ts';
-import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
+import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
 const ROOT = process.cwd();
 const loadJson = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
@@ -110,4 +113,63 @@ test('M3 [std-view-matches-rezono]: slip drops the unshared-sign filter, draws a
   } finally {
     await window.happyDOM.close();
   }
+});
+
+test('M3 [std-view-matches-rezono]: invalid cell state maps to violated sign in Slip.svelte, slip-element, and typst-export without throwing', async () => {
+  const slipPath = path.join(ROOT, 'packages', 'slip', 'src', 'Slip.svelte');
+  const invalidRow = {
+    kind: 'rule',
+    rule_id: 'rule.check',
+    sentence: [{ text: 'Check failed.' }],
+    grounds_distance_1: [
+      {
+        relation: 'check_target',
+        key: ['item-z'],
+        polarity: 'positive',
+        depth: 0,
+        sign: 'origin_observation',
+        cell: { state: 'invalid', display: null, reason: 'check_failed', proof_ref: 'p:inv' },
+        answered_verbs: []
+      }
+    ]
+  };
+
+  // 1. Slip.svelte
+  const { html: svelteHtml } = await renderSvelte(slipPath, { conformanceRow: invalidRow });
+  const { window: winS, document: docS } = parseHtml(svelteHtml);
+  try {
+    const td = docS.querySelector(`td[${DATA_MARKS.part}="value"][${DATA_MARKS.state}="invalid"]`);
+    assert.ok(td, 'Slip.svelte renders data-state="invalid"');
+    assert.ok(td.querySelector(`[${DATA_MARKS.sign}="violated"]`), 'Slip.svelte maps invalid state to violated sign');
+    assert.ok(docS.querySelector(`table[${DATA_MARKS.part}="legend"] tr[${DATA_MARKS.sign}="violated"]`), 'Slip.svelte legend lists violated');
+  } finally {
+    await winS.happyDOM.close();
+  }
+
+  // 2. renderSlipElementHtml parity
+  const elHtml = renderSlipElementHtml({ conformanceRow: invalidRow });
+  const { window: winE, document: docE } = parseHtml(elHtml);
+  try {
+    const td = docE.querySelector(`td[${DATA_MARKS.part}="value"][${DATA_MARKS.state}="invalid"]`);
+    assert.ok(td, 'slip-element renders data-state="invalid"');
+    assert.ok(td.querySelector(`[${DATA_MARKS.sign}="violated"]`), 'slip-element maps invalid state to violated sign');
+    assert.ok(docE.querySelector(`table[${DATA_MARKS.part}="legend"] tr[${DATA_MARKS.sign}="violated"]`), 'slip-element legend lists violated');
+  } finally {
+    await winE.happyDOM.close();
+  }
+
+  // 3. exportTypst on a scene with an invalid node
+  const fx01 = loadJson('fixtures/01-platform-drift.json');
+  const scene = compileFlowSplitScene(fx01);
+  const mutatedScene = {
+    ...scene,
+    nodes: scene.nodes.map((n, idx) => (idx === 0 ? { ...n, state: 'invalid' } : n))
+  };
+  const reasons = Object.fromEntries(fx01.nodes.filter((n) => n.state === 'unknown').map((n) => [n.id, n.reason]));
+  const signs = drawnSigns(mutatedScene);
+  assert.ok(signs.includes('violated'), 'drawnSigns maps invalid state to violated');
+  assert.ok(!signs.includes('invalid'), 'drawnSigns never emits invalid');
+  const typ = exportTypst(mutatedScene, { reasonByNodeId: reasons });
+  assert.ok(typ.includes('sign-glyph.violated'), 'exportTypst uses sign-glyph.violated for invalid state');
+  assert.ok(typ.includes('"violated"'), 'exportTypst legend lists violated');
 });

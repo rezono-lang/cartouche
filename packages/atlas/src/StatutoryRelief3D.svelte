@@ -216,11 +216,11 @@
                   role="img"
                   aria-label={sub.amountCell.state}
                   {...{
-                    [M.sign]: sub.amountCell.state,
+                    [M.sign]: sub.amountCell.state === 'invalid' ? 'violated' : sub.amountCell.state,
                     [M.reason]: sub.amountCell.reason ?? undefined
                   }}
                 >
-                  <span aria-hidden="true">{resolveSignSpec(sub.amountCell.state).glyph}</span>
+                  <span aria-hidden="true">{resolveSignSpec(sub.amountCell.state === 'invalid' ? 'violated' : sub.amountCell.state).glyph}</span>
                 </span>
                 {#if sub.amountCell.reason}
                   <span>{sub.amountCell.reason}</span>
@@ -282,11 +282,11 @@
                   role="img"
                   aria-label={cell.opaque.state}
                   {...{
-                    [M.sign]: cell.opaque.state,
+                    [M.sign]: cell.opaque.state === 'invalid' ? 'violated' : cell.opaque.state,
                     [M.reason]: cell.opaque.reason ?? undefined
                   }}
                 >
-                  <span aria-hidden="true">{resolveSignSpec(cell.opaque.state).glyph}</span>
+                  <span aria-hidden="true">{resolveSignSpec(cell.opaque.state === 'invalid' ? 'violated' : cell.opaque.state).glyph}</span>
                 </span>
                 {#if cell.opaque.reason}
                   <span>{cell.opaque.reason}</span>

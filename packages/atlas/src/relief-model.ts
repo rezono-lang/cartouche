@@ -498,11 +498,12 @@ export function buildReliefModel(
 
   if (gridCells.length > 0 || subjects.length > 0) addSign('derived');
   if (cliffMarkers.length > 0) addSign('origin_vendor');
+  const stateSign = (state: string): string => (state === 'invalid' ? 'violated' : state);
   for (const sub of subjects) {
-    if (sub.amountCell.state !== 'known') addSign(sub.amountCell.state);
+    if (sub.amountCell.state !== 'known') addSign(stateSign(sub.amountCell.state));
   }
   for (const cell of gridCells) {
-    if (cell.opaque.state !== 'known') addSign(cell.opaque.state);
+    if (cell.opaque.state !== 'known') addSign(stateSign(cell.opaque.state));
   }
   if (curtains.length > 0) addSign('unknown');
 
