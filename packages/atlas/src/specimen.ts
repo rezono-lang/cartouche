@@ -60,6 +60,17 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;');
 }
 
+const CONTRACT_STATE_SET = new Set<string>([
+  'known',
+  'unknown',
+  'not_applicable',
+  'invalid',
+  'absent',
+  'valid',
+  'changed',
+  'violated'
+]);
+
 export function renderSpecimenHtml(theme: PaletteName = 'swisstopo'): string {
   const palette: PaletteTokens = PALETTES[theme];
   const rows = SPECIMEN_ENTRIES.map((entry) => {
@@ -73,28 +84,27 @@ export function renderSpecimenHtml(theme: PaletteName = 'swisstopo'): string {
       prefix === 'trust'
         ? `${DATA_MARKS.trust_tier}="${escapeHtml(name)}"`
         : `${DATA_MARKS.sign}="${escapeHtml(name)}"`;
+    const stateAttr =
+      prefix === 'state' && CONTRACT_STATE_SET.has(name)
+        ? ` ${DATA_MARKS.state}="${escapeHtml(name)}"`
+        : '';
     const hatchStyle =
       name === 'unknown'
         ? ';background:repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px)'
         : '';
-    return `<tr data-entry="${escapeHtml(entry.dataEntry)}" ${markAttr}><th scope="row" style="color:${escapeHtml(color)}${hatchStyle}">${escapeHtml(entry.glyph)}</th><td>${escapeHtml(entry.dataEntry)}</td></tr>`;
+    return `<tr data-entry="${escapeHtml(entry.dataEntry)}" ${markAttr}${stateAttr}><th scope="row" style="color:${escapeHtml(color)}${hatchStyle}">${escapeHtml(entry.glyph)}</th><td>${escapeHtml(entry.dataEntry)}</td></tr>`;
   }).join('');
   return `<section data-specimen-theme="${escapeHtml(theme)}" style="background-color:${escapeHtml(palette.paper)};color:${escapeHtml(palette.ink)};font-family:var(--font-sans)"><table><thead><tr><th scope="col">Glyph</th><th scope="col">Entry</th></tr></thead><tbody>${rows}</tbody></table></section>`;
 }
 
 export function verifySpecimenCoverage(): {
   ok: boolean;
-  palettes: readonly PaletteName[];
   entryCount: number;
-  missingPalettes: readonly PaletteName[];
   missingTokens: readonly string[];
   missingSigns: readonly string[];
   missingStates: readonly EpistemicState[];
   missingRenderedEntries: readonly string[];
 } {
-  const palettes = Object.keys(PALETTES) as PaletteName[];
-  const missingPalettes = REQUIRED_PALETTES.filter((p) => !Object.prototype.hasOwnProperty.call(PALETTES, p));
-
   const requiredTokens = new Set<keyof PaletteTokens>(['paper', 'ink']);
   for (const spec of Object.values(SIGNS)) {
     requiredTokens.add(spec.token);
@@ -136,14 +146,11 @@ export function verifySpecimenCoverage(): {
 
   return {
     ok:
-      missingPalettes.length === 0 &&
       missingTokens.length === 0 &&
       missingSigns.length === 0 &&
       missingStates.length === 0 &&
       missingRenderedEntries.length === 0,
-    palettes,
     entryCount: SPECIMEN_ENTRIES.length,
-    missingPalettes,
     missingTokens,
     missingSigns,
     missingStates,

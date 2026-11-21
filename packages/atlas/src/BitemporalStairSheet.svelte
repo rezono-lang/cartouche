@@ -298,6 +298,7 @@
   .zs { transform: scaleY(var(--z)); }
   .hollow { background: transparent; border: 1px dashed currentColor; }
   .hatched { background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px); }
+  .hatched > span { background: var(--c-paper); color: var(--c-ink); padding: 0 0.25rem; }
   .invalid { border: 2px dashed var(--c-violated); }
   .bt-diff-del a, .bt-diff-ins a { color: inherit; }
   @media (prefers-reduced-motion: no-preference) {
