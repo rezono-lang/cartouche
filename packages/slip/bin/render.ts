@@ -563,6 +563,13 @@ async function renderFromReader(
   }
 
   const seal = sealFromReaderHead(readerHead, role);
+  const hasPartialSnapshot =
+    Array.isArray(readerHead.snapshots) && readerHead.snapshots.some((s) => s.full === false);
+  const hasUnavailableSweep = props.sweeps.some((sw) => sw.unavailable);
+  const horizon =
+    hasPartialSnapshot || hasUnavailableSweep
+      ? { complete: false, reason: 'not_read_in_full' as const }
+      : null;
   const lines = props.row.grounds_distance_1 ?? props.row.steps ?? [];
   const actions = applyLineActions(request.keys ?? [], lines, props.sweeps, props.answers, seal.canPropose, {
     activeVerb: null,
@@ -575,6 +582,7 @@ async function renderFromReader(
       theme,
       lang,
       seal,
+      horizon,
       sealChecks: props.sealChecks,
       manifestHash: props.manifestHash,
       dataset: props.dataset ?? resolvedPin?.dataset ?? null,
