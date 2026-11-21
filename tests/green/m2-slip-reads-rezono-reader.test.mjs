@@ -6,7 +6,7 @@ import { DATA_MARKS, STD_VERBS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { auditA11y, parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-// Decision 0010: the slip reads Rezono's reader. Every case below is carried over from Rezono's DOM tests in
+// Decision 0009: the slip reads Rezono's reader. Every case below is carried over from Rezono's DOM tests in
 // tests/slip/ at rezono-lang/rezono@f15c89d665e2815b02e12665203a9d48dd6abc40, with the expectations Rezono wrote by
 // hand from its tests/fixtures/slip (test_slip_rule_row, test_slip_calculated_row, test_unknown_shows_no_digit,
 // test_tables_and_legend, test_unserved_publication, test_verbs_that_answer, test_stops_only, and the turns of
@@ -271,7 +271,7 @@ test('unserved-publication (Rezono test_unserved_publication): a served page has
   assert.deepEqual(await auditA11y(refused.html), []);
 });
 
-test('Decision 0010: the view model runs at build time only, from pinned Rezono sources; the same request gives the same bytes', async () => {
+test('Decision 0009: the view model runs at build time only, from pinned Rezono sources; the same request gives the same bytes', async () => {
   const a = await render({ fixture: FX, role: 'reader', pack: 'slip', lang: 'en' });
   const b = await render({ fixture: FX, role: 'reader', pack: 'slip', lang: 'en' });
   assert.equal(a.html, b.html);

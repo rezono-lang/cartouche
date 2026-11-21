@@ -1,5 +1,5 @@
 /**
- * The slip's view model (Decision 0010), ported from rezono-lang/rezono viewer/slip/src/model.ts at
+ * The slip's view model (Decision 0009), ported from rezono-lang/rezono viewer/slip/src/model.ts at
  * f15c89d665e2815b02e12665203a9d48dd6abc40 (blob sha256 in packages/slip/rezono-source.json, "ported").
  *
  * It runs at build time, inside packages/slip/bin/render.ts, and never in the page bundle (Decision 0001): it asks
@@ -12,7 +12,7 @@
  *  - the head is kept on the view, so the seal quotes what the reader served;
  *  - types are tightened for Cartouche's strict compiler settings.
  *
- * What this model computes that belongs in Rezono's reader (Decision 0010, point 1): choosing the home row; pairing
+ * What this model computes that belongs in Rezono's reader (Decision 0009, point 1): choosing the home row; pairing
  * witnesses and calculation witnesses with lines; binding rule variables to lines through the body's atom positions;
  * placing aggregate totals before their contributors; matching calculation steps to premise rows; choosing origin
  * signs; parsing `known:` values and keys; resolving a sweep's table through kind inheritance; normalising stop

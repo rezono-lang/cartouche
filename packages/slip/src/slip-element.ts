@@ -75,7 +75,7 @@ export interface ElementCalcStep {
   readonly answered_verbs?: readonly string[] | undefined;
 }
 
-/** The sentence as the build filled it with Rezono's fill.ts (Decision 0010): text, and the line a variable links to. */
+/** The sentence as the build filled it with Rezono's fill.ts (Decision 0009): text, and the line a variable links to. */
 export interface ElementSentenceSegment {
   readonly text: string;
   readonly line?: number | undefined;
@@ -332,7 +332,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
 
   if (conformanceRow) {
     // One line renderer for the premises of a rule row and the steps of a calculated row; a line's index from 0
-    // is its data-line (Rezono's marks, Decision 0010). The sentence comes filled from the build.
+    // is its data-line (Rezono's marks, Decision 0009). The sentence comes filled from the build.
     const isCalc = conformanceRow.kind === 'calc';
     const resultOpaque = isCalc && conformanceRow.result_cell ? asOpaqueCell(conformanceRow.result_cell) : null;
     const lines: readonly (ElementGroundLine | ElementCalcStep)[] = isCalc

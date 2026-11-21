@@ -1,12 +1,12 @@
 /**
  * From the slip's view (src/model.ts, built from the reader's answers) to the props of the one Slip.svelte
- * (Decision 0010). Build time only. It renames and regroups; it decides nothing the view has not decided:
+ * (Decision 0009). Build time only. It renames and regroups; it decides nothing the view has not decided:
  *  - line `index` (from 0) becomes `data-line`; sentence segments keep the index they link to;
  *  - each value becomes an opaque cell; a non-known value carries the publication's reason as given;
  *  - an absent line's completeness is the role's snapshot of that relation, read in full (`full` in the head);
  *  - each stop carries, per line, the fold the model computed from its variant's published difference;
  *  - a sign is drawn only when Cartouche's frozen key has it (Rezono's rule: a sign not in the key is not drawn);
- *    the ones left out are returned, so a page can say so (Decision 0010, point 6).
+ *    the ones left out are returned, so a page can say so (Decision 0009, point 6).
  */
 
 import { SIGNS } from '../../reader-core/src/index.ts';

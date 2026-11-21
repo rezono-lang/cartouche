@@ -180,7 +180,7 @@
   let calcSteps = $derived<readonly SlipLine[]>(
     (conformanceRow?.steps ?? []).filter((step) => step.kind !== 'constant')
   );
-  // Lines are numbered by their index from 0 in the slip (Rezono's marks, Decision 0010).
+  // Lines are numbered by their index from 0 in the slip (Rezono's marks, Decision 0009).
   let slipLines = $derived<readonly SlipLine[]>(conformanceRow?.kind === 'calc' ? calcSteps : groundsList);
   let sentence = $derived<readonly SentenceSegment[]>(conformanceRow?.sentence ?? []);
 

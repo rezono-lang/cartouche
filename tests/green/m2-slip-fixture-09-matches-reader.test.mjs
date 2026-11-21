@@ -9,7 +9,7 @@ import { loadSlip } from '../../packages/slip/src/model.ts';
 import { slipPropsFromView } from '../../packages/slip/src/slip-props.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-// Decision 0010, point 5: fixtures/09-slip-conformance.json stays a small unit fixture only while it equals what the
+// Decision 0009, point 5: fixtures/09-slip-conformance.json stays a small unit fixture only while it equals what the
 // view model ported from Rezono produces from Rezono's reader answers (fixtures/10-slip-reader-answers.json) for the
 // same rows. Compared: everything the reader decides (rows, polarity, depth, totals, paths, states, values, reasons,
 // sentences and their links, the verbs the reader answers, the stops with statuses, turns, checks and folds) and the

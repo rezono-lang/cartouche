@@ -47,8 +47,8 @@ test('M1 conformance [verbs-that-answer]: shows button[data-verb][data-key] stri
   }
 
   // 2. flagged::item-a::12 has line 0 answered_verbs: [] and line 1 answered_verbs: ["depends", "suppose"]
-  //    (Rezono's reader answers reach on item__amount: fixture 09 follows it, decisions/0010 point 5)
-  //    (lines are numbered by their index from 0, Rezono's marks: decisions/0010-slip-reads-rezono-reader.md)
+  //    (Rezono's reader answers reach on item__amount: fixture 09 follows it, decisions/0009 point 5)
+  //    (lines are numbered by their index from 0, Rezono's marks: decisions/0009-slip-reads-rezono-reader.md)
   const plainFlagged = await render({
     fixture: FX_09,
     row: 'flagged::item-a::12',

@@ -14,7 +14,7 @@ export interface SweepStopCheckInput {
   readonly status: 'green' | 'warning' | 'red' | 'unavailable';
 }
 
-/** The new cell of one line in the stop's variant, from its published difference (Decision 0010). */
+/** The new cell of one line in the stop's variant, from its published difference (Decision 0009). */
 export interface SweepStopFold {
   readonly line: number;
   readonly cell: RawCellInput;

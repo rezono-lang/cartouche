@@ -431,7 +431,7 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
   try {
     const sentenceLinks = [...doc.querySelectorAll(`[${DATA_MARKS.part}="sentence"] a[${DATA_MARKS.line}]`)];
     assert.equal(sentenceLinks.length, 2, 'home claim sentence must bind {$i} and {$a} via explicit premise_position');
-    // Lines are numbered by their index from 0 (Rezono's marks, decisions/0010-slip-reads-rezono-reader.md).
+    // Lines are numbered by their index from 0 (Rezono's marks, decisions/0009-slip-reads-rezono-reader.md).
     assert.deepEqual(sentenceLinks.map((a) => a.getAttribute(DATA_MARKS.line)), ['1', '1']);
 
     const lines = [...doc.querySelectorAll(`table[${DATA_MARKS.sheet}="slip"] tr[${DATA_MARKS.line}]`)];
@@ -453,7 +453,7 @@ test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented 
   assert.deepEqual(await auditA11y(first.html), [], '09-slip-conformance home claim must have 0 WCAG 2.1 AA violations');
 
   // Row whose grounds omit premise_position must NOT guess links by array index, while aggregate links to part=total.
-  // Fixture 09's group line now carries premise_position 0, as Rezono's reader gives it (decisions/0010, point 5),
+  // Fixture 09's group line now carries premise_position 0, as Rezono's reader gives it (decisions/0009, point 5),
   // so the premise position is taken out here to keep testing that no link is guessed.
   const fxNoPosition = loadFixture('09-slip-conformance.json');
   delete fxNoPosition.slip_conformance.rows['group_size::group-a::2'].grounds_distance_1[0].premise_position;
