@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { buildMongeFoldingModel } from '../../packages/atlas/src/monge-model.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
 export const RED_META = {
@@ -52,4 +51,11 @@ test('M1 [monge-and-leftovers-honesty]: removed 3D/domain leftovers are cleaned 
 
   const modelSrc = read('packages/slip/src/model.ts');
   assert.equal(/['"`](law|statute|policy)['"`]/.test(modelSrc), false, 'packages/slip/src/model.ts must not contain hardcoded domain words law/statute/policy');
+
+  const atlasFiles = fs.readdirSync(path.join(ROOT, 'packages', 'atlas', 'src'));
+  assert.equal(
+    atlasFiles.some((f) => /statutory/i.test(f)),
+    false,
+    'packages/atlas/src/ must not carry domain-named StatutoryRelief3D.svelte (use domain-neutral Relief3DSheet.svelte)'
+  );
 });

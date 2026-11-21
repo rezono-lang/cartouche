@@ -61,4 +61,25 @@ test('M1 [guards-and-svg-contrast]: auditA11y decides SVG <text fill="..."> cont
     lowOpacityViolations.some((v) => v.id === 'color-contrast'),
     'auditA11y must account for CSS opacity when deciding color contrast'
   );
+
+  const lowMediaBlock = '<style>@media screen { .faint { color: #949494; background-color: #ffffff; } }</style><p class="faint">Media low contrast</p>';
+  const lowMediaViolations = await auditA11y(lowMediaBlock);
+  assert.ok(
+    lowMediaViolations.some((v) => v.id === 'color-contrast'),
+    'auditA11y must evaluate CSS rules inside @media screen blocks rather than stripping all @ blocks'
+  );
+});
+
+test('M1 [guards-and-svg-contrast]: specimen.ts verifies real rendered signs/palettes (not static palette count) and role-zero-leak / sweep tests do not self-feed inputs', () => {
+  const ROOT = process.cwd();
+  const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+
+  const specimenSrc = read('packages/atlas/src/specimen.ts');
+  assert.equal(/palettes\.length\s*===\s*3/.test(specimenSrc), false, 'specimen.ts must verify actual palette tokens/rendered signs rather than a static palettes.length === 3 count');
+
+  const roleLeakSrc = read('tests/green/role-zero-leak.test.mjs');
+  assert.equal(/complete\.nodes\.filter\(/.test(roleLeakSrc), false, 'role-zero-leak.test.mjs must not pre-strip restricted nodes inside the test itself');
+
+  const sweepTestSrc = read('tests/green/m2-slip-sweep-stops-and-fold.test.mjs');
+  assert.equal(/stops:\s*SWEEP\(\)\.stops_summary/.test(sweepTestSrc), false, 'm2-slip-sweep-stops-and-fold.test.mjs must not self-feed pre-built summary stops that it then asserts');
 });

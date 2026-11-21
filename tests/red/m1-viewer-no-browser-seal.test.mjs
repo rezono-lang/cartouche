@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DeltaStore } from '../../packages/reader-core/src/delta-store.ts';
 import { render as renderSlip } from '../../packages/slip/bin/render.ts';
 import { rezonoMessageFiller, rezonoStdPacks } from '../../packages/slip/bin/rezono-source.ts';
 import { loadSlip } from '../../packages/slip/src/model.ts';
@@ -76,9 +77,24 @@ test('M1 [viewer-no-browser-seal]: slip-props does not hard-code reader-hashes: 
 
   const renderSrc = read('packages/slip/bin/render.ts');
   assert.equal(/`sweep:\$\{/.test(renderSrc), false, 'render.ts must not fabricate sweep:<name>#<i> proof refs');
+  assert.equal(/provisionalCount\s*:/.test(renderSrc), false, 'render.ts must not fabricate provisionalCount');
+
+  const slipPropsSrc = read('packages/slip/src/slip-props.ts');
+  assert.equal(/export function rowProofRef\b/.test(slipPropsSrc), false, 'slip-props.ts must not fabricate rowProofRef (${manifestId}:${relation}:${key})');
 
   const modelSrc = read('packages/slip/src/model.ts');
   assert.equal(/\boriginSignForSourceKind\b/.test(modelSrc), false, 'model.ts must not guess origin signs from source.kind strings');
+  assert.equal(/parts\.includes\(\s*binding\.value\s*\)/.test(modelSrc), false, 'model.ts must not link bindings to premises by matching binding.value against premise keys');
+});
+
+test('M1 [viewer-no-browser-seal]: canPropose is never derived client-side when the reader omits it', () => {
+  const fx09 = JSON.parse(read('fixtures/09-slip-conformance.json'));
+  const store = new DeltaStore(fx09.manifest);
+  assert.equal(
+    store.seal().canPropose,
+    false,
+    'DeltaStore.seal() must not derive canPropose=true when the reader manifest does not publish can_propose/rights'
+  );
 });
 
 test('M1 [viewer-no-browser-seal]: AGENTS.md does not promise an unverified "verifiable witness" per mark', () => {
