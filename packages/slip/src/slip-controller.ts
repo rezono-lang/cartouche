@@ -59,7 +59,9 @@ export function createSlipModel(input: {
     ? null
     : input.seal.trustTier === 'provisional_engine'
       ? 'propose_locked_unsealed_live_stream'
-      : 'propose_locked_witness_failed';
+      : input.seal.witnessCheck !== 'green'
+        ? 'propose_locked_witness_failed'
+        : 'propose_locked_no_reader_grant';
 
   return Object.freeze({
     subjectId: input.subjectId,
