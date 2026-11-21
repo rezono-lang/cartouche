@@ -3,13 +3,6 @@
   import type { PaletteName } from '../../../packages/reader-core/src/palette.ts';
   import type { AtlasLocale } from '../../../packages/atlas/src/i18n-mf2.ts';
 
-  import Relief3DSheet from '../../../packages/atlas/src/Relief3DSheet.svelte';
-  import FlowSplitSheet from '../../../packages/atlas/src/FlowSplitSheet.svelte';
-  import KringstandSheet from '../../../packages/atlas/src/KringstandSheet.svelte';
-  import CausalRippleSheet from '../../../packages/atlas/src/CausalRippleSheet.svelte';
-  import BitemporalStairSheet from '../../../packages/atlas/src/BitemporalStairSheet.svelte';
-  import MongeFoldingSheet from '../../../packages/atlas/src/MongeFoldingSheet.svelte';
-
   import viewerData from '../../../fixtures/viewer/prerendered.json' with { type: 'json' };
 
   export type ViewerTab =
@@ -60,12 +53,6 @@
   const TYPST_SHEETS: readonly TypstSheetKey[] = ['relief', 'flow', 'kringstand', 'ripple', 'bitemporal', 'monge'];
   const SLIP_ROW_KEYS: readonly string[] = viewerData.slip.rowKeys;
 
-  const reliefFixture = viewerData.sheets.relief as unknown;
-  const kringFixture = viewerData.sheets.kringstand as unknown;
-  const rippleFixture = viewerData.sheets.ripple as unknown;
-  const bitemporalFixture = viewerData.sheets.bitemporal as unknown;
-  const mongeFixture = viewerData.sheets.monge as unknown;
-
   let activeTab = $state<ViewerTab>(initialTab);
   let theme = $state<PaletteName>(initialTheme in PALETTES ? initialTheme : 'swisstopo');
   let locale = $state<AtlasLocale>(initialLocale);
@@ -77,9 +64,37 @@
   let typstSheet = $state<TypstSheetKey>(initialTypstSheet);
 
   let themeCss = $derived(paletteCss(theme));
-  let activeFlowFixture = $derived(
-    (flowRole === 'full' ? viewerData.sheets.flowFull : viewerData.sheets.flowRestricted) as unknown
-  );
+
+  // Build-time prerendered Atlas sheets (zero browser scene compilers, layout models, or fixtures).
+  let activeSheetHtml = $derived.by((): string => {
+    const sheets = viewerData.sheetsHtml;
+    if (activeTab === 'relief') {
+      const byTheme = sheets.relief as Record<string, Record<string, string>>;
+      const byLoc = byTheme[theme] ?? byTheme.swisstopo ?? {};
+      return byLoc[locale] ?? byLoc.en ?? '';
+    }
+    if (activeTab === 'flow') {
+      const byTheme = (flowRole === 'full' ? sheets.flowFull : sheets.flowRestricted) as Record<string, string>;
+      return byTheme[theme] ?? byTheme.swisstopo ?? '';
+    }
+    if (activeTab === 'kringstand') {
+      return sheets.kringstand as string;
+    }
+    if (activeTab === 'ripple') {
+      const byTheme = sheets.ripple as Record<string, Record<string, string>>;
+      const byLoc = byTheme[theme] ?? byTheme.swisstopo ?? {};
+      return byLoc[locale] ?? byLoc.en ?? '';
+    }
+    if (activeTab === 'bitemporal') {
+      const byTheme = sheets.bitemporal as Record<string, string>;
+      return byTheme[theme] ?? byTheme.swisstopo ?? '';
+    }
+    if (activeTab === 'monge') {
+      const byTheme = sheets.monge as Record<string, string>;
+      return byTheme[theme] ?? byTheme.swisstopo ?? '';
+    }
+    return '';
+  });
 
   // Build-time prerendered @rezono/slip HTML (from fixtures/10-slip-reader-answers.json & 07-unserved-410.json).
   // Zero browser sealing, zero scene compilation, zero build-time model imports.
@@ -160,9 +175,7 @@
   </nav>
 
   <section class="viewer-stage" aria-label="Active sheet">
-    {#if activeTab === 'relief'}
-      <Relief3DSheet fixture={reliefFixture} {theme} lang={locale} />
-    {:else if activeTab === 'flow'}
+    {#if activeTab === 'flow'}
       <div class="subbar" role="group" aria-label="Projection role">
         <button
           type="button"
@@ -181,15 +194,13 @@
           Restricted Role (Zero-Leak)
         </button>
       </div>
-      <FlowSplitSheet fixture={activeFlowFixture} {theme} />
-    {:else if activeTab === 'kringstand'}
-      <KringstandSheet fixture={kringFixture} />
-    {:else if activeTab === 'ripple'}
-      <CausalRippleSheet fixture={rippleFixture} {theme} lang={locale} />
-    {:else if activeTab === 'bitemporal'}
-      <BitemporalStairSheet fixture={bitemporalFixture} {theme} />
-    {:else if activeTab === 'monge'}
-      <MongeFoldingSheet fixture={mongeFixture} {theme} />
+      <div class="prerendered-sheet">
+        {@html activeSheetHtml}
+      </div>
+    {:else if activeTab === 'relief' || activeTab === 'kringstand' || activeTab === 'ripple' || activeTab === 'bitemporal' || activeTab === 'monge'}
+      <div class="prerendered-sheet">
+        {@html activeSheetHtml}
+      </div>
     {:else if activeTab === 'slip'}
       <div class="subbar">
         <div class="control-group" role="group" aria-label="Slip mode">
