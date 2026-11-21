@@ -6,13 +6,13 @@ import { render } from '../../packages/slip/bin/render.ts';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 1,
   summary: 'N3 (#46 point 3): render() refuses a caller-built request.model the same way it refuses seal and sealChecks; the page never takes a caller proposeAllowed',
   waits_on: []
 };
 
-// Decision 0014 §2 N3, issue #46 point 3. render() refuses `seal` and `sealChecks` from the caller (Decision 0011), but
+// Decision 0015 §2 N3, issue #46 point 3. render() refuses `seal` and `sealChecks` from the caller (Decision 0011), but
 // `request.model` is used as given, and Slip.svelte trusts its proposeAllowed. A caller can therefore unlock Propose.
 // Fix: refuse `model` the same way as `seal`.
 

@@ -132,7 +132,7 @@ test('M4 [zero-client-decision-boundary]: DeltaStore removes client self-sealing
   store.ingestSealedSnapshot({ ...fx.manifest, id: 'sha256:round-m5', epoch: 43, trust_tier: 'sealed' }, fx.sealed_rows);
   assert.equal(store.seal().trustTier, 'sealed');
   assert.equal(store.seal().provisionalCount, 0);
-  // Whether Propose unlocks is the reader's to serve: tests/red/m1-propose-locked-until-served (Decision 0014 §5).
+  // Whether Propose unlocks is the reader's to serve: tests/red/m1-propose-locked-until-served (Decision 0015 §5).
 });
 
 test('M4 [zero-client-decision-boundary]: renderFromReader never hard-codes trust tier sealed when the reader /head serves none', async () => {
@@ -151,7 +151,7 @@ test('M4 [zero-client-decision-boundary]: renderFromReader never hard-codes trus
 
   // Rezono's /slip/head serves no trust_tier, can_propose or rights (rezono-lang/rezono#1451). The assertions that a
   // guessed trust_tier on the head changes the seal or is refused moved, reversed, to
-  // tests/red/m1-reads-only-served-head-fields: the page reads no field Rezono does not serve (Decision 0014 §5).
+  // tests/red/m1-reads-only-served-head-fields: the page reads no field Rezono does not serve (Decision 0015 §5).
 });
 
 test('M4 [zero-client-decision-boundary]: no client role===summary projection and no caller-injected seal/sealChecks overrides', async () => {

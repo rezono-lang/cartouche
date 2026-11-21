@@ -11,7 +11,7 @@ test('Z-set DeltaStore two-layer state + 3-tier CartoucheSeal locks Propose on l
   const store = new DeltaStore(fx.manifest, fx.sealed_rows);
 
   // Initially sealed. Whether Propose is allowed is the reader's to serve, not DeltaStore's to compute:
-  // tests/red/m1-propose-locked-until-served (Decision 0014 §5).
+  // tests/red/m1-propose-locked-until-served (Decision 0015 §5).
   const seal1 = store.seal();
   assert.equal(seal1.trustTier, 'sealed');
   assert.equal(seal1.provisionalCount, 0);

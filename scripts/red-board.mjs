@@ -22,7 +22,7 @@ const tasks = files.map((file) => {
   const waitsOn = waitsMatch
     ? waitsMatch[1].split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
     : [];
-  // Decision 0014 §3: an entry that is not a red-test id is an external gate (`rezono-lang/rezono#N`,
+  // Decision 0015 §3: an entry that is not a red-test id is an external gate (`rezono-lang/rezono#N`,
   // `devDependency:<name>`, `planner:assertions`). It stays open until a planner PR removes it.
   const isExternalGate = (id) => !/^m\d+-[a-z0-9-]+$/.test(id);
   const unresolvedWaits = waitsOn.filter((id) => isExternalGate(id) || files.some((f) => f.startsWith(id)));

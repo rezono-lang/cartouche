@@ -4,13 +4,13 @@ import { auditA11y } from '../../scripts/svelte-test-harness.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 2,
   summary: 'N6 (#46 point 17): the contrast audit decides SVG text by its fill, reads @media screen rules, and counts opacity; low-contrast text of each kind is a color-contrast violation',
   waits_on: []
 };
 
-// Decision 0014 §2 N6, issue #46 point 17. The contrast checker of #44 (auditDomColorContrast in
+// Decision 0015 §2 N6, issue #46 point 17. The contrast checker of #44 (auditDomColorContrast in
 // scripts/svelte-test-harness.mjs) skips every <svg> subtree, reads only CSS color and background, drops every @ block
 // and ignores opacity. Most sheet text is SVG text coloured by fill (flow-split-svg.ts draws its labels that way), so
 // m1-contrast-wcag-aa passes without seeing it. Either fix holds: decide these cases in the harness, or run axe in a real

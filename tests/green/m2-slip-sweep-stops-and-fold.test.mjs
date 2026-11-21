@@ -66,7 +66,7 @@ test('M2 conformance [stops-only]: <del>/<ins> fold only from the published fold
   assert.equal(none.querySelector('del'), null, 'no stop selected, no fold');
 });
 
-// Issue #46 point 14 (Decision 0014 §5): this case used to feed fixture 09's summary stops into the page and then check
+// Issue #46 point 14 (Decision 0015 §5): this case used to feed fixture 09's summary stops into the page and then check
 // them. It now reads the stops Rezono's reader served the partial-read role (fixture 10, store sweeps, role summary).
 test('M2 conformance [stops-only]: partial-read role gets only the unavailable stops its reader served, and no fold', async () => {
   const FX10 = 'fixtures/10-slip-reader-answers.json';

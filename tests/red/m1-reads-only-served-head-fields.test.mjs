@@ -9,7 +9,7 @@ import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 2,
   summary: 'N7 (#46 point 4): the slip reads no seal field Rezono does not serve; a guessed trust_tier or seal on /slip/head leaves the page byte-identical, and can_propose, rights or provisional_count never lift propose_locked_not_served, until rezono-lang/rezono#1451 names them',
   waits_on: [
@@ -17,13 +17,13 @@ export const RED_META = {
   ]
 };
 
-// Decision 0014 §2 N7, issue #46 point 4, Decision 0013 §3 ("Cartouche reads no field that Rezono does not serve").
+// Decision 0015 §2 N7, issue #46 point 4, Decision 0013 §3 ("Cartouche reads no field that Rezono does not serve").
 // render.ts sealFromReaderHead reads trust_tier, seal.trust_tier, can_propose, rights.can_propose, seal.can_propose,
 // provisional_count and seal.provisional_count: names Cartouche guessed, which Rezono's /slip/head does not have.
 // A head that carries them must leave the page exactly as it is. When rezono-lang/rezono#1451 lands, a planner
 // records the served names and m2-seal-and-rights-from-rezono reads them. Waits on the canPropose task: same code.
 // The assertions of tests/green/m4-zero-client-decision-boundary.test.mjs that a guessed trust_tier changes the seal
-// moved here, reversed (Decision 0014 §5).
+// moved here, reversed (Decision 0015 §5).
 
 const ROOT = process.cwd();
 const FX10 = 'fixtures/10-slip-reader-answers.json';

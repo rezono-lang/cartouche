@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export const RED_META = {
   milestone: 'M2',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 3,
   summary: '#46 point 14: the role zero-leak test renders a restricted role from the gate output recorded for that role, not from a fixture the test filters itself',
   waits_on: [
@@ -30,7 +30,7 @@ export const RED_META = {
   ]
 };
 
-// Decision 0014 §4, issue #46 point 14. tests/green/role-zero-leak.test.mjs (second test) filters the hidden nodes out
+// Decision 0015 §4, issue #46 point 14. tests/green/role-zero-leak.test.mjs (second test) filters the hidden nodes out
 // of fixture 01 inside the test and then checks that they are gone, so it checks only that rendering adds nothing.
 // Role projection is Rezono's (Decision 0011 §2); the real check needs the gate's output for two roles, which
 // m1-sheet-reads-gate-output records first. The fixture-10 case of that file is already a real check and stays. The
@@ -39,7 +39,7 @@ export const RED_META = {
 test('M2 [role-leak-on-reader-output]: a restricted role renders only what the gate served it', () => {
   assert.fail(
     [
-      'RED TASK (Decision 0014). Waits on the gate recording and a planner PR. Acceptance, each point an assertion of the promoted test:',
+      'RED TASK (Decision 0015). Waits on the gate recording and a planner PR. Acceptance, each point an assertion of the promoted test:',
       '1. The gate output for the sheet of m1-sheet-reads-gate-output is recorded for a complete role and a restricted role at the pinned commit, by the CI recorder.',
       '2. The restricted page is rendered from the restricted recording only. Every relation, key, label and value that only the complete recording holds is absent from its scene IR, SVG, DOM, table twin and hashed state.',
       '3. The page shows no placeholder, lock icon or count for what is hidden; the horizon reads not_read_in_full as the reader serves it (AGENTS rule 6).',

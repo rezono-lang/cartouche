@@ -6,7 +6,7 @@ import { parse } from 'yaml';
 
 export const RED_META = {
   milestone: 'M2',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 3,
   summary: '#46 point 12: the nightly job says what it does: no step claims to regenerate fixture 10 unless it runs the recorder, and no step passes REZONO_LIVE_DIR, which nothing reads',
   waits_on: [
@@ -32,7 +32,7 @@ export const RED_META = {
   ]
 };
 
-// Decision 0014 §4, issue #46 point 12. In .github/workflows/nightly-live.yml one step is named as if it regenerates
+// Decision 0015 §4, issue #46 point 12. In .github/workflows/nightly-live.yml one step is named as if it regenerates
 // fixture 10, but it only hashes the pinned Rezono files and runs fast-check, and it passes REZONO_LIVE_DIR, which no
 // script reads (checked on main at 8a72c0f). Recording and comparing the reader's answers happens in
 // rezono-reader-parity.yml (scripts/record-rezono-reader.mjs). Fix the step or remove it. If a later PR makes a script

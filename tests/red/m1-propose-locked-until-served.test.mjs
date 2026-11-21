@@ -8,17 +8,17 @@ import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 1,
   summary: '#46 point 4: Cartouche computes no canPropose (delta-store.ts, render.ts, KringstandSheet.svelte); until Rezono serves the right (rezono-lang/rezono#1451), Propose stays locked and the page says propose_locked_not_served',
   waits_on: []
 };
 
-// Decision 0014 §2 and §6, issue #46 point 4. canPropose is worked out in Cartouche: DeltaStore.seal() (from
+// Decision 0015 §2 and §6, issue #46 point 4. canPropose is worked out in Cartouche: DeltaStore.seal() (from
 // witness_check and the trust tier), render.ts sealFromManifest (fixture paths) and KringstandSheet.svelte (sealedOk).
 // Rezono's recorded /slip/head has no can_propose, rights or trust_tier field; rezono-lang/rezono#1451 asks for them.
 // Until the reader serves the right, Propose stays locked and the page says so with the reason code
-// propose_locked_not_served (Decision 0014 §7). The positive direction waits in m2-seal-and-rights-from-rezono.
+// propose_locked_not_served (Decision 0015 §7). The positive direction waits in m2-seal-and-rights-from-rezono.
 
 const ROOT = process.cwd();
 const M = DATA_MARKS;

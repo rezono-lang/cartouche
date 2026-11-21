@@ -6,7 +6,7 @@ import { render } from '../../packages/slip/bin/render.ts';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 2,
   summary: '#46 point 7: no seal check enters from the caller; render() refuses a fixture that carries seal_checks, as it refuses seal and sealChecks (request.model is m1-slip-refuses-request-model)',
   waits_on: [
@@ -14,7 +14,7 @@ export const RED_META = {
   ]
 };
 
-// Decision 0014 §4, issue #46 point 7. render() refuses `seal` and `sealChecks` from the caller, but two ways in remain:
+// Decision 0015 §4, issue #46 point 7. render() refuses `seal` and `sealChecks` from the caller, but two ways in remain:
 // request.model (m1-slip-refuses-request-model) and the fixture's `seal_checks`, which render.ts passes to the page as
 // they come. A fixture is the caller's input, so a check in it is an injected check. The third way in,
 // DeltaStore.ingestSealedSnapshot taking the caller's word for trust_tier 'sealed', needs a tier Rezono serves

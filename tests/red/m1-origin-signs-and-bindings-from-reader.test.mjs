@@ -8,13 +8,13 @@ import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 1,
   summary: 'N4 (#46 point 5): the slip shows an origin sign only as the reader serves it (none today) and never maps source kind text to a sign; a binding links to a premise by position only, never by matching its value',
   waits_on: []
 };
 
-// Decision 0014 §2 N4, issue #46 point 5 (and the law/statute/policy words of point 18). model.ts maps a source's
+// Decision 0015 §2 N4, issue #46 point 5 (and the law/statute/policy words of point 18). model.ts maps a source's
 // `kind` text to an origin sign (originSignForSourceKind). Rezono serves only kind "synthetic", so leaf rows show the
 // sign of Cartouche's own mapping. model.ts also links a binding to a premise by matching its value against premise
 // keys, which can pick the wrong premise. Fix: take the sign from the reader or show none (rezono-lang/rezono#1451 item

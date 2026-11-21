@@ -8,7 +8,7 @@ import { viewerBundleModules } from '../support/viewer-bundle.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 1,
   summary: 'N2 (#46 point 2): the viewer bundle compiles and lays out nothing (no scene compiler, layout model, Typst export or fixture in the browser), and the zero-compute lint and the domain check cover apps/',
   waits_on: [
@@ -16,7 +16,7 @@ export const RED_META = {
   ]
 };
 
-// Decision 0014 §2 N2, issue #46 point 2. App.svelte imports the scene compilers, the layout models, the Typst export and
+// Decision 0015 §2 N2, issue #46 point 2. App.svelte imports the scene compilers, the layout models, the Typst export and
 // the hand-written fixtures 01-09, so the browser compiles and lays out every sheet. apps/ is outside the zero-compute
 // lint (scripts/zero-compute-lint.mjs scans packages/ only) and outside the domain check (which checks packages/ only).
 // Fix: prerender the sheets at build time and extend both guards to apps/. Waits on N1: both rewrite App.svelte.

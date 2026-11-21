@@ -72,7 +72,7 @@ test('M1: Sheet 03 renders board lanes, separate unknown band, round chronometer
 });
 
 // Whether a sealed, green round unlocks [P] and approve is the reader's to serve; that expectation moved, reversed, to
-// tests/red/m1-propose-locked-until-served (Decision 0014 §5). A red witness check keeps both locked.
+// tests/red/m1-propose-locked-until-served (Decision 0015 §5). A red witness check keeps both locked.
 test('M1: Sheet 03 draws the sealed round and locks [P] when the witness check is red', async () => {
   const sealed = { ...fixture, live_provisional_delta: null };
   const { html, window: win, document: doc } = await mount(sealed);

@@ -10,13 +10,13 @@ import { viewerBundleModules } from '../support/viewer-bundle.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 1,
   summary: 'N1 (#46 point 1): the viewer seals nothing in the browser; its slip is the page render() builds from the recorded reader answers (fixture 10), and Slip gets no seal prop',
   waits_on: []
 };
 
-// Decision 0014 §2 N1, issue #46 point 1. apps/atlas-viewer/src/App.svelte builds a seal with DeltaStore from the
+// Decision 0015 §2 N1, issue #46 point 1. apps/atlas-viewer/src/App.svelte builds a seal with DeltaStore from the
 // hand-written fixture 09, which gives canPropose = true, and passes it straight to Slip.svelte. The guard in render()
 // (caller-injected seals are refused) never runs, and Slip unlocks Propose. Fix: mount the slip HTML that render()
 // produces from fixture 10 at build time, and give the page no seal prop.

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export const RED_META = {
   milestone: 'M2',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 3,
   summary: 'Once Rezono serves them (rezono-lang/rezono#1451): the seal shows the served trust tier, Propose unlocks only on the served right, a sealed round enters only as served, reader-hashes and origin signs quote the reader',
   waits_on: [
@@ -31,15 +31,15 @@ export const RED_META = {
   ]
 };
 
-// Decision 0014 §6, issue #46 points 4, 5, 6 and 7. The M1 tests hold the interim: Propose locked and "not served",
+// Decision 0015 §6, issue #46 points 4, 5, 6 and 7. The M1 tests hold the interim: Propose locked and "not served",
 // reader-hashes unavailable, no origin sign, no guessed field read. This task is the positive direction, once Rezono
 // serves the fields. A planner first records /slip/head and the grounds answers at the pin that serves them and
-// replaces this list with executable assertions (Decision 0014 §3); the worker then makes them pass.
+// replaces this list with executable assertions (Decision 0015 §3); the worker then makes them pass.
 
 test('M2 [seal-and-rights-from-rezono]: the seal and the right to propose come from what Rezono serves', () => {
   assert.fail(
     [
-      'RED TASK (Decision 0014). Waits on rezono-lang/rezono#1451 and a planner PR. Acceptance, each point an assertion of the promoted test:',
+      'RED TASK (Decision 0015). Waits on rezono-lang/rezono#1451 and a planner PR. Acceptance, each point an assertion of the promoted test:',
       '1. With /slip/head recorded at a pin that serves the trust tier (rezono#1451 item 1), the seal states exactly the served tier under the name Rezono uses, for every store and role in the recording; a head without it states none.',
       '2. Propose unlocks only when the recorded head says this role may propose (rezono#1451 item 2) and the served tier is not the live engine; otherwise it stays locked with the served reason, or propose_locked_not_served. No Cartouche code (DeltaStore, render.ts, KringstandSheet.svelte, the viewer) derives the right.',
       "3. DeltaStore.ingestSealedSnapshot, or what replaces it, accepts a sealed round only as the reader served it (rezono#1451 item 1); a caller-built ManifestMeta with trust_tier 'sealed' is refused (#46 point 7).",

@@ -4,13 +4,13 @@ import { lintSourceCode } from '../../scripts/zero-compute-ast.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 2,
   summary: '#46 point 16: the zero-compute lint fails closed instead of matching name lists; it catches the dependentTotal threshold, calc(var(--z)) and the hop sort under the opt-out tag, and a renamed data field',
   waits_on: []
 };
 
-// Decision 0014 §4 and §7, issue #46 point 16. scripts/zero-compute-ast.mjs decides what is data by name lists
+// Decision 0015 §4 and §7, issue #46 point 16. scripts/zero-compute-ast.mjs decides what is data by name lists
 // (OPAQUE_NAME_RE, DOMAIN_SORT_PROP_RE, CSS_CALC_DOMAIN_VAR_RE, GEOMETRY_SORT_PROPS), so a value with a new name
 // escapes. The three escapes below are copied from main at 8a72c0f (ripple-layout.ts:186-187 and :201-202,
 // BitemporalStairSheet.svelte:168 and :223). Fix: fail closed, so a value the lint cannot show to be geometry counts as

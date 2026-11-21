@@ -8,17 +8,17 @@ import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
 export const RED_META = {
   milestone: 'M1',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 1,
   summary: 'N5 (#46 point 6): the seal never shows reader-hashes green on its own say-so; until the reader serves a hash check per witness (rezono-lang/rezono#1451) it reads unavailable, and publisher-record quotes the head witness_check',
   waits_on: []
 };
 
-// Decision 0014 §2 N5, issue #46 point 6. slip-props.ts hard-codes { id: 'reader-hashes', status: 'green' }, so the
+// Decision 0015 §2 N5, issue #46 point 6. slip-props.ts hard-codes { id: 'reader-hashes', status: 'green' }, so the
 // checker seal of m1-slip-proof-tree passes on a value Cartouche wrote. Rezono's reader serves no hash check result;
 // rezono-lang/rezono#1451 item 3 asks for one per witness. Until then the check reads data-status="unavailable" (the
-// contract's value for what is not served, Decision 0014 §7). The assertion that reader-hashes is green moved here from
-// tests/green/m1-slip-proof-tree.test.mjs (Decision 0014 §5).
+// contract's value for what is not served, Decision 0015 §7). The assertion that reader-hashes is green moved here from
+// tests/green/m1-slip-proof-tree.test.mjs (Decision 0015 §5).
 
 const ROOT = process.cwd();
 const FX10 = 'fixtures/10-slip-reader-answers.json';

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export const RED_META = {
   milestone: 'M2',
-  decision: 'decisions/0014-quality-round-3.md',
+  decision: 'decisions/0015-quality-round-3.md',
   priority: 3,
   summary: '#46 point 15: every sheet and the specimen are tested as drawn in a real layout engine, not only on model coordinates; the specimen is a rendered page and counts no palettes',
   waits_on: [
@@ -31,16 +31,16 @@ export const RED_META = {
   ]
 };
 
-// Decision 0014 §4, issue #46 point 15. Only the flow sheet is tested as drawn (its SVG). Monge is tested on model
+// Decision 0015 §4, issue #46 point 15. Only the flow sheet is tested as drawn (its SVG). Monge is tested on model
 // coordinates; the relief, Kringstand, ripple and bitemporal sheets are not tested as drawn at all. Their HTML and CSS
 // layout cannot be measured in Happy-DOM, which has no layout engine. The specimen (packages/atlas/src/specimen.ts) is
 // a static list whose coverage still counts palettes, and nothing renders it. A planner adds the layout engine
-// (Chromium through playwright, a devDependency, Decision 0012 §9) and writes the assertions first (Decision 0014 §3).
+// (Chromium through playwright, a devDependency, Decision 0012 §9) and writes the assertions first (Decision 0015 §3).
 
 test('M2 [sheets-tested-as-drawn]: every sheet and the specimen are checked as the browser draws them', () => {
   assert.fail(
     [
-      'RED TASK (Decision 0014). Waits on the devDependency playwright and a planner PR. Acceptance, each point an assertion of the promoted test:',
+      'RED TASK (Decision 0015). Waits on the devDependency playwright and a planner PR. Acceptance, each point an assertion of the promoted test:',
       '1. Each of the six sheets renders in Chromium (playwright) at a fixed viewport, in the swisstopo, obsidian and forced palettes, from the same build output the viewer serves.',
       '2. The geometric invariants of Decision 0002 hold on drawn boxes (getBoundingClientRect, SVG getBBox): no overlapping sibling cards or labels, unique x and y on Monge planes II and III, two drift tracks each with its own proof link, no digit on an unknown mark.',
       '3. The Monge sheet is checked as drawn, not only through monge-model.ts coordinates.',

@@ -1,12 +1,12 @@
 ---
-id: 0014-quality-round-3
+id: 0015-quality-round-3
 status: accepted
 milestone: M1
 owner: planner
 created: 2026-11-21
 ---
 
-# Decision 0014: Quality Round 3 — #23 Was Not Done, and a Planner Writes the Assertion
+# Decision 0015: Quality Round 3 — #23 Was Not Done, and a Planner Writes the Assertion
 
 ## Context
 
@@ -20,6 +20,34 @@ created: 2026-11-21
 - Round 3 also found new principle violations. The worst is N1: the viewer (#36) seals in the browser and unlocks Propose.
 
 ## Decision
+
+### 0. Relation to Decision 0014
+
+Decision 0014 (PR #52) landed while this plan was being written. It partitioned #46 into three bundled M1 tests: `m1-viewer-no-browser-seal` (points 1 to 8), `m1-monge-and-leftovers-honesty` and `m1-guards-and-svg-contrast`.
+
+This decision supersedes that partition, for two reasons.
+
+- **The tests match source text.** Most of their assertions test the shape of the code with a regular expression, for example "`zero-compute-lint.mjs` contains the string `'apps'`" or "`model.ts` has no `originSignForSourceKind`". A worker can satisfy such an assertion without fixing anything. This is the weakness #46 found in #23's to-do lists.
+- **The fixes are blocked.** Green assertions that hold the findings (§5) were left in place, so a worker could not fix the findings without editing a green test.
+
+Its three red tests are replaced by the tasks of §4. `m1-viewer-no-browser-seal` keeps its name, with new content. Each of its assertions has a behavioural replacement:
+
+| 0014 assertion | Replaced by |
+| --- | --- |
+| App.svelte has no `DeltaStore`, no scene compiler, no `seal=` on Slip | `m1-viewer-no-browser-seal`, `m1-viewer-prerendered-and-guarded` (the Vite build graph, and the Svelte AST) |
+| The lint and the domain check name `apps` | `m1-viewer-prerendered-and-guarded` (the guards run on a temp tree with a violation under `apps/`) |
+| render() refuses `model` and fixture `seal_checks` | `m1-slip-refuses-request-model`, `m1-no-injected-seal-checks` |
+| No `reader-hashes: green`, `rowProofRef`, `sweep:` refs or `provisionalCount` in source | `m1-seal-checks-only-as-served`, `m1-proof-refs-only-as-served`, `m1-reads-only-served-head-fields` |
+| No `originSignForSourceKind` or value-matched bindings in `model.ts` | `m1-origin-signs-and-bindings-from-reader` (a kind mutation and a binding mutation) |
+| `canPropose` not derived client-side | `m1-propose-locked-until-served` |
+| `AGENTS.md` makes no verifiable-witness claim | `m1-proof-refs-only-as-served` |
+| No `CURTAIN_HEIGHT`; `changed` and `not_applicable` not painted valid | `m1-monge-unknown-and-state-colours` (curtain height against the round axis, and drawn fills) |
+| `nightly-live.yml` has no `REZONO_LIVE_DIR` and no false fixture-10 step | `m2-nightly-step-says-what-it-does` (the parsed workflow) |
+| No `threlteScene`, no Threlte in the docs, no `statutory`, no law/statute/policy | `m2-leftovers-removed`, `m1-origin-signs-and-bindings-from-reader` |
+| The lint catches the three escapes | `m1-zero-compute-lint-fails-closed` (the escapes as frozen snippets, plus a renamed field) |
+| The PR guard protects the harness, the domain check and `package.json` | `m1-green-guard-covers-harness` |
+| auditA11y decides SVG fill and opacity | `m1-contrast-reads-svg-fill` |
+| The specimen counts no palettes; the role-leak and sweep tests don't feed their own inputs | `m2-sheets-tested-as-drawn`, `m2-role-leak-on-reader-output`; the sweep test is fixed in this PR |
 
 ### 1. #46 is the open list
 Every open point of #46 is a red test on the board, or is covered by one that is already there.

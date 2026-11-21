@@ -154,7 +154,7 @@ test('M1 [slip-proof-tree]: opening why renders table[data-answer="grounds"] wit
 
     // 5. Leaves are base fact sources: published @ source; no leaf is derived. Their origin sign is the reader's to
     // serve: the assertion that a leaf carries one moved, reversed, to tests/red/m1-origin-signs-and-bindings-from-reader
-    // (Decision 0014 §5): Cartouche chose it from the kind text "synthetic".
+    // (Decision 0015 §5): Cartouche chose it from the kind text "synthetic".
     const leafRows = rows.filter((r) => Number(r.getAttribute(M.depth)) === 1);
     assert.equal(leafRows.length, 3);
     for (const leaf of leafRows) {
@@ -173,7 +173,7 @@ test('M1 [slip-proof-tree]: opening why renders table[data-answer="grounds"] wit
       [...seal.querySelectorAll(`[${M.check}]`)].map((el) => [el.getAttribute(M.check), el.getAttribute(M.status)])
     );
     // reader-hashes is not served by the reader; its expectation moved to tests/red/m1-seal-checks-only-as-served
-    // (Decision 0014 §5).
+    // (Decision 0015 §5).
     assert.equal(checks.get('publisher-record'), 'green');
 
     // 7. Legend lists every [data-sign] drawn anywhere on the page
