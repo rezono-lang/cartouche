@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export const RED_META = {
   milestone: 'M3',
-  decision: 'decisions/0010-slip-reads-rezono-reader.md',
+  decision: 'decisions/0009-slip-reads-rezono-reader.md',
   summary: 'Frozen std-view tokens and data-marks match Rezono packs/std-view at the slip source pin (sign names, verbs and their questions), and contracts/rezono-pin.json pins that commit; contract bump under Decision 0007 with owner review',
   waits_on: ['m2-slip-reads-rezono-reader']
 };

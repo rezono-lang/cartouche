@@ -1,12 +1,12 @@
 ---
-id: 0010-slip-reads-rezono-reader
+id: 0009-slip-reads-rezono-reader
 status: accepted
 milestone: M2
 owner: slip
 created: 2026-11-21
 ---
 
-# Decision 0010: The Slip Reads Rezono's Reader — One Slip, One Numbering, One Key
+# Decision 0009: The Slip Reads Rezono's Reader — One Slip, One Numbering, One Key
 
 ## Context
 Decision 0006 made Cartouche the home of the slip and of the seven conformance requirements Rezono specified for it

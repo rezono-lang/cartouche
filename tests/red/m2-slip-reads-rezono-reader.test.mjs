@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export const RED_META = {
   milestone: 'M2',
-  decision: 'decisions/0010-slip-reads-rezono-reader.md',
+  decision: 'decisions/0009-slip-reads-rezono-reader.md',
   summary: 'Slip reads Rezono reader answers (fixtures/10) through a build-time port of Rezono model.ts; fill.ts sentences; data-line from 0; calc steps as lines; stops inside the swept line; folds from the published difference; Rezono DOM cases carried over',
   waits_on: []
 };
