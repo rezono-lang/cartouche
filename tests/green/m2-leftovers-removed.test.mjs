@@ -6,28 +6,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { buildReliefModel } from '../../packages/atlas/src/relief-model.ts';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0015-quality-round-3.md',
-  priority: 3,
-  summary: '#46 point 18: the leftovers of the removed 3D stack go (relief threlteScene, the Threlte line in the launch kit), and no file under packages/ or apps/ is named with a domain word such as Statutory, which the domain check then catches',
-  waits_on: [
-    'm1-green-guard-covers-harness',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
-
 // Decision 0015 §4, issue #46 point 18. #31 removed three and @threlte, but relief-model.ts still builds a threlteScene
 // and docs/AGENT-LAUNCH-KIT.md still plans a Threlte sheet. The relief sheet's file and component are named
 // StatutoryRelief3D, a legal-domain word the domain check does not know. The law/statute/policy words that model.ts

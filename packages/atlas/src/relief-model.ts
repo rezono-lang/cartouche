@@ -674,7 +674,7 @@ export function renderReliefOrthographicSvg(
 
 export function renderRelief2DProfileSvg(
   model: ReliefModel,
-  ariaLabel = '2D profile fallback of statutory relief'
+  ariaLabel = '2D profile fallback of relief surface'
 ): string {
   const p = model.palette;
   const padLeft = 72;
