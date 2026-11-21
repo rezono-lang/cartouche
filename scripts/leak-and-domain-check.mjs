@@ -12,6 +12,7 @@ const ROOT = process.cwd();
 
 // Machine paths are generic and live here. Names of private environments never appear in this public repo, not even
 // encoded: CI passes them in the secret CARTOUCHE_PRIVATE_PATTERNS, one case-insensitive regular expression per line.
+// Anchor each with word boundaries (\b…\b), so a short name never matches inside a hex hash.
 const PRIVATE_PATTERNS = [
   /C:\\Users\\/i,
   /\/Users\/[a-z0-9._-]+\//i,
@@ -45,7 +46,8 @@ export function findDomainWordViolation(text) {
   return match ? match[0] : null;
 }
 
-function walk(dir, ignore = new Set(['.git', 'node_modules', 'dist'])) {
+// `.rezono-live` is the nightly checkout of Rezono itself, scanned by Rezono's own leak check, not Cartouche's.
+function walk(dir, ignore = new Set(['.git', 'node_modules', 'dist', '.rezono-live'])) {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (ignore.has(entry.name)) continue;
