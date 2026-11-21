@@ -6,10 +6,10 @@ This playbook applies every hard-won operational lesson from building `rezono-la
 
 | Role | Model Tier | Responsibility |
 | :--- | :--- | :--- |
-| **Coordinator (*Aanjager*)** | Medium / Fast | Reads `npm run red-board -- --json`, respects WIP backpressure, spawns workers, clears stale claims (>2h). |
-| **Planner** | Strongest | Writes `decisions/XXXX-*.md` (with YAML head) and bundled red tests in `tests/red/`. Never writes implementation code. |
-| **Worker** | Fast / Economical | Claims ONE `ready` red test (`task/<id>`), implements the minimum clean change, passes `npm run fast-check` locally (<15s), promotes the red test to `tests/green/`. |
-| **Reviewer (*Nakijker*)** | Strongest (Read-Only) | Runs every 15–20 landed PRs and pre-merge on critical boundaries (`opaque.ts`, `xd-guard.ts`, `zero-compute-lint.mjs`, role projection). |
+| **Coordinator (*Aanjager*)** | Medium / Fast | Reads `npm run red-board -- --json`, respects WIP backpressure, spawns workers, clears stale claims (>2h). Playbook: `docs/agents/START.md`. |
+| **Planner** | Strongest | Writes `decisions/XXXX-*.md` (with YAML head) and bundled red tests in `tests/red/`. Never writes implementation code. Prompt: `docs/agents/planner.md`. |
+| **Worker** | Fast / Economical | Claims ONE `ready` red test (`task/<id>`), implements the minimum clean change, passes `npm run fast-check` locally (<5s), promotes the red test to `tests/green/`. Prompt: `docs/agents/worker.md`. |
+| **Reviewer (*Nakijker*)** | Strongest (Read-Only) | Runs every 15–20 landed PRs and pre-merge on critical boundaries (`contracts/`, `opaque.ts`, `xd-guard.ts`, `zero-compute-lint.mjs`, role projection). Prompt: `docs/agents/reviewer.md`. |
 
 ## 2. WIP Backpressure & Runner Budget
 

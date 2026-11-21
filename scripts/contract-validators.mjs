@@ -521,5 +521,19 @@ export function validateFixtureProjection(fixture, projectionContract) {
     if (!fixture.unserved.reason_message_id) errors.push(`${fid}.unserved.reason_message_id required.`);
   }
 
+  // Slip conformance fixture (09-slip-conformance.json)
+  if (fixture.slip_conformance) {
+    const sc = fixture.slip_conformance;
+    for (const [rowId, rowSpec] of Object.entries(sc.rows ?? {})) {
+      if (rowSpec.result_cell) validateOpaqueCell(rowSpec.result_cell, `${fid}.rows[${rowId}].result_cell`, errors);
+      for (const [i, g] of (rowSpec.grounds_distance_1 ?? []).entries()) {
+        validateOpaqueCell(g.cell, `${fid}.rows[${rowId}].grounds[${i}].cell`, errors);
+      }
+      for (const [i, st] of (rowSpec.steps ?? []).entries()) {
+        validateOpaqueCell(st.cell, `${fid}.rows[${rowId}].steps[${i}].cell`, errors);
+      }
+    }
+  }
+
   return errors;
 }

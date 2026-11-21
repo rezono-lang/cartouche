@@ -1,0 +1,222 @@
+{
+  "fixture_id": "09-slip-conformance",
+  "manifest": {
+    "id": "sha256:5a1b2c3d4e5f60718293a4b5c6d7e8f90123",
+    "epoch": 1,
+    "knowledge_time": "2026-01-01T00:00:00Z",
+    "role": "reader",
+    "witness_check": "green",
+    "trust_tier": "sealed"
+  },
+  "horizon": { "complete": true, "reason": null },
+  "slip_conformance": {
+    "pack": "slip",
+    "home_claim": {
+      "relation": "flagged",
+      "key": ["item-a", "12"]
+    },
+    "messages": {
+      "en": {
+        "rule.flagged": "Item {$i} is flagged with amount {$a}, and nothing holds it.",
+        "rule.group_size": "Group {$g} has {$n} items.",
+        "rule.busy": "Group {$g} is busy.",
+        "calc.capped_amount": "Capped amount"
+      },
+      "nl": {
+        "rule.flagged": "Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.",
+        "rule.group_size": "Groep {$g} heeft {$n} items.",
+        "rule.busy": "Groep {$g} is druk.",
+        "calc.capped_amount": "Begrensd bedrag"
+      }
+    },
+    "rows": {
+      "flagged::item-a::12": {
+        "kind": "rule",
+        "rule_id": "rule.flagged",
+        "bindings": [
+          { "name": "i", "display": "item-a", "premise_position": 0 },
+          { "name": "a", "display": "12", "premise_position": 0 }
+        ],
+        "grounds_distance_1": [
+          {
+            "relation": "held",
+            "key": ["item-a"],
+            "polarity": "negative",
+            "depth": 0,
+            "premise_position": 1,
+            "sign": "observation",
+            "cell": {
+              "state": "absent",
+              "display": null,
+              "proof_ref": "witness:held-absent-item-a",
+              "completeness_witness_ref": "sweep:complete-held"
+            },
+            "answered_verbs": []
+          },
+          {
+            "relation": "item__amount",
+            "key": ["item-a", "12"],
+            "polarity": "positive",
+            "depth": 0,
+            "premise_position": 0,
+            "sign": "observation",
+            "cell": {
+              "state": "known",
+              "display": "12",
+              "proof_ref": "fact:item-a-amount"
+            },
+            "answered_verbs": ["suppose"],
+            "sweep_name": "item_amount"
+          }
+        ]
+      },
+      "group_size::group-a::2": {
+        "kind": "rule",
+        "rule_id": "rule.group_size",
+        "bindings": [
+          { "name": "g", "display": "group-a", "premise_position": 0 },
+          { "name": "n", "display": "2", "aggregate": true }
+        ],
+        "grounds_distance_1": [
+          {
+            "relation": "group",
+            "key": ["group-a"],
+            "polarity": "positive",
+            "depth": 0,
+            "sign": "design",
+            "cell": { "state": "known", "display": "group-a", "proof_ref": "fact:group-a" },
+            "answered_verbs": []
+          },
+          {
+            "part": "total",
+            "relation": "group_size__count",
+            "key": ["group-a", "2"],
+            "polarity": "positive",
+            "depth": 0,
+            "sign": "derived",
+            "cell": { "state": "known", "display": "2", "proof_ref": "agg:group-a-count" },
+            "answered_verbs": []
+          },
+          {
+            "relation": "item__group",
+            "key": ["item-a", "group-a"],
+            "polarity": "positive",
+            "depth": 1,
+            "sign": "observation",
+            "cell": { "state": "known", "display": "item-a", "proof_ref": "fact:item-a-group" },
+            "answered_verbs": []
+          },
+          {
+            "relation": "item__group",
+            "key": ["item-b", "group-a"],
+            "polarity": "positive",
+            "depth": 1,
+            "sign": "observation",
+            "cell": { "state": "known", "display": "item-b", "proof_ref": "fact:item-b-group" },
+            "answered_verbs": []
+          }
+        ]
+      },
+      "busy::group-a": {
+        "kind": "rule",
+        "rule_id": "rule.busy",
+        "bindings": [{ "name": "g", "display": "group-a", "premise_position": 0 }],
+        "grounds_distance_1": [
+          {
+            "relation": "group_size",
+            "key": ["group-a", "2"],
+            "polarity": "positive",
+            "depth": 0,
+            "sign": "derived",
+            "cell": { "state": "known", "display": "2", "proof_ref": "witness:group-size-a" },
+            "answered_verbs": ["why", "depends"]
+          }
+        ]
+      },
+      "calc__capped_amount::item-a": {
+        "kind": "calc",
+        "rule_id": "calc.capped_amount",
+        "result_cell": { "state": "known", "display": "12", "proof_ref": "calc:capped-item-a" },
+        "steps": [
+          {
+            "path": "at_most_twenty/value",
+            "depth": 0,
+            "sign": "derived",
+            "cell": { "state": "known", "display": "12", "proof_ref": "calc:capped-item-a#0" }
+          },
+          {
+            "path": "at_most_twenty/value/0",
+            "depth": 1,
+            "sign": "observation",
+            "cell": { "state": "known", "display": "12", "proof_ref": "calc:capped-item-a#1" }
+          }
+        ]
+      },
+      "calc__capped_amount::item-c": {
+        "kind": "calc",
+        "rule_id": "calc.capped_amount",
+        "result_cell": {
+          "state": "unknown",
+          "display": null,
+          "reason": "fact recorded_amount.amount is missing",
+          "proof_ref": "calc:capped-item-c"
+        },
+        "steps": [
+          {
+            "path": "at_most_twenty/value",
+            "depth": 0,
+            "sign": "derived",
+            "cell": {
+              "state": "unknown",
+              "display": null,
+              "reason": "fact recorded_amount.amount is missing",
+              "proof_ref": "calc:capped-item-c#0"
+            }
+          },
+          {
+            "path": "at_most_twenty/value/0",
+            "depth": 1,
+            "sign": "observation",
+            "cell": {
+              "state": "unknown",
+              "display": null,
+              "reason": "fact recorded_amount.amount is missing",
+              "proof_ref": "calc:capped-item-c#1"
+            }
+          }
+        ]
+      }
+    },
+    "sweeps": {
+      "item_amount": {
+        "target_relation": "item__amount",
+        "target_key": ["item-a", "12"],
+        "stops_reader": [
+          { "index": 0, "display": "0", "status": "green", "turn": null, "fold_display": "0" },
+          { "index": 1, "display": "5", "status": "green", "turn": "same", "fold_display": "5" },
+          { "index": 2, "display": "10", "status": "green", "turn": "turns", "fold_display": "10" },
+          { "index": 3, "display": "15", "status": "not_computed", "turn": "unknown", "fold_display": null },
+          { "index": 4, "display": "20", "status": "green", "turn": "unknown", "fold_display": "20" },
+          { "index": 5, "display": "25", "status": "green", "turn": "turns", "fold_display": "25" },
+          {
+            "index": 6,
+            "display": "30",
+            "status": "red",
+            "turn": "unknown",
+            "fold_display": null,
+            "checks": [{ "id": "max_amount_limit", "status": "red" }]
+          }
+        ],
+        "stops_summary": [
+          { "index": 0, "display": "0", "status": "unavailable", "turn": null, "fold_display": null },
+          { "index": 1, "display": "5", "status": "unavailable", "turn": "unknown", "fold_display": null },
+          { "index": 2, "display": "10", "status": "unavailable", "turn": "unknown", "fold_display": null },
+          { "index": 3, "display": "15", "status": "unavailable", "turn": "unknown", "fold_display": null },
+          { "index": 4, "display": "20", "status": "unavailable", "turn": "unknown", "fold_display": null },
+          { "index": 5, "display": "25", "status": "unavailable", "turn": "unknown", "fold_display": null },
+          { "index": 6, "display": "30", "status": "unavailable", "turn": "unknown", "fold_display": null }
+        ]
+      }
+    }
+  }
+}
