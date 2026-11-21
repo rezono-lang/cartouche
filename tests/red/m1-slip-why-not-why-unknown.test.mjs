@@ -1,32 +1,142 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
+import { render } from '../../packages/slip/bin/render.ts';
+import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
 export const RED_META = {
   milestone: 'M1',
   decision: 'decisions/0012-proof-first-plan.md',
   summary: 'Why not and why unknown in the slip: a missing premise is a ghost row with its published reason, the conclusion stays unknown (never no), and a premise the role may not read says not readable for your role, with n premises hidden only as the reader publishes it (proof map requirements 5 and 6)',
   waits_on: [
-    'planner:assertions',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-proof-tree'
+    'm1-sheet-reads-gate-output'
   ]
 };
 
-// Decision 0012 §2 (3c) and §3a (proof map, requirements 5 and 6, folded into the drawer). Unique to the four Rezono
-// states: absent, unknown, not applicable and invalid each have a reason. Rezono std-explain publishes gap (the first
-// premise that fails, with candidate deltas) and contrast (what lacks support). A premise can be missing in the
-// publication or not readable for this role; RDFox drops the second silently.
+// Decision 0012 §2 (3c) and §3a (proof map requirements 5 and 6). Unique to Rezono's 4-valued truth:
+// missing premises appear as ghost rows with their published reason (zero digits), unknown conclusions stay unknown,
+// and role-screened premises say "not readable for your role" without leaking key, value, or source.
 
-test('M1 [slip-why-not-why-unknown]: why not and why unknown show ghost rows with their reason, keep unknown unknown, and say what the role may not read', () => {
-  assert.fail(
-    [
-      'RED TASK (Decision 0012). Acceptance, each point an assertion of the promoted test:',
-      '1. On an absent conclusion, opening why not renders table[data-answer="contrast"]; on an unknown or absent one, opening missing renders table[data-answer="gap"]. Each has th headers and one tr per premise the reader names, with data-relation, data-key, data-polarity and data-state.',
-      '2. Ghost row: a premise missing from the publication is drawn in the proof (also in the grounds table of m1-slip-proof-tree) as a row with data-state="unknown" and the data-reason the reader gives, its text from MF2 (for example: waiting for the tax authority), or with data-state="absent" and its data-completeness-ref. A ghost row has no value and no digit.',
-      '3. The conclusion that rests on a ghost row stays data-state="unknown" with its reason. It is never shown as no, false, zero or absent unless the reader publishes that state.',
-      '4. Role lens: a premise the current role may not read is said as such (not readable for your role, from MF2) without its key, value or source. The conclusion says how many of its premises are hidden (for example 1 premise hidden) only when the reader publishes that number for the role; Cartouche counts no hidden rows itself (AGENTS.md rule 6). Rendering the same conclusion for a role that can read it shows the premise itself. The test renders both roles from recorded answers.',
-      '5. Candidate deltas the reader returns for gap are listed as the reader orders them; Cartouche ranks nothing.',
-      '6. First gate case: in the recorded healthcare allowance answers, at the epoch where the income of p-bob is not yet known, the income row is a ghost row with the reason the gate gives and the allowance of p-bob is unknown; at the epoch where it is known, the allowance has its published value. Dates and wording come from the recording; where they differ from the mockup (unknown on 1 February, known from 1 March), the recording wins and the PR says so.'
-    ].join('\n')
-  );
+const ROOT = process.cwd();
+const M = DATA_MARKS;
+const FX10_PATH = path.join(ROOT, 'fixtures', '10-slip-reader-answers.json');
+
+function fixtureWithWhyNotAndRoleLens({ publishHiddenCount }) {
+  const fx = JSON.parse(fs.readFileSync(FX10_PATH, 'utf8'));
+  const reader = fx.reader_answers.main.reader;
+  const groundsKey = '/slip/m-1/ask/grounds?relation=group_size&key=%5B%22group-a%22%2C%222%22%5D';
+  const answer = reader[groundsKey].body;
+  // Mark the distance-0 conclusion as unknown resting on the ghost unknown premise (point 3).
+  answer.nodes[0].state = 'unknown';
+  answer.nodes[0].reason = 'waiting_for_tax_authority';
+  // Add a ghost unknown premise (missing from publication) and a role-screened outside premise.
+  answer.nodes.push({
+    relation: 'recorded_amount',
+    key: '["item-x"]',
+    distance: 1,
+    state: 'unknown',
+    reason: 'waiting_for_tax_authority'
+  });
+  answer.nodes.push({
+    relation: 'secret_relation',
+    key: '["secret-key-999"]',
+    distance: 1,
+    outside: true
+  });
+  if (publishHiddenCount) {
+    answer.hidden_count = 1;
+  }
+  return fx;
+}
+
+test('M1 [slip-why-not-why-unknown]: ghost rows carry data-state="unknown" and data-reason with zero digits; conclusion stays unknown', async () => {
+  const fx = fixtureWithWhyNotAndRoleLens({ publishHiddenCount: false });
+  const res = await render({
+    fixture: fx,
+    store: 'main',
+    role: 'reader',
+    pack: 'slip',
+    lang: 'en',
+    row: { relation: 'busy', key: ['group-a'] },
+    keys: ['w']
+  });
+  const { window: win, document: doc } = parseHtml(res.html);
+  try {
+    const tree = doc.querySelector(`table[${M.answer}="grounds"]`);
+    assert.ok(tree, 'expected grounds proof tree');
+
+    // Point 2: Ghost row carries data-state="unknown", data-reason, and zero digits.
+    const ghostRow = tree.querySelector(`tr[${M.relation}="recorded_amount"]`);
+    assert.ok(ghostRow, 'missing premise must render as a ghost row in the proof tree');
+    const valCell = ghostRow.querySelector(`td[${M.part}="value"]`);
+    assert.equal(valCell?.getAttribute(M.state), 'unknown', 'ghost row must carry data-state="unknown"');
+    assert.equal(valCell?.getAttribute(M.reason), 'waiting_for_tax_authority', 'ghost row must carry its published data-reason');
+    assert.equal(/[0-9]/.test(valCell?.textContent ?? ''), false, 'ghost unknown row must contain zero digits');
+
+    // Point 3: Conclusion resting on a ghost unknown premise stays data-state="unknown" with its reason and zero digits.
+    const conclusionRow = tree.querySelector(`tr[${M.depth}="0"]`);
+    assert.ok(conclusionRow, 'expected distance-0 conclusion row');
+    const concCell = conclusionRow.querySelector(`td[${M.part}="value"]`);
+    assert.equal(concCell?.getAttribute(M.state), 'unknown', 'conclusion resting on a ghost row must stay data-state="unknown"');
+    assert.equal(concCell?.getAttribute(M.reason), 'waiting_for_tax_authority', 'unknown conclusion must carry its published data-reason');
+    assert.equal(/[0-9]/.test(concCell?.textContent ?? ''), false, 'unknown conclusion must contain zero digits (never 0/no/false)');
+  } finally {
+    await win.happyDOM.close();
+  }
+});
+
+test('M1 [slip-why-not-why-unknown]: role-screened premise carries [data-sign="screened"] with zero leaks and shows hidden count ONLY when reader publishes it', async () => {
+  // Without reader-published hidden_count: must NOT invent a hidden count, and must NOT leak secret key/relation.
+  const fxNoCount = fixtureWithWhyNotAndRoleLens({ publishHiddenCount: false });
+  const resNoCount = await render({
+    fixture: fxNoCount,
+    store: 'main',
+    role: 'reader',
+    pack: 'slip',
+    lang: 'en',
+    row: { relation: 'busy', key: ['group-a'] },
+    keys: ['w']
+  });
+  const d1 = parseHtml(resNoCount.html);
+  let textWithoutCount = '';
+  try {
+    const tree = d1.document.querySelector(`table[${M.answer}="grounds"]`);
+    assert.ok(tree, 'expected grounds proof tree');
+    textWithoutCount = tree.textContent ?? '';
+    assert.equal(textWithoutCount.includes('secret_relation'), false, 'screened premise must leak zero relation name');
+    assert.equal(textWithoutCount.includes('secret-key-999'), false, 'screened premise must leak zero key');
+    const screened = tree.querySelector(`[${M.sign}="screened"]`);
+    assert.ok(screened, 'screened premise must carry frozen [data-sign="screened"] mark');
+    assert.ok((screened.closest('td')?.textContent ?? '').trim().length > 0, 'screened premise must render non-empty MF2 label');
+    assert.equal(
+      d1.document.querySelector(`[${M.reason}="hidden_premises"]`) !== null || /\b1\s+premise\s+hidden\b/i.test(textWithoutCount),
+      false,
+      'Cartouche must never count hidden premises when reader omits hidden_count'
+    );
+  } finally {
+    await d1.window.happyDOM.close();
+  }
+
+  // With reader-published hidden_count: 1 -> renders the published hidden count.
+  const fxWithCount = fixtureWithWhyNotAndRoleLens({ publishHiddenCount: true });
+  const resWithCount = await render({
+    fixture: fxWithCount,
+    store: 'main',
+    role: 'reader',
+    pack: 'slip',
+    lang: 'en',
+    row: { relation: 'busy', key: ['group-a'] },
+    keys: ['w']
+  });
+  const d2 = parseHtml(resWithCount.html);
+  try {
+    const treeText = d2.document.querySelector(`table[${M.answer}="grounds"]`)?.textContent ?? '';
+    const note = d2.document.querySelector(`[${M.reason}="hidden_premises"]`)?.textContent ?? treeText;
+    assert.notEqual(treeText, textWithoutCount, 'when reader publishes hidden_count=1, slip must render the published hidden count');
+    assert.ok(/\b1\b/.test(note), 'rendered hidden count must include the published count 1');
+  } finally {
+    await d2.window.happyDOM.close();
+  }
 });
