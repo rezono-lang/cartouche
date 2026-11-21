@@ -13,7 +13,7 @@ export function compileFlowSplitScene(fixture: {
   manifest: ManifestMeta;
   horizon: { complete: boolean; reason: string | null };
   nodes: readonly {
-    id: string; label: string; zone: string; sign: 'decision' | 'design' | 'observation' | 'derived';
+    id: string; label: string; zone: string; sign: 'origin_decision' | 'origin_design' | 'origin_observation' | 'derived';
     state: 'valid' | 'changed' | 'violated' | 'absent' | 'unknown';
     reason?: string; proof_ref: string; completeness_witness_ref?: string;
   }[];
@@ -120,7 +120,7 @@ export function compileSubsidyReliefScene(fixture: {
     nodes,
     driftEdges: [],
     unknownManifolds,
-    usedSigns: ['legislator', 'derived', 'valid', 'unknown'],
+    usedSigns: ['origin_vendor', 'derived', 'valid', 'unknown'],
     tableTwin: {
       headers: ['Subject', 'Amount', 'State', 'Citation'],
       rows: nodes.map((n, i) => [n.id, n.cell ? renderOpaqueText(n.cell) : '', n.state, fixture.subjects[i]!.citation])
@@ -136,7 +136,7 @@ export function compileMongeScene(fixture: {
   manifest: ManifestMeta;
   projection: 'orthographic';
   services: readonly {
-    id: string; label: string; sign: 'decision' | 'design';
+    id: string; label: string; sign: 'origin_decision' | 'origin_design';
     x: number; y: number; state: 'valid' | 'violated' | 'absent' | 'unknown';
     proof_ref: string; completeness_witness_ref?: string;
   }[];
@@ -176,7 +176,7 @@ export function compileMongeScene(fixture: {
     nodes,
     driftEdges,
     unknownManifolds: [],
-    usedSigns: ['decision', 'design', 'drift', 'absent', 'unknown'],
+    usedSigns: ['origin_decision', 'origin_design', 'drift', 'absent', 'unknown'],
     tableTwin: {
       headers: ['Service', 'X', 'Y', 'State', 'Proof'],
       rows: fixture.services.map((s) => [s.label, String(s.x), String(s.y), s.state, s.proof_ref])

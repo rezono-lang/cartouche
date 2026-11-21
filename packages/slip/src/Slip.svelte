@@ -102,7 +102,6 @@
     answers?: Readonly<Record<string, AnswerTableSpec>>;
     openAnswer?: string | null;
     manifestHash?: string | null;
-    signsLeftOut?: readonly string[];
     sweeps?: readonly LineSweep[];
     openSweepLine?: number | null;
     selectedStopIndex?: number | null;
@@ -125,7 +124,6 @@
     answers = {},
     openAnswer = null,
     manifestHash = null,
-    signsLeftOut = [],
     sweeps = [],
     openSweepLine = null,
     selectedStopIndex = null,
@@ -173,7 +171,7 @@
   let visibleVerbs = $derived.by((): readonly StdVerbSpec[] => {
     if (availableVerbs === null) return STD_VERBS;
     const allowed = new Set(availableVerbs);
-    return STD_VERBS.filter((spec) => allowed.has(spec.verb) || allowed.has(spec.question));
+    return STD_VERBS.filter((spec) => allowed.has(spec.verb) || (spec.question !== undefined && allowed.has(spec.question)));
   });
 
   let groundsList = $derived<readonly SlipLine[]>(conformanceRow?.grounds_distance_1 ?? []);
@@ -221,19 +219,20 @@
       ordered.push(signName);
     };
 
+    const stateSign = (state: string): string => (state === 'invalid' ? 'violated' : state);
     if (conformanceRow) {
       if (conformanceRow.kind === 'calc' && conformanceRow.result_cell && conformanceRow.result_cell.state !== 'known') {
-        addSign(conformanceRow.result_cell.state);
+        addSign(stateSign(conformanceRow.result_cell.state));
       }
       for (const [idx, line] of slipLines.entries()) {
         addSign(line.sign);
         if (line.cell.state !== 'known') {
-          addSign(line.cell.state);
+          addSign(stateSign(line.cell.state));
         }
         const fold = foldForLine(idx);
         if (fold !== null) {
           addSign('supposed');
-          if (fold.state !== 'known') addSign(fold.state);
+          if (fold.state !== 'known') addSign(stateSign(fold.state));
         }
       }
     } else if (model) {
@@ -659,10 +658,6 @@
       </table>
       {#if answer.note}<p class="slip-answer-note">{answer.note}</p>{/if}
     {/each}
-
-    {#if signsLeftOut.length > 0}
-      <p class="slip-signs-left-out">Signs not in this key, not drawn: {signsLeftOut.join(', ')}</p>
-    {/if}
 
     {#if drawnSigns.length > 0}
       <table class="slip-legend" data-part="legend" aria-label="Sign legend">

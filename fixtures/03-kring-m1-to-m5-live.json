@@ -15,9 +15,9 @@
     { "id": "m-4", "time": "2026-11-20T21:40:00Z", "cert_hash": "sha256:8f4ac2", "sealed": true }
   ],
   "sealed_rows": [
-    { "key": "step:vault-rule-patch", "lane": "needed", "label": "vault-rule-patch", "sign": "decision", "state": "valid", "proof_ref": "round:m-4#needed-1" },
-    { "key": "step:canary-smoke", "lane": "waiting", "label": "canary-smoke", "sign": "observation", "state": "changed", "reason": "awaiting_probe", "proof_ref": "round:m-4#wait-1" },
-    { "key": "step:policy-push", "lane": "ready", "label": "policy-push", "sign": "decision", "state": "valid", "proof_ref": "round:m-4#ready-1" },
+    { "key": "step:vault-rule-patch", "lane": "needed", "label": "vault-rule-patch", "sign": "origin_decision", "state": "valid", "proof_ref": "round:m-4#needed-1" },
+    { "key": "step:canary-smoke", "lane": "waiting", "label": "canary-smoke", "sign": "origin_observation", "state": "changed", "reason": "awaiting_probe", "proof_ref": "round:m-4#wait-1" },
+    { "key": "step:policy-push", "lane": "ready", "label": "policy-push", "sign": "origin_decision", "state": "valid", "proof_ref": "round:m-4#ready-1" },
     { "key": "step:cert-issuer", "lane": "done", "label": "cert-issuer", "sign": "derived", "state": "valid", "proof_ref": "round:m-4#done-1" },
     { "key": "step:ingress-sync", "lane": "done", "label": "ingress-sync", "sign": "derived", "state": "valid", "proof_ref": "round:m-4#done-2" },
     { "key": "step:pg-replica", "lane": "done", "label": "pg-replica", "sign": "derived", "state": "valid", "proof_ref": "round:m-4#done-3" },
@@ -31,7 +31,7 @@
     "changes": [
       {
         "weight": 1,
-        "row": { "key": "step:worker-07", "lane": "ready", "label": "worker-07", "sign": "observation", "state": "changed", "proof_ref": "stream:m5-draft-142ms" }
+        "row": { "key": "step:worker-07", "lane": "ready", "label": "worker-07", "sign": "origin_observation", "state": "changed", "proof_ref": "stream:m5-draft-142ms" }
       }
     ]
   }

@@ -10,13 +10,13 @@
   },
   "horizon": { "complete": true, "reason": null },
   "nodes": [
-    { "id": "svc-gateway", "label": "Gateway", "zone": "ingress", "sign": "design", "state": "valid", "layer": "both", "proof_ref": "proof:gw-01" },
-    { "id": "svc-keycloak", "label": "Keycloak", "zone": "platform", "sign": "decision", "state": "valid", "layer": "both", "proof_ref": "proof:kc-01" },
-    { "id": "svc-orders", "label": "Orders API", "zone": "consumers", "sign": "design", "state": "changed", "layer": "both", "proof_ref": "proof:ord-19" },
-    { "id": "svc-vault", "label": "Vault", "zone": "storage", "sign": "decision", "state": "violated", "layer": "both", "proof_ref": "proof:vlt-88" },
-    { "id": "svc-postgres", "label": "Postgres", "zone": "storage", "sign": "observation", "state": "valid", "layer": "both", "proof_ref": "proof:pg-42" },
-    { "id": "svc-backup", "label": "Backup Store", "zone": "recovery", "sign": "decision", "state": "absent", "layer": "stated", "proof_ref": "proof:dr-05", "completeness_witness_ref": "sweep:complete-ns-12-of-12" },
-    { "id": "svc-edge-04", "label": "Edge-04", "zone": "recovery", "sign": "design", "state": "unknown", "reason": "telemetry_timeout", "display": null, "layer": "both", "proof_ref": "proof:edge-04-timeout" }
+    { "id": "svc-gateway", "label": "Gateway", "zone": "ingress", "sign": "origin_design", "state": "valid", "layer": "both", "proof_ref": "proof:gw-01" },
+    { "id": "svc-keycloak", "label": "Keycloak", "zone": "platform", "sign": "origin_decision", "state": "valid", "layer": "both", "proof_ref": "proof:kc-01" },
+    { "id": "svc-orders", "label": "Orders API", "zone": "consumers", "sign": "origin_design", "state": "changed", "layer": "both", "proof_ref": "proof:ord-19" },
+    { "id": "svc-vault", "label": "Vault", "zone": "storage", "sign": "origin_decision", "state": "violated", "layer": "both", "proof_ref": "proof:vlt-88" },
+    { "id": "svc-postgres", "label": "Postgres", "zone": "storage", "sign": "origin_observation", "state": "valid", "layer": "both", "proof_ref": "proof:pg-42" },
+    { "id": "svc-backup", "label": "Backup Store", "zone": "recovery", "sign": "origin_decision", "state": "absent", "layer": "stated", "proof_ref": "proof:dr-05", "completeness_witness_ref": "sweep:complete-ns-12-of-12" },
+    { "id": "svc-edge-04", "label": "Edge-04", "zone": "recovery", "sign": "origin_design", "state": "unknown", "reason": "telemetry_timeout", "display": null, "layer": "both", "proof_ref": "proof:edge-04-timeout" }
   ],
   "edges": [
     { "id": "e1", "from": "svc-gateway", "to": "svc-keycloak", "layer": "both", "kind": "standard", "proof_ref": "proof:e1" },

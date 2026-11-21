@@ -38,11 +38,16 @@
     return r;
   }
 
+  function signNameOf(state: string): string {
+    return state === 'invalid' ? 'violated' : state;
+  }
+
   function glyphOf(state: string): string {
-    if (!Object.prototype.hasOwnProperty.call(SIGNS, state)) {
+    const signName = signNameOf(state);
+    if (!Object.prototype.hasOwnProperty.call(SIGNS, signName)) {
       throw new Error('no std-view sign for state: ' + state);
     }
-    return SIGNS[state]!.glyph;
+    return SIGNS[signName]!.glyph;
   }
 
   let reason = $derived(reasonOf(opaque));
@@ -67,7 +72,7 @@
       {#if opaque.state === 'known'}
         {opaque.display}
       {:else}
-        <span class="cartouche-sign" role="img" aria-label={opaque.state} {...{ [M.sign]: opaque.state, [M.proof_ref]: opaque.proofRef }}>
+        <span class="cartouche-sign" role="img" aria-label={opaque.state} {...{ [M.sign]: signNameOf(opaque.state), [M.proof_ref]: opaque.proofRef }}>
           <span aria-hidden="true">{glyph}</span>
         </span>
         {#if reason}<span>{reason}</span>{/if}
@@ -77,7 +82,7 @@
       {#if folded.state === 'known'}
         {folded.display}
       {:else}
-        <span class="cartouche-sign" role="img" aria-label={folded.state} {...{ [M.sign]: folded.state, [M.proof_ref]: folded.proofRef }}>
+        <span class="cartouche-sign" role="img" aria-label={folded.state} {...{ [M.sign]: signNameOf(folded.state), [M.proof_ref]: folded.proofRef }}>
           <span aria-hidden="true">{glyphOf(folded.state)}</span>
         </span>
         {#if foldReason}<span>{foldReason}</span>{/if}
@@ -102,7 +107,7 @@
       class="cartouche-sign"
       role="img"
       aria-label={opaque.state}
-      {...{ [M.sign]: opaque.state, [M.proof_ref]: opaque.proofRef, [M.reason]: reason ?? undefined }}
+      {...{ [M.sign]: signNameOf(opaque.state), [M.proof_ref]: opaque.proofRef, [M.reason]: reason ?? undefined }}
     >
       <span aria-hidden="true">{glyph}</span>
     </span>

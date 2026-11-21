@@ -20,7 +20,7 @@ export interface MongeServiceInput {
   readonly id: string;
   readonly label: string;
   readonly short?: string;
-  readonly sign: 'decision' | 'design';
+  readonly sign: 'origin_decision' | 'origin_design';
   readonly x: number;
   readonly y: number;
   readonly state: MongeNodeState;

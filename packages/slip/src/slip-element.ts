@@ -131,7 +131,7 @@ export function resolveSlipShortcut(
 
   const spec = STD_VERBS.find((v) => v.key === pressed);
   if (!spec) return { status: 'ignored' };
-  if (allowedSet !== null && !allowedSet.has(spec.verb) && !allowedSet.has(spec.question)) {
+  if (allowedSet !== null && !allowedSet.has(spec.verb) && !(spec.question !== undefined && allowedSet.has(spec.question))) {
     return { status: 'ignored' };
   }
   if (spec.verb === 'propose' && !options.proposeAllowed) {
@@ -173,6 +173,10 @@ function renderSignSpan(signName: string, proofRef: string, reason?: string | nu
 
 const DIGIT_RE = /[0-9]/;
 
+function stateSignName(state: string): string {
+  return state === 'invalid' ? 'violated' : state;
+}
+
 function renderOpaqueCellTd(opaque: OpaqueDisplayCell): string {
   if (opaque.state === 'known') {
     return (
@@ -191,7 +195,7 @@ function renderOpaqueCellTd(opaque: OpaqueDisplayCell): string {
   return (
     `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="${escapeHtml(opaque.state)}"` +
     `${reasonAttr} ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}"${completenessAttr}>` +
-    `${renderSignSpan(opaque.state, opaque.proofRef, opaque.reason)}` +
+    `${renderSignSpan(stateSignName(opaque.state), opaque.proofRef, opaque.reason)}` +
     `${opaque.reason ? `<span>${escapeHtml(opaque.reason)}</span>` : ''}</td>`
   );
 }
@@ -309,7 +313,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
     const verbs =
       allowedSet === null
         ? STD_VERBS
-        : STD_VERBS.filter((v) => allowedSet.has(v.verb) || allowedSet.has(v.question));
+        : STD_VERBS.filter((v) => allowedSet.has(v.verb) || (v.question !== undefined && allowedSet.has(v.question)));
 
     parts.push(`<nav class="slip-verb-bar" aria-label="Slip verbs">`);
     for (const spec of verbs) {
@@ -362,7 +366,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       `<thead><tr><th scope="col">Line</th><th scope="col">Sign</th><th scope="col">${isCalc ? 'Step' : 'Relation'}</th><th scope="col">Value</th><th scope="col">Actions</th></tr></thead><tbody>`
     );
     if (resultOpaque) {
-      if (resultOpaque.state !== 'known') trackSign(resultOpaque.state);
+      if (resultOpaque.state !== 'known') trackSign(stateSignName(resultOpaque.state));
       parts.push(
         `<tr ${DATA_MARKS.proof_ref}="${escapeHtml(resultOpaque.proofRef)}">` +
           `<td></td><td></td><td>${escapeHtml(conformanceRow.rule_id)}</td>` +
@@ -374,11 +378,11 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       const line = entry.line;
       const opaque = entry.opaque;
       if (line.sign) trackSign(line.sign);
-      if (opaque.state !== 'known') trackSign(opaque.state);
+      if (opaque.state !== 'known') trackSign(stateSignName(opaque.state));
       const attr = (name: string, value: string | undefined): string =>
         value === undefined ? '' : ` ${name}="${escapeHtml(value)}"`;
       const allowedLine = new Set(line.answered_verbs ?? []);
-      const lineVerbs = STD_VERBS.filter((v) => allowedLine.has(v.verb) || allowedLine.has(v.question));
+      const lineVerbs = STD_VERBS.filter((v) => allowedLine.has(v.verb) || (v.question !== undefined && allowedLine.has(v.question)));
       const buttonsHtml = lineVerbs
         .map(
           (spec) =>

@@ -123,19 +123,20 @@ export function buildAnswerTable(
   row: VerbConformanceRowLike | null,
   reader?: ReaderVerbCapability | null
 ): SlipVerbAnswerTable {
-  const explicit = reader?.answersByQuestion?.[spec.question];
+  const question = spec.question ?? spec.verb;
+  const explicit = reader?.answersByQuestion?.[question];
   if (explicit) {
     return {
-      question: spec.question,
+      question,
       verb: spec.verb,
       headers: explicit.headers,
       rows: explicit.rows
     };
   }
 
-  if (spec.question === 'grounds' && row?.grounds_distance_1) {
+  if (question === 'grounds' && row?.grounds_distance_1) {
     return {
-      question: spec.question,
+      question,
       verb: spec.verb,
       headers: ['Relation', 'Key', 'State', 'Proof'],
       rows: row.grounds_distance_1.map((line) => ({
@@ -147,7 +148,7 @@ export function buildAnswerTable(
   }
 
   return {
-    question: spec.question,
+    question,
     verb: spec.verb,
     headers: ['Question', 'Rule', 'Proof'],
     rows: []

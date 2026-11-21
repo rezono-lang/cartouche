@@ -105,7 +105,9 @@ export function drawnSigns(scene: CartoucheScene): readonly string[] {
   const used = new Set<string>();
   for (const n of scene.nodes) {
     used.add(n.sign);
-    if (NON_ORIGIN_STATES.has(n.state) || STATE_GLYPH_STATES.has(n.state)) used.add(n.state);
+    if (NON_ORIGIN_STATES.has(n.state) || STATE_GLYPH_STATES.has(n.state)) {
+      used.add(n.state === 'invalid' ? 'violated' : n.state);
+    }
   }
   if (scene.driftEdges.length > 0) used.add('drift');
   for (const s of used) glyphOf(s);
@@ -137,7 +139,7 @@ const PRELUDE = (): string => {
     '  } else if state == "absent" {',
     '    sign-glyph.absent',
     '  } else if state == "invalid" {',
-    '    sign-glyph.invalid',
+    '    sign-glyph.violated',
     '  } else if display != none {',
     '    if state in ("valid", "changed", "violated") { sign-glyph.at(state); h(3pt) }',
     '    display',

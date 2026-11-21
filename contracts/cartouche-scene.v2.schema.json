@@ -141,20 +141,23 @@
       "items": {
         "type": "string",
         "enum": [
-          "decision",
-          "legislator",
-          "design",
-          "observation",
+          "origin_decision",
+          "origin_vendor",
+          "origin_design",
+          "origin_observation",
           "derived",
+          "assumption",
+          "drift",
+          "screened",
+          "proposal",
+          "sealed",
+          "supposed",
           "valid",
           "changed",
           "violated",
-          "drift",
-          "absent",
           "unknown",
           "not_applicable",
-          "invalid",
-          "supposed"
+          "absent"
         ]
       }
     },
@@ -213,7 +216,7 @@
         "label": { "type": "string", "minLength": 1 },
         "sign": {
           "type": "string",
-          "enum": ["decision", "legislator", "design", "observation", "derived"]
+          "enum": ["origin_decision", "origin_vendor", "origin_design", "origin_observation", "derived"]
         },
         "state": {
           "type": "string",
