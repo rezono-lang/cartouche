@@ -4,7 +4,9 @@
   import type { SlipModel, VerbKey } from './slip-controller.ts';
   import SlipSeal from './SlipSeal.svelte';
   import SlipUnserved from './SlipUnserved.svelte';
+  import SlipSweep from './SlipSweep.svelte';
   import SlipValueCell from './SlipValueCell.svelte';
+  import { canFoldStop } from './slip-sweep.ts';
   import { isLineVerbDisabled, resolveLineVerbs } from './slip-verbs.ts';
 
   interface UnservedInfo {
@@ -240,12 +242,6 @@
       throw new Error(`Unknown std-view sign: "${signName}".`);
     }
     return spec;
-  }
-
-  function canFoldStop(stop: SweepStop | null): boolean {
-    if (!stop) return false;
-    if (stop.status === 'red' || stop.status === 'not_computed' || stop.status === 'unavailable') return false;
-    return stop.fold_display !== null;
   }
 
   let drawnSigns = $derived.by((): readonly string[] => {
@@ -609,32 +605,7 @@
       </section>
     {/if}
 
-    {#if sweepStops.length > 0}
-      <section class="slip-sweep" aria-label="Sweep stops">
-        <h2>Sweep Stops</h2>
-        <div class="slip-sweep-strip">
-          {#each sweepStops as stop (stop.index)}
-            <button
-              type="button"
-              data-stop={String(stop.index)}
-              data-status={stop.status}
-              data-turn={stop.turn ?? 'unknown'}
-              aria-pressed={activeStopIndex === stop.index}
-              onclick={() => selectStop(stop.index)}
-            >
-              {#if stop.status !== 'red'}
-                <span>{stop.display}</span>
-              {/if}
-              {#if stop.status === 'red' && stop.checks && stop.checks.length > 0}
-                {#each stop.checks as chk (chk.id)}
-                  <span data-check={chk.id} data-status={chk.status}>{chk.id}</span>
-                {/each}
-              {/if}
-            </button>
-          {/each}
-        </div>
-      </section>
-    {/if}
+    <SlipSweep stops={sweepStops} activeIndex={activeStopIndex} onSelect={selectStop} />
 
     {#each openAnswers as answer (answer.question)}
       <table class="slip-answer-table" data-answer={answer.question} aria-label={`Answer ${answer.question}`}>
