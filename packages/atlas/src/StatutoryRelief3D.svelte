@@ -1,6 +1,8 @@
 <script lang="ts">
   import { DATA_MARKS, SIGNS, paletteCss } from '../../reader-core/src/index.ts';
   import type { PaletteName, SignSpec } from '../../reader-core/src/index.ts';
+  import { formatAtlasMessage, formatReasonLabel } from './i18n-mf2.ts';
+  import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
   import {
     buildReliefModel,
     renderRelief2DProfileSvg,
@@ -17,6 +19,8 @@
   interface Props {
     fixture: ReliefFixtureInput;
     theme?: PaletteName;
+    lang?: AtlasLocale;
+    messages?: Mf2MessageCatalog | null;
     projection?: ReliefProjection;
     sliceYIndex?: number;
     sealChecks?: readonly SealCheckItem[];
@@ -26,13 +30,19 @@
   let {
     fixture,
     theme = 'swisstopo',
+    lang = 'en',
+    messages = null,
     projection = 'orthographic',
     sliceYIndex = 1,
     sealChecks = [],
-    title = 'Statutory Relief'
+    title
   }: Props = $props();
 
   const M = DATA_MARKS;
+  let t = $derived((key: string, params?: Readonly<Record<string, string>>): string =>
+    formatAtlasMessage(lang, key, params, messages)
+  );
+  let resolvedTitle = $derived(title ?? t('sheet.relief.title'));
   let projectionOverride = $state<ReliefProjection | null>(null);
   let activeProjection = $derived<ReliefProjection>(projectionOverride ?? projection);
 
@@ -48,8 +58,8 @@
 
   let svgMarkup = $derived(
     activeProjection === '2d'
-      ? renderRelief2DProfileSvg(model, `${title} — 2D profile slice`)
-      : renderReliefOrthographicSvg(model, `${title} — orthographic 3D terrain`)
+      ? renderRelief2DProfileSvg(model, t('sheet.relief.profile_suffix', { title: resolvedTitle }))
+      : renderReliefOrthographicSvg(model, t('sheet.relief.terrain_suffix', { title: resolvedTitle }), lang, messages)
   );
 
   let effectiveSealChecks = $derived.by((): readonly SealCheckItem[] => {
@@ -87,7 +97,7 @@
   <style>{themeCssText}</style>
 
   <header class="relief-header">
-    <h2 id="relief-3d-title">{title}</h2>
+    <h2 id="relief-3d-title">{resolvedTitle}</h2>
     <p>{model.xAxis.label} × {model.yAxis.label} → {model.zAxis.label} ({model.zAxis.unit})</p>
 
     <div class="relief-controls">
@@ -97,13 +107,13 @@
         aria-pressed={activeProjection === '2d'}
         onclick={toggleProjection}
       >
-        {activeProjection === 'orthographic' ? 'Switch to 2D profile' : 'Switch to 3D orthographic'}
+        {activeProjection === 'orthographic' ? t('sheet.relief.switch_to_2d') : t('sheet.relief.switch_to_3d')}
       </button>
     </div>
 
     <section
       class="relief-seal"
-      aria-label="Verification seal"
+      aria-label={t('sheet.common.seal')}
       {...{ [M.part]: 'seal', [M.trust_tier]: model.scene.seal.trustTier }}
     >
       <div class="relief-seal-meta">
@@ -111,7 +121,7 @@
         <span>{model.scene.seal.trustTier}</span>
         <span>{model.scene.seal.role}</span>
       </div>
-      <ul aria-label="Seal checks">
+      <ul aria-label={t('sheet.common.seal_checks')}>
         {#each effectiveSealChecks as chk (chk.id)}
           <li {...{ [M.check]: chk.id, [M.status]: chk.status }}>
             {chk.label ?? chk.id}: {chk.status}
@@ -126,8 +136,8 @@
   </figure>
 
   {#if model.curtains.length > 0}
-    <section class="relief-curtains" aria-label="Unknown uncertainty curtains">
-      <h3>Uncertainty Curtains</h3>
+    <section class="relief-curtains" aria-label={t('sheet.relief.curtains')}>
+      <h3>{t('sheet.relief.curtains')}</h3>
       {#each model.curtains as curtain (curtain.subjectId)}
         <div
           class="relief-curtain-banner"
@@ -148,15 +158,15 @@
           >
             <span aria-hidden="true">{resolveSignSpec('unknown').glyph}</span>
           </span>
-          <span>{curtain.reason}</span>
+          <span>{formatReasonLabel(lang, curtain.reason, messages)}</span>
           <a href={`#${curtain.proofRef}`} {...{ [M.proof_ref]: curtain.proofRef }}>witness</a>
         </div>
       {/each}
     </section>
   {/if}
 
-  <section aria-label="Accessible table twin">
-    <h3>Accessible Table Twin</h3>
+  <section aria-label={t('sheet.common.twin')}>
+    <h3>{t('sheet.common.twin')}</h3>
     <table {...{ [M.part]: 'twin' }}>
       <caption>Subject outcomes, cliff distances, and citations</caption>
       <thead>

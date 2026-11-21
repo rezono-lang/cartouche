@@ -7,7 +7,7 @@ import { SIGNS } from '../../packages/reader-core/src/index.ts';
 import {
   compileFlowSplitScene,
   compileMongeScene,
-  compileSubsidyReliefScene
+  compileReliefScene
 } from '../../packages/scene-ir/src/compilers.ts';
 import { compileBitemporalScene } from '../../packages/scene-ir/src/compile-bitemporal.ts';
 import { compileKringstandScene } from '../../packages/scene-ir/src/compile-kringstand.ts';
@@ -23,7 +23,7 @@ const reasons = (nodes) => Object.fromEntries(nodes.filter((n) => n.state === 'u
 
 const CASES = {
   flow: { scene: compileFlowSplitScene(fx01), opts: { reasonByNodeId: reasons(fx01.nodes) } },
-  relief: { scene: compileSubsidyReliefScene(fx04), opts: {} },
+  relief: { scene: compileReliefScene(fx04), opts: {} },
   bitemporal: { scene: compileBitemporalScene(fx05), opts: {} },
   monge: { scene: compileMongeScene(fx08), opts: { reasonByNodeId: reasons(fx08.services) } },
   kring: { scene: compileKringstandScene(fx03), opts: {} }

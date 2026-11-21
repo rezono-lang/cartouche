@@ -5,6 +5,7 @@
 
 import { DATA_MARKS, PALETTES, SIGNS } from '../../reader-core/src/index.ts';
 import type { EpistemicSign, EpistemicState, PaletteName, PaletteTokens, SignSpec } from '../../reader-core/src/index.ts';
+import type { ReaderClient } from '../../reader-core/src/client.ts';
 import { compileCausalRippleScene } from '../../scene-ir/src/compile-causal-ripple.ts';
 import type {
   CausalRippleEdgeInput,
@@ -612,4 +613,29 @@ export function exportCausalRippleSvg(
 ): string {
   const model = buildCausalRippleModel(fixture, options);
   return renderCausalRippleSvg(model, options.ariaLabel);
+}
+
+export interface CausalRippleReaderLoadResult {
+  readonly model: CausalRippleModel;
+  readonly fixture: RippleFixtureWithEdges;
+  readonly verified: boolean;
+  readonly sha256: string;
+}
+
+/**
+ * Loads a Causal Ripple projection directly from a Rezono ReaderClient (`POST /ask/reach`)
+ * with SHA-256 verification and builds the headless CausalRippleModel.
+ */
+export async function loadCausalRippleFromReader(
+  client: ReaderClient,
+  question: unknown,
+  options: CausalRippleRenderOptions = {}
+): Promise<CausalRippleReaderLoadResult> {
+  const res = await client.reach(question);
+  if (res.kind !== 'ok') {
+    throw new Error(`ReaderClient reach failed (${res.kind}, HTTP ${res.status}).`);
+  }
+  const fixture = res.body as RippleFixtureWithEdges;
+  const model = buildCausalRippleModel(fixture, options);
+  return { model, fixture, verified: res.verified, sha256: res.sha256 };
 }

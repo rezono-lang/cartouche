@@ -1,6 +1,6 @@
 /**
- * Sheet 01: 3D Swisstopo Statutory Relief (Decision 0002 & 0003).
- * Pure headless, zero-compute model, Threlte v8 / Three.js orthographic scene descriptor,
+ * Sheet 01: Orthographic Swisstopo Relief (Decision 0002 & 0003).
+ * Pure headless, zero-compute model, orthographic camera descriptor,
  * and deterministic orthographic axonometric + 2D profile SVG exporters.
  *
  * Guarantees:
@@ -25,7 +25,10 @@ import type {
   RawCellInput,
   SignSpec
 } from '../../reader-core/src/index.ts';
-import { compileSubsidyReliefScene } from '../../scene-ir/src/compilers.ts';
+import type { ReaderClient } from '../../reader-core/src/client.ts';
+import { compileReliefScene } from '../../scene-ir/src/compilers.ts';
+import { formatReasonLabel } from './i18n-mf2.ts';
+import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
 import { checkGeometricInvariants } from '../../scene-ir/src/geometry-invariants.ts';
 import { assertXDDiscipline } from '../../scene-ir/src/xd-guard.ts';
 import type { CartoucheScene } from '../../scene-ir/src/types.ts';
@@ -67,10 +70,11 @@ export interface ReliefSubjectInput {
   readonly id: string;
   readonly state: 'valid' | 'changed' | 'violated' | 'unknown' | 'absent';
   readonly amount_cell: RawCellInput;
-  readonly income_cell?: RawCellInput;
-  readonly assets_cell?: RawCellInput;
+  readonly x_axis_cell?: RawCellInput;
+  readonly y_axis_cell?: RawCellInput;
   readonly cliff_distance_display?: string;
   readonly citation: string;
+  readonly [extraField: string]: unknown;
 }
 
 export interface ReliefFixtureInput {
@@ -93,8 +97,8 @@ export interface ReliefValidatedSubject {
   readonly state: ReliefSubjectInput['state'];
   readonly sign: 'derived';
   readonly amountCell: OpaqueDisplayCell;
-  readonly incomeCell: OpaqueDisplayCell | null;
-  readonly assetsCell: OpaqueDisplayCell | null;
+  readonly xAxisCell: OpaqueDisplayCell | null;
+  readonly yAxisCell: OpaqueDisplayCell | null;
   readonly cliffDistanceDisplay: string | null;
   readonly citation: string;
   readonly hasUncertaintyCurtain: boolean;
@@ -261,14 +265,36 @@ export function buildReliefModel(
     );
   }
 
+  function isRawCellInput(v: unknown): v is RawCellInput {
+    return typeof v === 'object' && v !== null && typeof (v as { state?: unknown }).state === 'string';
+  }
+
+  function resolveAxisCell(
+    sub: ReliefSubjectInput,
+    axis: ReliefAxisInput,
+    slot: 'x_axis_cell' | 'y_axis_cell'
+  ): RawCellInput | null {
+    const direct = sub[slot];
+    if (isRawCellInput(direct)) return direct;
+    const tokens = axis.label.trim().toLowerCase().split(/\s+/);
+    const tail = tokens[tokens.length - 1];
+    if (tail) {
+      const candidate = sub[`${tail}_cell`];
+      if (isRawCellInput(candidate)) return candidate;
+    }
+    return null;
+  }
+
   const validatedSubjectCells = fixture.subjects.map((sub) => {
     const amountCell = asOpaqueCell(sub.amount_cell);
     validateNonKnownReason(amountCell);
-    const incomeCell = sub.income_cell ? asOpaqueCell(sub.income_cell) : null;
-    if (incomeCell) validateNonKnownReason(incomeCell);
-    const assetsCell = sub.assets_cell ? asOpaqueCell(sub.assets_cell) : null;
-    if (assetsCell) validateNonKnownReason(assetsCell);
-    return { sub, amountCell, incomeCell, assetsCell };
+    const rawX = resolveAxisCell(sub, fixture.sweep_2d.x_axis, 'x_axis_cell');
+    const xAxisCell = rawX ? asOpaqueCell(rawX) : null;
+    if (xAxisCell) validateNonKnownReason(xAxisCell);
+    const rawY = resolveAxisCell(sub, fixture.sweep_2d.y_axis, 'y_axis_cell');
+    const yAxisCell = rawY ? asOpaqueCell(rawY) : null;
+    if (yAxisCell) validateNonKnownReason(yAxisCell);
+    return { sub, amountCell, xAxisCell, yAxisCell };
   });
 
   const compilerSubjects = validatedSubjectCells.map(({ sub, amountCell }) => {
@@ -309,7 +335,7 @@ export function buildReliefModel(
     proof_ref: m.proof_ref
   }));
 
-  const scene = compileSubsidyReliefScene({
+  const scene = compileReliefScene({
     manifest: fixture.manifest,
     subjects: compilerSubjects,
     sweep_2d: {
@@ -380,7 +406,7 @@ export function buildReliefModel(
   const curtainSubjects = new Set(curtains.map((c) => c.subjectId));
 
   const subjects: ReliefValidatedSubject[] = validatedSubjectCells.map(
-    ({ sub, amountCell, incomeCell, assetsCell }) => {
+    ({ sub, amountCell, xAxisCell, yAxisCell }) => {
       const hasUncertaintyCurtain = curtainSubjects.has(sub.id);
       if ((sub.state === 'unknown' || amountCell.state === 'unknown') && !hasUncertaintyCurtain) {
         throw new Error(
@@ -393,8 +419,8 @@ export function buildReliefModel(
         state: sub.state,
         sign: 'derived' as const,
         amountCell,
-        incomeCell,
-        assetsCell,
+        xAxisCell,
+        yAxisCell,
         cliffDistanceDisplay: sub.cliff_distance_display ?? null,
         citation: sub.citation,
         hasUncertaintyCurtain
@@ -586,7 +612,9 @@ function renderIsoPrismFaces(
 
 export function renderReliefOrthographicSvg(
   model: ReliefModel,
-  ariaLabel = 'Orthographic statutory relief terrain'
+  ariaLabel = 'Orthographic relief terrain',
+  locale: AtlasLocale = 'en',
+  messages?: Mf2MessageCatalog | null
 ): string {
   const p = model.palette;
   const parts: string[] = [
@@ -668,12 +696,13 @@ export function renderReliefOrthographicSvg(
     const labelX = (startTop.px + endTop.px) / 2;
     const labelY = (startTop.py + endTop.py) / 2 - 8;
 
+    const reasonText = formatReasonLabel(locale, curtain.reason, messages);
     parts.push(
       `<g ${DATA_MARKS.part}="curtain" ${DATA_MARKS.key}="curtain:${escapeXml(curtain.subjectId)}" ` +
         `${DATA_MARKS.sign}="unknown" ${DATA_MARKS.state}="unknown" ` +
         `${DATA_MARKS.reason}="${escapeXml(curtain.reason)}" ${DATA_MARKS.proof_ref}="${escapeXml(curtain.proofRef)}">`,
       `<polygon points="${curtainPoly}" fill="url(#relief-unknown-hatch)" stroke="${p.hatchStroke}" stroke-width="1.5" stroke-dasharray="5 3" fill-opacity="0.72" />`,
-      `<text x="${labelX}" y="${labelY}" fill="${p.ink}" font-size="11" text-anchor="middle">${escapeXml(`${unknownGlyph} unknown · ${curtain.reason}`)}</text>`,
+      `<text x="${labelX}" y="${labelY}" fill="${p.ink}" font-size="11" text-anchor="middle">${escapeXml(`${unknownGlyph} ${reasonText}`)}</text>`,
       `</g>`
     );
   }
@@ -788,4 +817,29 @@ export function renderRelief2DProfileSvg(
 
   parts.push('</svg>');
   return parts.join('');
+}
+
+export interface ReliefReaderLoadResult {
+  readonly model: ReliefModel;
+  readonly fixture: ReliefFixtureInput;
+  readonly verified: boolean;
+  readonly sha256: string;
+}
+
+/**
+ * Loads a Relief projection directly from a Rezono ReaderClient (`POST /ask/sweep`)
+ * with SHA-256 verification and builds the headless ReliefModel.
+ */
+export async function loadReliefFromReader(
+  client: ReaderClient,
+  question: unknown,
+  options: Parameters<typeof buildReliefModel>[1] = {}
+): Promise<ReliefReaderLoadResult> {
+  const res = await client.sweep(question);
+  if (res.kind !== 'ok') {
+    throw new Error(`ReaderClient sweep failed (${res.kind}, HTTP ${res.status}).`);
+  }
+  const fixture = res.body as ReliefFixtureInput;
+  const model = buildReliefModel(fixture, options);
+  return { model, fixture, verified: res.verified, sha256: res.sha256 };
 }

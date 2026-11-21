@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { asOpaqueCell, canonicalJson, DeltaStore, renderFigure, renderOpaqueText } from '../../packages/reader-core/src/index.ts';
-import { compileFlowSplitScene, compileMongeScene, compileSubsidyReliefScene } from '../../packages/scene-ir/src/index.ts';
+import { compileFlowSplitScene, compileMongeScene, compileReliefScene } from '../../packages/scene-ir/src/index.ts';
 import { createSlipModel } from '../../packages/slip/src/index.ts';
 
 const OPAQUE_FIELDS = new Set(['display', 'previous_display', 'ratio_display', 'outcome_display', 'cliff_distance_display']);
@@ -40,7 +40,7 @@ test('Exhaustive Opaque-Token Mutation Test: Subsidy 3D Relief passes all mutate
   const { mutated } = mutateOpaqueTokens(raw, '§SUB_TOK');
   const expectedA001 = mutated.subjects[0].amount_cell.display;
 
-  const scene = compileSubsidyReliefScene(mutated);
+  const scene = compileReliefScene(mutated);
   const serialized = canonicalJson(scene);
 
   // Zero NaN, zero Infinity, exact passthrough into node and Table Twin!

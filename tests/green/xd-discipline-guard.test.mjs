@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { compileSubsidyReliefScene, validateXDDiscipline } from '../../packages/scene-ir/src/index.ts';
+import { compileReliefScene, validateXDDiscipline } from '../../packages/scene-ir/src/index.ts';
 
 test('xD-Discipline Guard accepts valid orthographic 3D relief with hatched unknown curtain', () => {
   const fx = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), 'fixtures', '04-subsidy-a001-a003.json'), 'utf8')
   );
-  const scene = compileSubsidyReliefScene(fx);
+  const scene = compileReliefScene(fx);
   assert.deepEqual(validateXDDiscipline(scene), []);
 });
 
@@ -16,7 +16,7 @@ test('xD-Discipline Guard rejects perspective 3D, nominal Z height, and unknown 
   const fx = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), 'fixtures', '04-subsidy-a001-a003.json'), 'utf8')
   );
-  const validScene = compileSubsidyReliefScene(fx);
+  const validScene = compileReliefScene(fx);
 
   const badScene = {
     ...validScene,

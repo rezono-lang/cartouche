@@ -19,7 +19,15 @@ const PRIVATE_PATTERNS = [
 ];
 
 // Hardcoded domain terms forbidden inside reusable packages/* (allowed only in fixtures/ and tests/).
-const DOMAIN_WORDS = /\b(keycloak|hubble|zorgtoeslag|belastingdienst|raadsbesluit|subsidy|postgres|vault)\b/i;
+const DOMAIN_WORDS =
+  /\b(keycloak|hubble|zorgtoeslag|belastingdienst|raadsbesluit|subsidy|income|assets|postgres|vault)\b/i;
+
+export function findDomainWordViolation(text) {
+  // Split CamelCase, PascalCase, and snake_case tokens so compileSubsidyReliefScene / incomeCell / assets_cell are caught.
+  const normalized = text.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
+  const match = normalized.match(DOMAIN_WORDS);
+  return match ? match[0] : null;
+}
 
 function walk(dir, ignore = new Set(['.git', 'node_modules', 'dist'])) {
   const out = [];
@@ -46,9 +54,9 @@ for (const file of files) {
     }
   }
   if (rel.startsWith('packages/')) {
-    const match = text.match(DOMAIN_WORDS);
-    if (match) {
-      violations.push(`${rel}: hardcoded domain term "${match[0]}" found inside domain-neutral package.`);
+    const found = findDomainWordViolation(text);
+    if (found) {
+      violations.push(`${rel}: hardcoded domain term "${found}" found inside domain-neutral package.`);
     }
   }
 }

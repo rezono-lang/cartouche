@@ -70,7 +70,7 @@ export function compileFlowSplitScene(fixture: {
   return scene;
 }
 
-export function compileSubsidyReliefScene(fixture: {
+export function compileReliefScene(fixture: {
   manifest: ManifestMeta;
   subjects: readonly {
     id: string; state: 'valid' | 'unknown';

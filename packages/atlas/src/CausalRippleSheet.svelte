@@ -1,6 +1,8 @@
 <script lang="ts">
   import { SIGNS } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
+  import { formatAtlasMessage, formatReasonLabel } from './i18n-mf2.ts';
+  import type { AtlasLocale, Mf2MessageCatalog } from './i18n-mf2.ts';
   import { buildCausalRippleModel, renderCausalRippleSvg } from './ripple-layout.ts';
   import type { RippleFixtureWithEdges } from './ripple-layout.ts';
   import { mountCausalRipplePixi } from './ripple-pixi.ts';
@@ -8,18 +10,28 @@
   interface Props {
     fixture: RippleFixtureWithEdges;
     theme?: PaletteName;
+    lang?: AtlasLocale;
+    messages?: Mf2MessageCatalog | null;
     title?: string;
   }
 
   let {
     fixture,
     theme = 'swisstopo',
-    title = 'Causal Ripple & Distance Columns'
+    lang = 'en',
+    messages = null,
+    title
   }: Props = $props();
 
+  let t = $derived((key: string, params?: Readonly<Record<string, string>>): string =>
+    formatAtlasMessage(lang, key, params, messages)
+  );
+  let resolvedTitle = $derived(title ?? t('sheet.ripple.title'));
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let model = $derived(buildCausalRippleModel(fixture, { theme }));
-  let svgMarkup = $derived(renderCausalRippleSvg(model, `${title} — ${model.mode} diagram`));
+  let svgMarkup = $derived(
+    renderCausalRippleSvg(model, t('sheet.ripple.diagram_label', { title: resolvedTitle, mode: model.mode }))
+  );
 
   $effect(() => {
     if (typeof window === 'undefined' || !canvasEl) return;
@@ -44,8 +56,8 @@
   aria-labelledby="causal-ripple-title"
 >
   <header>
-    <h1 id="causal-ripple-title">{title}</h1>
-    <p>{model.mode} · dependents={model.dependentTotal}</p>
+    <h1 id="causal-ripple-title">{resolvedTitle}</h1>
+    <p>{t('sheet.ripple.summary', { mode: model.mode, count: String(model.dependentTotal) })}</p>
 
     {#if !model.scene.horizon.complete}
       <div
@@ -53,7 +65,9 @@
         data-status="warning"
         data-reason={model.scene.horizon.reason ?? 'incomplete'}
       >
-        incomplete: {model.scene.horizon.reason ?? 'incomplete'}
+        {t('sheet.common.horizon_incomplete', {
+          reason: formatReasonLabel(lang, model.scene.horizon.reason ?? 'incomplete', messages)
+        })}
       </div>
     {/if}
 
@@ -86,15 +100,15 @@
     ></canvas>
   </figure>
 
-  <aside aria-label="Sheet legend">
-    <h2>Legend</h2>
+  <aside aria-label={t('sheet.common.legend')}>
+    <h2>{t('sheet.common.legend')}</h2>
     <table data-part="legend">
-      <caption>Drawn epistemic signs on this sheet</caption>
+      <caption>{t('sheet.common.legend_caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Sign</th>
-          <th scope="col">Glyph</th>
-          <th scope="col">Kind</th>
+          <th scope="col">{t('col.sign')}</th>
+          <th scope="col">{t('col.glyph')}</th>
+          <th scope="col">{t('col.kind')}</th>
         </tr>
       </thead>
       <tbody>
@@ -109,19 +123,19 @@
     </table>
   </aside>
 
-  <section aria-label="Accessible table twin">
-    <h2>Accessible Table Twin</h2>
+  <section aria-label={t('sheet.common.twin')}>
+    <h2>{t('sheet.common.twin')}</h2>
     <table data-part="twin">
-      <caption>Causal ripple nodes with cut-set gates and proof witnesses</caption>
+      <caption>{t('sheet.common.twin_caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Entity</th>
-          <th scope="col">Hop</th>
-          <th scope="col">Gate</th>
-          <th scope="col">Load-Bearing</th>
-          <th scope="col">Sign</th>
-          <th scope="col">Value</th>
-          <th scope="col">Proof</th>
+          <th scope="col">{t('col.entity')}</th>
+          <th scope="col">{t('col.hop')}</th>
+          <th scope="col">{t('col.gate')}</th>
+          <th scope="col">{t('col.load_bearing')}</th>
+          <th scope="col">{t('col.sign')}</th>
+          <th scope="col">{t('col.value')}</th>
+          <th scope="col">{t('col.proof')}</th>
         </tr>
       </thead>
       <tbody>
@@ -149,7 +163,7 @@
             >
               {#if n.state === 'unknown'}
                 <span data-sign="unknown" data-reason={n.reason ?? undefined}>
-                  {SIGNS.unknown?.glyph ?? '▨'} unknown · {n.reason}
+                  {SIGNS.unknown?.glyph ?? '▨'} {n.reason ? formatReasonLabel(lang, n.reason, messages) : ''}
                 </span>
               {:else if n.state === 'absent'}
                 <span data-sign="absent">
