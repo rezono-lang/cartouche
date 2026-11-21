@@ -208,9 +208,13 @@ function renderOpaqueCellTd(opaque: OpaqueDisplayCell): string {
     opaque.state === 'absent' && opaque.completenessWitnessRef
       ? ` ${DATA_MARKS.completeness_ref}="${escapeHtml(opaque.completenessWitnessRef)}"`
       : '';
+  const hatchAttr =
+    opaque.state === 'unknown'
+      ? ' style="background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px);"'
+      : '';
   return (
     `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="${escapeHtml(opaque.state)}"` +
-    `${reasonAttr} ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}"${completenessAttr}>` +
+    `${reasonAttr} ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}"${completenessAttr}${hatchAttr}>` +
     `${renderSignSpan(stateSignName(opaque.state), opaque.proofRef, opaque.reason)}` +
     `${opaque.reason ? `<span>${escapeHtml(opaque.reason)}</span>` : ''}</td>`
   );

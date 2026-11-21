@@ -119,7 +119,7 @@
   >
     <defs>
       <pattern id="monge-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-        <line x1="0" y1="0" x2="0" y2="6" stroke="var(--c-hatch)" stroke-width="2" />
+        <line x1="0" y1="0" x2="0" y2="6" stroke="var(--c-hatch)" stroke-width="1" />
       </pattern>
     </defs>
 

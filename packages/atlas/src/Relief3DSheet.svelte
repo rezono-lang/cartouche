@@ -347,7 +347,7 @@
     font-family: system-ui, -apple-system, sans-serif;
   }
   .relief-curtain-banner {
-    background: repeating-linear-gradient(45deg, transparent 0 4px, var(--c-hatch) 4px 5px);
+    background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px);
     padding: 0.4rem 0.6rem;
     margin: 0.5rem 0;
   }
