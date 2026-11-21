@@ -28,6 +28,7 @@
     readonly part?: 'total' | undefined;
     readonly relation?: string | undefined;
     readonly key?: readonly string[] | undefined;
+    readonly iri?: string | undefined;
     readonly polarity?: 'positive' | 'negative' | undefined;
     readonly depth: number;
     readonly path?: string | undefined;
@@ -131,6 +132,7 @@
     answers?: Readonly<Record<string, AnswerTableSpec>>;
     openAnswer?: string | null;
     manifestHash?: string | null;
+    dataset?: string | null;
     sweeps?: readonly LineSweep[];
     openSweepLine?: number | null;
     selectedStopIndex?: number | null;
@@ -153,6 +155,7 @@
     answers = {},
     openAnswer = null,
     manifestHash = null,
+    dataset = null,
     sweeps = [],
     openSweepLine = null,
     selectedStopIndex = null,
@@ -389,7 +392,7 @@
     <SlipUnserved {unserved} {httpStatus} />
   {:else}
     {#if seal}
-      <SlipSeal {seal} checks={effectiveSealChecks} {manifestHash} />
+      <SlipSeal {seal} checks={effectiveSealChecks} {manifestHash} {dataset} />
     {/if}
 
     {#if !model && seal && !proposeAllowed && proposeBlockedReason}
@@ -531,7 +534,13 @@
                   </span>
                 {/if}
               </td>
-              <td>{line.label ?? line.relation ?? line.path}</td>
+              <td>
+                {#if line.iri}
+                  <a href={`?at=${encodeURIComponent(line.iri)}`}>{line.label ?? line.relation ?? line.path}</a>
+                {:else}
+                  {line.label ?? line.relation ?? line.path}
+                {/if}
+              </td>
               <SlipValueCell cell={line.cell} fold={foldForLine(idx)} />
               <td>
                 {#each lineVerbs as spec (spec.verb)}

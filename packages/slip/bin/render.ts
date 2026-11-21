@@ -171,6 +171,7 @@ export interface SlipRenderRequest {
   readonly lang?: string;
   readonly theme?: PaletteName;
   readonly row?: string | RowSelection;
+  readonly at?: string;
   readonly keys?: readonly (string | SlipLineAction)[];
   readonly reader?: ReaderCapabilityConfig | string;
   readonly activeVerb?: VerbKey;
@@ -473,12 +474,72 @@ async function renderFromReader(
     return res;
   };
 
-  const row = typeof request.row === 'object' ? request.row : undefined;
+  let row = typeof request.row === 'object' ? request.row : undefined;
+  let resolvedPin: { manifest?: string | undefined; dataset?: string | undefined } | undefined;
+  if (typeof request.at === 'string' && request.at.length > 0) {
+    const resolveRes = await fetchFn(`/${encodeURIComponent(pack)}/resolve?iri=${encodeURIComponent(request.at)}`);
+    const resolveBody = (await resolveRes.json().catch(() => null)) as {
+      error?: unknown;
+      manifest?: unknown;
+      dataset?: unknown;
+      relation?: unknown;
+      key?: unknown;
+    } | null;
+    if (!resolveRes.ok) {
+      const out = svelteRender(component, {
+        props: {
+          theme,
+          unserved: {
+            code: `http_status_${resolveRes.status}`,
+            reason_message_id: typeof resolveBody?.error === 'string' ? resolveBody.error : `http_${resolveRes.status}`
+          },
+          httpStatus: resolveRes.status
+        }
+      });
+      return { html: out.body ?? '', files };
+    }
+    let parsedKey: string[] | null = null;
+    if (typeof resolveBody?.key === 'string') {
+      const parsed: unknown = JSON.parse(resolveBody.key);
+      if (Array.isArray(parsed) && parsed.every((p) => typeof p === 'string')) parsedKey = parsed as string[];
+    } else if (Array.isArray(resolveBody?.key) && resolveBody.key.every((p) => typeof p === 'string')) {
+      parsedKey = [...(resolveBody.key as string[])];
+    }
+    if (typeof resolveBody?.relation !== 'string' || !parsedKey) {
+      const out = svelteRender(component, {
+        props: {
+          theme,
+          unserved: { code: 'http_status_409', reason_message_id: 'invalid_conclusion_resolution' },
+          httpStatus: 409
+        }
+      });
+      return { html: out.body ?? '', files };
+    }
+    row = { relation: resolveBody.relation, key: parsedKey };
+    resolvedPin = {
+      manifest: typeof resolveBody.manifest === 'string' ? resolveBody.manifest : undefined,
+      dataset: typeof resolveBody.dataset === 'string' ? resolveBody.dataset : undefined
+    };
+  }
   let props: SlipProps;
   let readerHead: HeadResponse;
   try {
     const view = await loadSlip(fetchFn, { pack, lang, row }, await rezonoStdPacks(), await rezonoMessageFiller());
     readerHead = view.head;
+    if (
+      resolvedPin &&
+      ((resolvedPin.manifest && resolvedPin.manifest !== readerHead.id) ||
+        (resolvedPin.dataset && readerHead.dataset && resolvedPin.dataset !== readerHead.dataset))
+    ) {
+      const out = svelteRender(component, {
+        props: {
+          theme,
+          unserved: { code: 'http_status_409', reason_message_id: 'dataset_pin_mismatch' },
+          httpStatus: 409
+        }
+      });
+      return { html: out.body ?? '', files };
+    }
     props = slipPropsFromView(view);
   } catch (err) {
     const refused = refusals.at(-1);
@@ -507,6 +568,7 @@ async function renderFromReader(
       seal,
       sealChecks: props.sealChecks,
       manifestHash: props.manifestHash,
+      dataset: props.dataset ?? resolvedPin?.dataset ?? null,
       conformanceRow: props.row,
       answers: props.answers,
       openAnswer: actions.openAnswer,

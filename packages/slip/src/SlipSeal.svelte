@@ -9,14 +9,19 @@
   let {
     seal,
     checks = [],
-    manifestHash = null
-  }: { seal: CartoucheSeal; checks?: readonly SealCheck[]; manifestHash?: string | null } = $props();
+    manifestHash = null,
+    dataset = null
+  }: { seal: CartoucheSeal; checks?: readonly SealCheck[]; manifestHash?: string | null; dataset?: string | null } = $props();
   const M = DATA_MARKS;
 </script>
 
 <section class="slip-seal" aria-label="Verification seal" {...{ [M.part]: 'seal', [M.trust_tier]: seal.trustTier }}>
   <div class="slip-seal-meta">
     <span class="slip-manifest-hash" {...{ [M.part]: 'manifest-hash' }}>{manifestHash ?? seal.manifestId}</span>
+    <span class="slip-seal-manifest">{seal.manifestId}</span>
+    {#if dataset}
+      <span class="slip-seal-dataset">{dataset}</span>
+    {/if}
     <span class="slip-seal-tier">{seal.trustTier}</span>
     <span class="slip-seal-role">{seal.role}</span>
   </div>

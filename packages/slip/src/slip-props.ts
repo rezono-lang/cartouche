@@ -21,6 +21,7 @@ export interface SlipPropsLine {
   readonly part?: 'total' | undefined;
   readonly relation: string;
   readonly key: readonly string[];
+  readonly iri?: string | undefined;
   readonly polarity: 'positive' | 'negative';
   readonly depth: number;
   readonly path?: string | undefined;
@@ -118,6 +119,7 @@ export interface SlipProps {
   readonly answers: Readonly<Record<string, SlipPropsAnswer>>;
   readonly sealChecks: readonly { readonly id: string; readonly status: 'green' | 'warning' | 'red' }[];
   readonly manifestHash: string;
+  readonly dataset?: string | undefined;
 }
 
 function keyParts(raw: string): string[] {
@@ -171,6 +173,7 @@ export function slipPropsFromView(view: SlipView): SlipProps {
     part: line.part,
     relation: line.relation,
     key: keyParts(line.key),
+    ...(line.iri ? { iri: line.iri } : {}),
     polarity: line.polarity,
     depth: line.depth,
     path: line.path,
@@ -244,7 +247,8 @@ export function slipPropsFromView(view: SlipView): SlipProps {
     sweeps,
     answers,
     sealChecks,
-    manifestHash: view.seal.manifestSha256
+    manifestHash: view.seal.manifestSha256,
+    ...(view.head.dataset ? { dataset: view.head.dataset } : {})
   };
 }
 
