@@ -155,15 +155,52 @@ function parseDeclarations(cssText) {
   return decls;
 }
 
+function flattenDefaultScreenCss(cssText) {
+  let out = '';
+  let i = 0;
+  const len = cssText.length;
+  while (i < len) {
+    if (cssText[i] === '@') {
+      const start = i;
+      while (i < len && cssText[i] !== '{' && cssText[i] !== ';') i++;
+      if (i >= len) break;
+      if (cssText[i] === ';') {
+        i++;
+        continue;
+      }
+      const header = cssText.slice(start, i).trim().toLowerCase();
+      const bodyStart = i + 1;
+      let depth = 1;
+      i++;
+      while (i < len && depth > 0) {
+        if (cssText[i] === '{') depth++;
+        else if (cssText[i] === '}') depth--;
+        i++;
+      }
+      const inner = cssText.slice(bodyStart, i - 1);
+      // Unwrap default screen @media blocks (e.g. @media screen, @media all); skip forced-colors, print, keyframes, etc.
+      const isDefaultScreenMedia =
+        /^@media\b/.test(header) &&
+        !/forced-colors|prefers-reduced-motion|prefers-contrast|prefers-color-scheme\s*:\s*dark|\bprint\b/.test(header);
+      if (isDefaultScreenMedia) {
+        out += '\n' + flattenDefaultScreenCss(inner) + '\n';
+      }
+    } else {
+      out += cssText[i];
+      i++;
+    }
+  }
+  return out;
+}
+
 function extractCssRules(doc) {
   const rules = [];
   for (const styleEl of doc.querySelectorAll('style')) {
     const stripped = (styleEl.textContent ?? '').replace(/\/\*[\s\S]*?\*\//g, '');
-    // Skip @media (forced-colors) or @keyframes blocks when auditing default screen contrast
-    const withoutAtBlocks = stripped.replace(/@[a-z-]+[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/gi, '');
+    const flattened = flattenDefaultScreenCss(stripped);
     const ruleRe = /([^{}]+)\{([^{}]*)\}/g;
     let m;
-    while ((m = ruleRe.exec(withoutAtBlocks)) !== null) {
+    while ((m = ruleRe.exec(flattened)) !== null) {
       const selectors = m[1]
         .split(',')
         .map((s) => s.trim())
@@ -209,13 +246,30 @@ function auditDomColorContrast(doc, theme = 'swisstopo') {
     }
   }
 
-  const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'TITLE', 'SVG', 'PATH', 'DEFS']);
+  const SKIP_TAGS = new Set([
+    'SCRIPT',
+    'STYLE',
+    'NOSCRIPT',
+    'TEMPLATE',
+    'TITLE',
+    'DEFS',
+    'PATTERN',
+    'CLIPPATH',
+    'MASK',
+    'LINEARGRADIENT',
+    'RADIALGRADIENT',
+    'METADATA',
+    'DESC'
+  ]);
+  const SVG_SURFACE_TAGS = new Set(['RECT', 'CIRCLE', 'ELLIPSE', 'POLYGON', 'PATH']);
 
-  function walk(el, inheritedFg, inheritedBg, inheritedVars, inheritedFontSize, inheritedBold) {
-    if (!el || el.nodeType !== 1) return;
-    if (SKIP_TAGS.has(el.tagName)) return;
-    if (el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true') return;
+  function parseAlpha(raw) {
+    if (raw === undefined || raw === null || raw === '') return 1;
+    const n = parseFloat(String(raw).trim());
+    return Number.isFinite(n) ? clamp01(n) : 1;
+  }
 
+  function resolveElementStyles(el, inheritedVars) {
     const vars = new Map(inheritedVars);
     const props = new Map();
     for (const rule of rules) {
@@ -233,44 +287,70 @@ function auditDomColorContrast(doc, theme = 'swisstopo') {
         else props.set(p, v);
       }
     }
+    return { vars, props };
+  }
+
+  function walk(el, inheritedFg, inheritedBg, inheritedVars, inheritedFontSize, inheritedBold, inheritedOpacity, inSvg) {
+    if (!el || el.nodeType !== 1) return;
+    const tag = el.tagName.toUpperCase();
+    if (SKIP_TAGS.has(tag)) return;
+    if (el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true') return;
+
+    const nowInSvg = inSvg || tag === 'SVG';
+    const { vars, props } = resolveElementStyles(el, inheritedVars);
 
     const display = (props.get('display') ?? '').toLowerCase();
     const visibility = (props.get('visibility') ?? '').toLowerCase();
     if (display === 'none' || visibility === 'hidden') return;
     if (/\b(sr-only|visually-hidden)\b/.test(el.getAttribute('class') ?? '')) return;
 
+    const rawOpacity = props.get('opacity') ?? el.getAttribute('opacity');
+    const opacity = inheritedOpacity * parseAlpha(rawOpacity);
+
     let fg = inheritedFg;
     let bg = inheritedBg;
     let unparseableFg = null;
 
-    if (props.has('color')) {
+    if (props.has('background-color')) {
+      const parsed = parseColor(props.get('background-color'), vars);
+      if (parsed) bg = compositeRgba([parsed[0], parsed[1], parsed[2], parsed[3] * opacity], bg);
+    } else if (props.has('background')) {
+      const tok = extractBackgroundToken(props.get('background'));
+      const parsed = tok ? parseColor(tok, vars) : null;
+      if (parsed) bg = compositeRgba([parsed[0], parsed[1], parsed[2], parsed[3] * opacity], bg);
+    }
+
+    if (nowInSvg && (tag === 'TEXT' || tag === 'TSPAN')) {
+      const rawFill = props.get('fill') ?? el.getAttribute('fill');
+      if (rawFill && rawFill.trim().toLowerCase() !== 'none') {
+        const parsed = parseColor(rawFill, vars);
+        if (parsed) fg = parsed;
+        else if (!/^(inherit|initial|unset|currentcolor)$/i.test(rawFill.trim())) {
+          unparseableFg = rawFill;
+        }
+      }
+    } else if (props.has('color')) {
       const rawFg = props.get('color');
       const parsed = parseColor(rawFg, vars);
-      if (parsed) fg = compositeRgba(parsed, bg);
+      if (parsed) fg = parsed;
       else if (rawFg && !/^(inherit|initial|unset|currentcolor)$/i.test(rawFg.trim())) {
         unparseableFg = rawFg;
       }
     }
-    if (props.has('background-color')) {
-      const parsed = parseColor(props.get('background-color'), vars);
-      if (parsed) bg = compositeRgba(parsed, bg);
-    } else if (props.has('background')) {
-      const tok = extractBackgroundToken(props.get('background'));
-      const parsed = tok ? parseColor(tok, vars) : null;
-      if (parsed) bg = compositeRgba(parsed, bg);
-    }
 
     let fontSize = inheritedFontSize;
-    if (props.has('font-size')) {
-      const fsRaw = resolveCssVars(props.get('font-size'), vars);
-      const pxMatch = fsRaw.match(/^([\d.]+)px$/i);
+    const rawFs = props.get('font-size') ?? (nowInSvg ? el.getAttribute('font-size') : null);
+    if (rawFs) {
+      const fsRaw = resolveCssVars(rawFs, vars).trim();
+      const pxMatch = fsRaw.match(/^([\d.]+)(?:px)?$/i);
       const remMatch = fsRaw.match(/^([\d.]+)rem$/i);
       if (pxMatch) fontSize = parseFloat(pxMatch[1]);
       else if (remMatch) fontSize = parseFloat(remMatch[1]) * 16;
     }
     let isBold = inheritedBold;
-    if (props.has('font-weight')) {
-      const fw = props.get('font-weight').toLowerCase();
+    const rawFw = props.get('font-weight') ?? (nowInSvg ? el.getAttribute('font-weight') : null);
+    if (rawFw) {
+      const fw = rawFw.toLowerCase();
       isBold = fw === 'bold' || fw === 'bolder' || parseInt(fw, 10) >= 700;
     }
 
@@ -280,33 +360,49 @@ function auditDomColorContrast(doc, theme = 'swisstopo') {
         violations.push({
           id: 'color-contrast',
           impact: 'serious',
-          description: `Unable to decide WCAG 2.1 AA color contrast for unparseable foreground "${unparseableFg}" on <${el.tagName.toLowerCase()}>`,
+          description: `Unable to decide WCAG 2.1 AA color contrast for unparseable foreground "${unparseableFg}" on <${tag.toLowerCase()}>`,
           nodes: [{ html: el.outerHTML.slice(0, 160) }]
         });
       } else {
+        const fillOpacity = nowInSvg ? parseAlpha(props.get('fill-opacity') ?? el.getAttribute('fill-opacity')) : 1;
+        const effectiveFg = compositeRgba([fg[0], fg[1], fg[2], fg[3] * opacity * fillOpacity], bg);
         const isLarge = fontSize >= 24 || (isBold && fontSize >= 18.66);
         const minRatio = isLarge ? 3.0 : 4.5;
-        const r = wcagContrastRatio(fg, bg);
+        const r = wcagContrastRatio(effectiveFg, bg);
         if (r < minRatio) {
           violations.push({
             id: 'color-contrast',
             impact: 'serious',
-            description: `Element <${el.tagName.toLowerCase()}> has contrast ratio ${r.toFixed(2)}:1 (requires >= ${minRatio}:1)`,
+            description: `Element <${tag.toLowerCase()}> has contrast ratio ${r.toFixed(2)}:1 (requires >= ${minRatio}:1)`,
             nodes: [{ html: el.outerHTML.slice(0, 160) }]
           });
         }
       }
     }
 
+    let childBg = bg;
     for (const child of el.children) {
-      walk(child, fg, bg, vars, fontSize, isBold);
+      const childTag = child.tagName.toUpperCase();
+      if (nowInSvg && SVG_SURFACE_TAGS.has(childTag)) {
+        const { vars: cVars, props: cProps } = resolveElementStyles(child, vars);
+        const rawFill = cProps.get('fill') ?? child.getAttribute('fill');
+        if (rawFill && !/^(none|transparent)$/i.test(rawFill.trim()) && !/url\(/i.test(rawFill)) {
+          const parsed = parseColor(rawFill, cVars);
+          if (parsed && parsed[3] > 0) {
+            const cOp = opacity * parseAlpha(cProps.get('opacity') ?? child.getAttribute('opacity'))
+              * parseAlpha(cProps.get('fill-opacity') ?? child.getAttribute('fill-opacity'));
+            childBg = compositeRgba([parsed[0], parsed[1], parsed[2], parsed[3] * cOp], childBg);
+          }
+        }
+      }
+      walk(child, fg, childBg, vars, fontSize, isBold, opacity, nowInSvg);
     }
   }
 
   const defaultFg = [0, 0, 0, 1];
   const defaultBg = [255, 255, 255, 1];
   if (doc.body) {
-    walk(doc.body, defaultFg, defaultBg, baseVars, 16, false);
+    walk(doc.body, defaultFg, defaultBg, baseVars, 16, false, 1, false);
   }
   return violations;
 }

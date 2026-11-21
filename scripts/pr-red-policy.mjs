@@ -29,6 +29,9 @@ const PROTECTED_POLICY_PATHS = new Set([
   'scripts/contract-validators.mjs',
   'scripts/decision-red-guard.mjs',
   'scripts/pr-red-policy.mjs',
+  'scripts/svelte-test-harness.mjs',
+  'scripts/leak-and-domain-check.mjs',
+  'package.json',
   '.github/workflows/red-policy.yml'
 ]);
 

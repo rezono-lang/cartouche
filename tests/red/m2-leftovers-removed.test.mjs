@@ -12,23 +12,17 @@ export const RED_META = {
   priority: 3,
   summary: '#46 point 18: the leftovers of the removed 3D stack go (relief threlteScene, the Threlte line in the launch kit), and no file under packages/ or apps/ is named with a domain word such as Statutory, which the domain check then catches',
   waits_on: [
-    'm1-contrast-reads-svg-fill',
     'm1-green-guard-covers-harness',
     'm1-mark-opens-slip',
     'm1-monge-unknown-and-state-colours',
     'm1-motion-between-epochs',
-    'm1-no-injected-seal-checks',
-    'm1-origin-signs-and-bindings-from-reader',
     'm1-proof-refs-only-as-served',
     'm1-propose-locked-until-served',
     'm1-reads-only-served-head-fields',
-    'm1-seal-checks-only-as-served',
     'm1-sheet-reads-gate-output',
     'm1-slip-all-witnesses',
-    'm1-slip-refuses-request-model',
     'm1-slip-why-not-why-unknown',
     'm1-time-valid-at-known-at',
-    'm1-viewer-no-browser-seal',
     'm1-viewer-prerendered-and-guarded',
     'm1-zero-compute-lint-fails-closed'
   ]
@@ -37,7 +31,7 @@ export const RED_META = {
 // Decision 0015 §4, issue #46 point 18. #31 removed three and @threlte, but relief-model.ts still builds a threlteScene
 // and docs/AGENT-LAUNCH-KIT.md still plans a Threlte sheet. The relief sheet's file and component are named
 // StatutoryRelief3D, a legal-domain word the domain check does not know. The law/statute/policy words that model.ts
-// maps to an origin sign go with that mapping (m1-origin-signs-and-bindings-from-reader).
+// mapped to an origin sign went with that mapping in #55 (tests/green/m1-origin-signs-and-bindings-from-reader).
 
 const ROOT = process.cwd();
 

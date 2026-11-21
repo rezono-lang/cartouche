@@ -20,10 +20,10 @@
  *     asked per relation until one has exactly one row; the reader should answer "the row this role opens on" itself.
  *     Build-time only here.
  *  2. Pairing witnesses & calculation witnesses with lines -> Target: Rezono reader/gate (`/ask/grounds` pre-joined lines); build-time only here.
- *  3. Binding rule variables to lines via body atom positions -> Target: Rezono publisher/gate (pre-bound sentence segments with line indices); build-time only here.
+ *  3. Binding rule variables to lines via body atom positions -> Target: Rezono publisher/gate; build-time only here (Decision 0014: value-based fallback removed).
  *  4. Placing aggregate totals before their contributors -> Target: Rezono reader/gate (canonical grounds order with `part: "total"` and `depth`); build-time only here.
  *  5. Matching calculation steps to premise rows -> Target: Rezono reader/gate (pre-linked calc steps in display order); build-time only here.
- *  6. Choosing origin signs -> Target: Rezono publisher (`packs/std-view/key.yaml` sign attached to each published row); build-time only here.
+ *  6. Choosing origin signs -> Target: Rezono publisher (`packs/std-view/key.yaml` sign attached to each published row); Decision 0014: guessing from `source.kind` removed.
  *  7. Parsing `known:` values and keys -> Target: Rezono reader/gate (structured `{ state, display, reason }` opaque cells); build-time only here.
  *  8. Resolving a sweep's table through kind inheritance -> Target: Rezono reader/gate (bound target relation/slot on `/sweeps`); build-time only here.
  *  9. Normalising stop statuses and turns -> Dropped, not moved: the reader already serves the canonical values
@@ -333,26 +333,6 @@ function formatLineValue(
 	return { state: 'known', value: keyParts.join(sep), reason: '' };
 }
 
-function originSignForSourceKind(
-	catalog: readonly SignInfo[],
-	kind: string | undefined,
-): SignInfo | undefined {
-	const k = (kind ?? '').trim().toLowerCase();
-	if (k === 'decision' || k === 'law' || k === 'statute' || k === 'policy') {
-		return signByName(catalog, 'origin_decision');
-	}
-	if (k === 'vendor' || k === 'manual' || k === 'spec') {
-		return signByName(catalog, 'origin_vendor');
-	}
-	if (k === 'design' || k === 'synthetic' || k === 'schema' || k === 'config') {
-		return signByName(catalog, 'origin_design');
-	}
-	if (k === 'observation' || k === 'measurement' || k === 'fact') {
-		return signByName(catalog, 'origin_observation');
-	}
-	return undefined;
-}
-
 function formatSourceCitation(name: string, position?: string): string {
 	const base = name.startsWith('@') ? name : `@${name}`;
 	if (!position) return base;
@@ -375,9 +355,10 @@ function formatOrigin(
 	if (node.sources && node.sources.length > 0) {
 		const first = node.sources[0]!;
 		if (forProofTree) {
+			// Cartouche (Decision 0014): never guess origin signs from source.kind; use only an explicit published sign.
 			return {
 				origin: formatSourceCitation(first.name, first.position),
-				originSign: originSignForSourceKind(catalog, first.kind),
+				...(first.sign ? { originSign: signByName(catalog, first.sign) } : {}),
 			};
 		}
 		return { origin: first.position ? `${first.name}:${first.position}` : first.name };
@@ -560,19 +541,8 @@ export function buildAnswerTable(
 			for (const binding of witness.bindings ?? []) {
 				const name = stripQuestionPrefix(binding.variable);
 				args[name] = binding.value;
-				let target = varToRow.get(name);
-				if (target === undefined) {
-					for (const s of directSteps) {
-						const parts = parseKey(s.premise.key);
-						if (parts.includes(binding.value)) {
-							const idx = nodeIndexById.get(rowId(s.premise.relation, s.premise.key));
-							if (idx !== undefined) {
-								target = idx;
-								break;
-							}
-						}
-					}
-				}
+				// Cartouche (Decision 0014): link bindings by rule premise position only, never by value matching.
+				const target = varToRow.get(name);
 				bindings.push(
 					target !== undefined
 						? { variable: name, value: binding.value, line: target }

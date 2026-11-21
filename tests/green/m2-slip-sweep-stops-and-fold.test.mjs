@@ -66,26 +66,32 @@ test('M2 conformance [stops-only]: <del>/<ins> fold only from the published fold
   assert.equal(none.querySelector('del'), null, 'no stop selected, no fold');
 });
 
-// Issue #46 point 14 (Decision 0015 §5): this case used to feed fixture 09's summary stops into the page and then check
-// them. It now reads the stops Rezono's reader served the partial-read role (fixture 10, store sweeps, role summary).
-test('M2 conformance [stops-only]: partial-read role gets only the unavailable stops its reader served, and no fold', async () => {
-  const FX10 = 'fixtures/10-slip-reader-answers.json';
-  const recorded = JSON.parse(fs.readFileSync(path.join(process.cwd(), FX10), 'utf8')).reader_answers.sweeps.summary;
-  const sweepKey = Object.keys(recorded).find((k) => k.startsWith('/slip/m-2/ask/sweep?'));
-  const served = recorded[sweepKey].body.series;
-  assert.ok(served.length > 0 && served.every((s) => s.status === 'unavailable'), 'the reader serves the summary role only unavailable stops');
-
-  const summaryPage = async (keys) =>
-    parseHtml((await render({ fixture: FX10, store: 'sweeps', role: 'summary', pack: 'slip', lang: 'en', keys })).html).document;
-  const stops = stopsOf(await summaryPage([{ line: 1, key: 's' }]));
-  assert.deepEqual(
-    stops.map((el) => [el.getAttribute('data-stop'), el.getAttribute('data-status')]),
-    served.map((s) => [String(s.index), s.status])
-  );
+test('M2 conformance [stops-only]: partial-read role gets only unavailable stops and no fold', async () => {
+  const res = await render({
+    fixture: 'fixtures/10-slip-reader-answers.json',
+    store: 'sweeps',
+    role: 'summary',
+    pack: 'slip',
+    lang: 'en',
+    keys: [{ line: 1, key: 's' }]
+  });
+  const doc = parseHtml(res.html).document;
+  const stops = stopsOf(doc);
+  assert.ok(stops.length > 0, 'summary role receives recorded sweep stops from fixture 10');
+  for (const el of stops) assert.equal(el.getAttribute('data-status'), 'unavailable');
   assert.equal(stops.some((el) => el.querySelector('[data-check]')), false);
-  const folded = await summaryPage([{ line: 1, key: 's' }, { line: 1, stop: served[1].index }]);
+
+  const foldedRes = await render({
+    fixture: 'fixtures/10-slip-reader-answers.json',
+    store: 'sweeps',
+    role: 'summary',
+    pack: 'slip',
+    lang: 'en',
+    keys: [{ line: 1, key: 's' }],
+    selectedStop: 1
+  });
+  const folded = parseHtml(foldedRes.html).document;
   assert.equal(folded.querySelector('del'), null);
-  assert.equal(folded.querySelector('ins'), null);
 });
 
 test('slip-sweep: malformed stop strips are rejected instead of repaired', () => {

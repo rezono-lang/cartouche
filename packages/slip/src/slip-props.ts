@@ -119,11 +119,6 @@ function keyParts(raw: string): string[] {
   return parsed as string[];
 }
 
-/** A reference to the row that proves a line, in the manifest the reader served (Cartouche-local naming). */
-export function rowProofRef(manifestId: string, relation: string, key: string, path?: string): string {
-  return `${manifestId}:${relation}:${key}${path === undefined ? '' : `#${path}`}`;
-}
-
 // The role reads every row of the relation (`full` on its snapshot in the head), so a row it does not find is absent.
 function completenessRef(head: HeadResponse, relation: string): string {
   const snapshot = head.snapshots.find((s) => s.relation === relation);
@@ -159,10 +154,9 @@ export function slipPropsFromView(view: SlipView): SlipProps {
     return sign.name;
   };
 
+  // Decision 0014: use the reader-published manifest ID (never fabricate a synthetic rowProofRef).
   const lineCell = (line: SlipLine): RawCellInput =>
-    cellOf(line.state, line.value, line.reason, rowProofRef(view.manifestId, line.relation, line.key, line.path), () =>
-      completenessRef(view.head, line.relation)
-    );
+    cellOf(line.state, line.value, line.reason, view.manifestId, () => completenessRef(view.head, line.relation));
 
   const lines: SlipPropsLine[] = view.lines.map((line) => ({
     part: line.part,
@@ -227,15 +221,13 @@ export function slipPropsFromView(view: SlipView): SlipProps {
   const answers: Record<string, SlipPropsAnswer> = {};
   for (const [id, table] of Object.entries(view.answersByKey)) {
     const verb = id.slice(id.indexOf(':') + 1);
-    answers[id] = answerOf(table, verb, view.manifestId, drawable);
+    answers[id] = answerOf(table, verb, drawable);
   }
   if (view.supposedSign) drawable(view.supposedSign);
   drawable(view.seal.sealSign);
 
-  const sealChecks: { id: string; status: 'green' | 'warning' | 'red' }[] = [
-    // The reader served this page, and it serves no object whose hash fails (Rezono decisions/viewer-slip.md, The seal).
-    { id: 'reader-hashes', status: 'green' }
-  ];
+  // Decision 0014: emit only checks actually published by the reader (never hard-code reader-hashes: green).
+  const sealChecks: { id: string; status: 'green' | 'warning' | 'red' }[] = [];
   if (view.seal.witnessCheck) sealChecks.push({ id: 'publisher-record', status: view.seal.witnessCheck });
 
   return {
@@ -250,7 +242,6 @@ export function slipPropsFromView(view: SlipView): SlipProps {
 function answerOf(
   table: AnswerTable,
   verb: string,
-  manifestId: string,
   drawable: (sign: SignInfo | undefined) => string | undefined
 ): SlipPropsAnswer {
   const notes = [table.cutMessage, table.moreLabel].filter((text): text is string => typeof text === 'string');
@@ -275,9 +266,6 @@ function answerOf(
       ...(row.source !== undefined ? { source: row.source } : {}),
       ...(row.state !== undefined ? { state: row.state } : {}),
       ...(row.reason !== undefined ? { reason: row.reason } : {}),
-      ...(row.relation !== undefined && row.key !== undefined
-        ? { proof_ref: rowProofRef(manifestId, row.relation, row.key) }
-        : {}),
       cells: row.cells.map((cell) => ({ text: cell.text, sign: drawable(cell.sign) }))
     })),
     note: notes.length > 0 ? notes.join(' ') : undefined

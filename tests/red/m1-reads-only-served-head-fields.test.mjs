@@ -11,7 +11,7 @@ export const RED_META = {
   milestone: 'M1',
   decision: 'decisions/0015-quality-round-3.md',
   priority: 2,
-  summary: 'N7 (#46 point 4): the slip reads no seal field Rezono does not serve; a guessed trust_tier or seal on /slip/head leaves the page byte-identical, and can_propose, rights or provisional_count never lift propose_locked_not_served, until rezono-lang/rezono#1451 names them',
+  summary: 'N7 (#46 point 4): the slip reads no seal field Rezono does not serve; a guessed trust_tier or seal on /slip/head leaves the page byte-identical, and can_propose, rights or provisional_count never lift propose_locked_no_reader_grant, until rezono-lang/rezono#1451 names them',
   waits_on: [
     'm1-propose-locked-until-served'
   ]
@@ -40,7 +40,7 @@ const GUESSED_TIER = [
 
 // Fields that would grant the right to propose. On main the reader page shows no Propose state at all, so these are
 // held through the statement m1-propose-locked-until-served adds: with any of them on the head, the page still says
-// propose_locked_not_served.
+// propose_locked_no_reader_grant.
 const GUESSED_RIGHT = [{ can_propose: true }, { rights: { can_propose: true } }, { seal: { can_propose: true } }, { provisional_count: 0 }];
 
 const digest = (html) => crypto.createHash('sha256').update(html).digest('hex');
@@ -86,8 +86,8 @@ for (const extra of GUESSED_RIGHT) {
     try {
       for (const b of doc.querySelectorAll(`button[${M.verb}="propose"]`)) assert.equal(b.hasAttribute('disabled'), true);
       assert.ok(
-        doc.querySelector(`[${M.reason}="propose_locked_not_served"]`),
-        `with ${JSON.stringify(extra)} on /slip/head the page does not say propose_locked_not_served: it never says it ` +
+        doc.querySelector(`[${M.reason}="propose_locked_no_reader_grant"]`),
+        `with ${JSON.stringify(extra)} on /slip/head the page does not say propose_locked_no_reader_grant: it never says it ` +
           '(m1-propose-locked-until-served), or it reads a right Rezono does not serve (#46 point 4)'
       );
     } finally {

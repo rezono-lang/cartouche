@@ -28,19 +28,18 @@ test('Role-safe zero-leak projection: tenant_a contains zero traces of restricte
   }
 });
 
-test('Role-safe zero-leak projection (complete -> restricted): projecting complete fixture 01 to tenant_a leaves zero IDs, labels, placeholders, or count leaks in scene, SVG, and DOM', async () => {
+test('Role-safe zero-leak projection (complete -> restricted): published tenant_a fixture leaves zero complete-only IDs, labels, placeholders, or count leaks in scene, SVG, and DOM', async () => {
   const complete = JSON.parse(fs.readFileSync(path.join(ROOT, 'fixtures', '01-platform-drift.json'), 'utf8'));
-  const restrictedIds = new Set(['svc-vault', 'svc-backup', 'svc-edge-04']);
-  const restrictedTokens = ['svc-vault', 'svc-backup', 'svc-edge-04', 'Vault', 'Backup Store', 'Edge-04', 'e-drift-vault', 'e-absent-backup'];
-
-  // Simulate Rezono edge/gate role projection from complete publication -> tenant_a
-  const projected = {
-    ...complete,
-    manifest: { ...complete.manifest, role: 'tenant_a' },
-    horizon: { complete: false, reason: 'not_read_in_full' },
-    nodes: complete.nodes.filter((n) => !restrictedIds.has(n.id)),
-    edges: complete.edges.filter((e) => !restrictedIds.has(e.from) && !restrictedIds.has(e.to))
-  };
+  const projected = JSON.parse(fs.readFileSync(path.join(ROOT, 'fixtures', '02-platform-tenant-a.json'), 'utf8'));
+  const visibleIds = new Set(projected.nodes.map((n) => n.id));
+  const restrictedIds = new Set(complete.nodes.map((n) => n.id).filter((id) => !visibleIds.has(id)));
+  assert.ok(restrictedIds.size > 0, 'complete fixture must contain nodes absent from tenant_a publication');
+  const restrictedTokens = [
+    ...restrictedIds,
+    ...(projected.forbidden_leaks_check ?? []),
+    'e-drift-vault',
+    'e-absent-backup'
+  ];
 
   const scene = compileFlowSplitScene(projected);
   const sceneJson = canonicalJson(scene);

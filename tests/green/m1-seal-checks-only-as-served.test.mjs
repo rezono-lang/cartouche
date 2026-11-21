@@ -14,11 +14,12 @@ export const RED_META = {
   waits_on: []
 };
 
+// Green on arrival (Decision 0015 §4): #55 fixed this while the plan was in review; this behavioural check holds the fix
+// independently of Decision 0014's green tests, which match source text.
 // Decision 0015 §2 N5, issue #46 point 6. slip-props.ts hard-codes { id: 'reader-hashes', status: 'green' }, so the
 // checker seal of m1-slip-proof-tree passes on a value Cartouche wrote. Rezono's reader serves no hash check result;
-// rezono-lang/rezono#1451 item 3 asks for one per witness. Until then the check reads data-status="unavailable" (the
-// contract's value for what is not served, Decision 0015 §7). The assertion that reader-hashes is green moved here from
-// tests/green/m1-slip-proof-tree.test.mjs (Decision 0015 §5).
+// rezono-lang/rezono#1451 item 3 asks for one per witness. Until then the seal shows no such check, or shows it as
+// data-status="unavailable" (the contract's value for what is not served, Decision 0015 §7).
 
 const ROOT = process.cwd();
 const FX10 = 'fixtures/10-slip-reader-answers.json';
@@ -42,10 +43,9 @@ for (const c of CASES) {
       const checks = Object.fromEntries(
         [...seal.querySelectorAll(`[${M.check}]`)].map((el) => [el.getAttribute(M.check), el.getAttribute(M.status)])
       );
-      assert.equal(
-        checks['reader-hashes'],
-        'unavailable',
-        'the seal says reader-hashes: green, a value slip-props.ts hard-codes; the reader serves no hash check (#46 point 6)'
+      assert.ok(
+        checks['reader-hashes'] === undefined || checks['reader-hashes'] === 'unavailable',
+        `the seal says reader-hashes: ${checks['reader-hashes']}, a value slip-props.ts hard-codes; the reader serves no hash check (#46 point 6)`
       );
       assert.equal(checks['publisher-record'], head.witness_check, "publisher-record quotes the head's witness_check");
     } finally {

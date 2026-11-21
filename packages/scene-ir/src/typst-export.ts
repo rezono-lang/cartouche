@@ -194,7 +194,7 @@ function sceneBody(scene: CartoucheScene, options: TypstExportOptions): string {
       .map((v) => typstString(v))
       .join(', ')})`
   );
-  if (seal.trustTier !== 'sealed' || !seal.canPropose) {
+  if (seal.trustTier !== 'sealed' || seal.witnessCheck !== 'green') {
     out.push(`#banner(${typstString(`${seal.trustTier}: unsealed, Propose and approval are locked`)})`);
   }
   if (!scene.horizon.complete) {

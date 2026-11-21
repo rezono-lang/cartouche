@@ -6,7 +6,6 @@ import { parse } from 'svelte/compiler';
 import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
-import { viewerBundleModules } from '../support/viewer-bundle.mjs';
 
 export const RED_META = {
   milestone: 'M1',
@@ -16,10 +15,10 @@ export const RED_META = {
   waits_on: []
 };
 
-// Decision 0015 §2 N1, issue #46 point 1. apps/atlas-viewer/src/App.svelte builds a seal with DeltaStore from the
-// hand-written fixture 09, which gives canPropose = true, and passes it straight to Slip.svelte. The guard in render()
-// (caller-injected seals are refused) never runs, and Slip unlocks Propose. Fix: mount the slip HTML that render()
-// produces from fixture 10 at build time, and give the page no seal prop.
+// Decision 0015 §2 N1, issue #46 point 1. App.svelte built a seal with DeltaStore from the hand-written fixture 09 and
+// passed it to Slip.svelte, which unlocked Propose. #55 mounts the slip that render() builds from fixture 10 at build
+// time. This test checks that by behaviour (the page and the Svelte AST), independently of the green test
+// m1-viewer-no-browser-seal of Decision 0014. DeltaStore in the browser bundle is m1-viewer-prerendered-and-guarded.
 
 const ROOT = process.cwd();
 const APP = path.join(ROOT, 'apps', 'atlas-viewer', 'src', 'App.svelte');
@@ -31,17 +30,7 @@ function sealChecks(doc) {
   return seal ? [...seal.querySelectorAll(`[${M.check}]`)].map((el) => [el.getAttribute(M.check), el.getAttribute(M.status)]) : null;
 }
 
-test('M1 [viewer-no-browser-seal]: the browser bundle holds no DeltaStore, so nothing in the page builds a seal', async () => {
-  const modules = await viewerBundleModules();
-  assert.ok(modules.includes('apps/atlas-viewer/src/main.ts'), 'the build graph was read');
-  assert.equal(
-    modules.includes('packages/reader-core/src/delta-store.ts'),
-    false,
-    'the viewer bundle ships packages/reader-core/src/delta-store.ts: the browser builds a seal (and canPropose) itself (#46 point 1)'
-  );
-});
-
-test('M1 [viewer-no-browser-seal]: the viewer slip is the page render() builds from the recorded reader answers', async () => {
+test('M1 [viewer-slip-built-from-reader]: the viewer slip is the page render() builds from the recorded reader answers', async () => {
   const fx = JSON.parse(fs.readFileSync(path.join(ROOT, FX10), 'utf8'));
   const head = fx.reader_answers.main.reader['/slip/head'].body;
   const built = await render({ fixture: FX10, store: 'main', role: 'reader', pack: 'slip', lang: 'en' });
@@ -67,7 +56,7 @@ test('M1 [viewer-no-browser-seal]: the viewer slip is the page render() builds f
   }
 });
 
-test('M1 [viewer-no-browser-seal]: App.svelte passes Slip no seal prop', () => {
+test('M1 [viewer-slip-built-from-reader]: App.svelte passes Slip no seal prop', () => {
   const ast = parse(fs.readFileSync(APP, 'utf8'), { modern: true });
   const offenders = [];
   (function walk(node) {

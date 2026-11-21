@@ -11,15 +11,13 @@ export const RED_META = {
   decision: 'decisions/0015-quality-round-3.md',
   priority: 1,
   summary: 'N2 (#46 point 2): the viewer bundle compiles and lays out nothing (no scene compiler, layout model, Typst export or fixture in the browser), and the zero-compute lint and the domain check cover apps/',
-  waits_on: [
-    'm1-viewer-no-browser-seal'
-  ]
+  waits_on: []
 };
 
-// Decision 0015 §2 N2, issue #46 point 2. App.svelte imports the scene compilers, the layout models, the Typst export and
-// the hand-written fixtures 01-09, so the browser compiles and lays out every sheet. apps/ is outside the zero-compute
-// lint (scripts/zero-compute-lint.mjs scans packages/ only) and outside the domain check (which checks packages/ only).
-// Fix: prerender the sheets at build time and extend both guards to apps/. Waits on N1: both rewrite App.svelte.
+// Decision 0015 §2 N2, issue #46 point 2. App.svelte imports the scene compilers, the layout models, DeltaStore and the
+// hand-written fixtures, so the browser compiles and lays out every sheet. #55 prerendered the slip and the Typst view
+// and extended the zero-compute lint and the domain check to apps/ (the last two tests below now pass and hold that);
+// the six sheets are still compiled in the browser. Fix: prerender the sheets at build time too.
 
 const ROOT = process.cwd();
 
@@ -28,7 +26,8 @@ function compilesOrLaysOut(rel) {
   if (rel.startsWith('packages/scene-ir/src/')) return rel !== 'packages/scene-ir/src/types.ts';
   if (rel === 'packages/reader-core/src/delta-store.ts') return true;
   if (/^packages\/atlas\/src\/[a-z-]+-(model|layout)\.ts$/.test(rel)) return true;
-  return rel.startsWith('fixtures/');
+  // The golden fixtures (fixtures/NN-*.json) are build input; prerendered build output (fixtures/viewer/) may ship.
+  return /^fixtures\/[^/]+\.json$/.test(rel);
 }
 
 function tempProject(files) {

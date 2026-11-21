@@ -129,10 +129,10 @@ test('M4 [zero-client-decision-boundary]: DeltaStore removes client self-sealing
     () => store.ingestSealedSnapshot({ ...fx.manifest, trust_tier: 'provisional_engine' }, fx.sealed_rows),
     /trust_tier="sealed"/
   );
-  store.ingestSealedSnapshot({ ...fx.manifest, id: 'sha256:round-m5', epoch: 43, trust_tier: 'sealed' }, fx.sealed_rows);
+  store.ingestSealedSnapshot({ ...fx.manifest, id: 'sha256:round-m5', epoch: 43, trust_tier: 'sealed', can_propose: true }, fx.sealed_rows);
   assert.equal(store.seal().trustTier, 'sealed');
   assert.equal(store.seal().provisionalCount, 0);
-  // Whether Propose unlocks is the reader's to serve: tests/red/m1-propose-locked-until-served (Decision 0015 §5).
+  assert.equal(store.seal().canPropose, true);
 });
 
 test('M4 [zero-client-decision-boundary]: renderFromReader never hard-codes trust tier sealed when the reader /head serves none', async () => {

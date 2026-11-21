@@ -10,6 +10,8 @@ export const RED_META = {
   waits_on: []
 };
 
+// Green on arrival (Decision 0015 §4): #53 fixed this while the plan was in review; this behavioural check holds the fix
+// independently of Decision 0014's green tests, which match source text.
 // Decision 0015 §2 N6, issue #46 point 17. The contrast checker of #44 (auditDomColorContrast in
 // scripts/svelte-test-harness.mjs) skips every <svg> subtree, reads only CSS color and background, drops every @ block
 // and ignores opacity. Most sheet text is SVG text coloured by fill (flow-split-svg.ts draws its labels that way), so

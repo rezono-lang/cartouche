@@ -71,12 +71,12 @@ test('M1: Sheet 03 renders board lanes, separate unknown band, round chronometer
   assert.deepEqual(violations, [], JSON.stringify(violations, null, 2));
 });
 
-// Whether a sealed, green round unlocks [P] and approve is the reader's to serve; that expectation moved, reversed, to
-// tests/red/m1-propose-locked-until-served (Decision 0015 §5). A red witness check keeps both locked.
-test('M1: Sheet 03 draws the sealed round and locks [P] when the witness check is red', async () => {
-  const sealed = { ...fixture, live_provisional_delta: null };
+test('M1: Sheet 03 unlocks [P] and approve only when sealed, green, and reader grants can_propose', async () => {
+  const sealed = { ...fixture, manifest: { ...fixture.manifest, can_propose: true }, live_provisional_delta: null };
   const { html, window: win, document: doc } = await mount(sealed);
   try {
+    assert.equal(doc.querySelector(PROPOSE).hasAttribute('disabled'), false);
+    assert.equal(doc.querySelector('form button[type="submit"]').hasAttribute('disabled'), false);
     assert.equal(doc.querySelector(ROOT).getAttribute(M.trust_tier), 'sealed');
     assert.equal(roundRows(doc).length, 4);
   } finally {

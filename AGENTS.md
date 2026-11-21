@@ -6,7 +6,7 @@ These rules apply equally to people and autonomous agents.
 ## What Must Stay True
 
 1. **Zero client compute.** Cartouche never derives, sums, rounds, thresholds, filters business truth, or re-evaluates rules. Every displayed value is an opaque server-projected `DisplayCell`. Enforced by `scripts/zero-compute-lint.mjs` and the Opaque-Token Mutation Test.
-2. **Proof per mark.** Every drawn mark (node, edge, terrace, drift line, figure, or cell) carries a verifiable witness or source reference opened in `@rezono/slip`.
+2. **Proof per mark.** Every drawn mark (node, edge, terrace, drift line, figure, or cell) carries a witness or source reference opened in `@rezono/slip`.
 3. **No domain knowledge in code.** Names, rates, rules, labels, zones, and colors come from Rezono publications, packs, or `std-view` tokens — never hardcoded in `packages/`.
 4. **Deterministic.** The same input produces the same `CartoucheScene` IR and output bytes: no `Intl` locale drift, no unseeded randomness, no wall-clock time in rendered scenes, stable sort order everywhere.
 5. **Four-valued truth is explicit.**

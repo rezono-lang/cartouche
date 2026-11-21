@@ -24,6 +24,7 @@ export interface PublishedRippleEdgeInput extends CausalRippleEdgeInput {
 }
 
 export interface RippleFixtureWithEdges extends Omit<CausalRippleFixtureInput, 'edges'> {
+  readonly layout_mode?: RippleLayoutMode;
   readonly edges?: readonly PublishedRippleEdgeInput[];
 }
 
@@ -100,6 +101,7 @@ export interface CausalRippleModel {
 export interface CausalRippleRenderOptions {
   readonly theme?: PaletteName;
   readonly ariaLabel?: string;
+  readonly mode?: RippleLayoutMode;
 }
 
 export const DISTANCE_COLUMN_THRESHOLD = 12;
@@ -184,9 +186,9 @@ export function buildCausalRippleModel(
   }
 
   const dependentTotal = typeof fixture.dependent_count === 'number' ? fixture.dependent_count : fixture.nodes.length;
-  const mode: RippleLayoutMode = dependentTotal > DISTANCE_COLUMN_THRESHOLD ? 'distance-columns' : 'radial-rings';
+  const mode: RippleLayoutMode = options.mode ?? fixture.layout_mode ?? 'distance-columns';
 
-  // Group nodes by hop in ascending structural hop order while preserving exact server order within each hop.
+  // Group nodes by hop preserving exact server-published hop and row order (Decision 0001).
   const hopBuckets = new Map<number, CausalRippleNodeInput[]>();
   const hopOrder: number[] = [];
   for (const n of fixture.nodes) {
@@ -198,8 +200,6 @@ export function buildCausalRippleModel(
     }
     bucket.push(n);
   }
-  // @cartouche-geometry-sort
-  hopOrder.sort((a, b) => a - b);
 
   let maxRows = 1;
   for (const bucket of hopBuckets.values()) {

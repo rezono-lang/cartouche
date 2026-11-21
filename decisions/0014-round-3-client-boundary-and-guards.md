@@ -9,7 +9,7 @@ created: 2026-11-21
 
 # Decision 0014: Quality Review Round 3 — Client Boundary, Honesty & Guards (Issue #46)
 
-> Superseded by Decision 0015 (`decisions/0015-quality-round-3.md`), which replaces the three red tests below with behavioural tests and maps each assertion (0015 §0).
+> Superseded by Decision 0015 (`decisions/0015-quality-round-3.md`). It checks every point below with a behavioural test and replaces the remaining red test, `m1-monge-and-leftovers-honesty` (0015 §0).
 
 ## Context
 

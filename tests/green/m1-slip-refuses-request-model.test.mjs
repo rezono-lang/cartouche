@@ -12,6 +12,8 @@ export const RED_META = {
   waits_on: []
 };
 
+// Green on arrival (Decision 0015 §4): #55 fixed this while the plan was in review; this behavioural check holds the fix
+// independently of Decision 0014's green tests, which match source text.
 // Decision 0015 §2 N3, issue #46 point 3. render() refuses `seal` and `sealChecks` from the caller (Decision 0011), but
 // `request.model` is used as given, and Slip.svelte trusts its proposeAllowed. A caller can therefore unlock Propose.
 // Fix: refuse `model` the same way as `seal`.

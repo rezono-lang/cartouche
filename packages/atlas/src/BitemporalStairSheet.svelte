@@ -177,8 +177,9 @@
               <g class="zlift">
                 <path
                   d={`M0 ${-TILE_HALF_H} L${TILE_HALF_W} 0 L0 ${TILE_HALF_H} L${-TILE_HALF_W} 0 Z`}
-                  fill={c.state === 'changed' ? 'var(--c-caution)' : 'var(--c-paper-elev)'}
-                  stroke="var(--c-ink)"
+                  fill="var(--c-paper-elev)"
+                  stroke={c.state === 'changed' ? 'var(--c-caution)' : 'var(--c-ink)'}
+                  stroke-width={c.state === 'changed' ? '2' : undefined}
                   stroke-dasharray={c.state === 'changed' ? '6 2' : undefined}
                 />
                 <text x="0" y="4" text-anchor="middle" font-size="11" fill="var(--c-ink)">
@@ -220,7 +221,6 @@
 
 <style>
   .zs { transform: scaleY(var(--z)); }
-  .zlift { transform: translateY(calc(var(--z) * -90px)); }
   .hollow { background: transparent; border: 1px dashed currentColor; }
   .hatched { background: repeating-linear-gradient(45deg, transparent 0 4px, var(--c-hatch) 4px 5px); }
   .invalid { border: 2px dashed var(--c-violated); }

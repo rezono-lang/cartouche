@@ -12,15 +12,15 @@ import path from 'node:path';
 import { parseSync } from 'oxc-parser';
 
 const OPAQUE_NAME_RE =
-  /^(display|previousDisplay|previous_display|cell|rawCell|amount|value|val|figure|rate|cap|income|assets|total|subtotal|sum|score|cost|price|threshold|tariff|subsidy|benefit|balance|salary|quota|metric|amount_cell|income_cell|assets_cell|ratio_display|outcome_display|cliff_distance_display|z_norm|bar_units|dependent_count)$/i;
+  /^(display|previousDisplay|previous_display|cell|rawCell|amount|value|val|figure|rate|cap|income|assets|total|subtotal|sum|score|cost|price|threshold|tariff|subsidy|benefit|balance|salary|quota|metric|amount_cell|income_cell|assets_cell|ratio_display|outcome_display|cliff_distance_display|z_norm|bar_units|dependent_count|dependentTotal)$/i;
 
 const DOMAIN_SORT_PROP_RE =
-  /^(display|previousDisplay|value|val|amount|rate|score|total|subtotal|sum|date|time|timestamp|priority|rank|income|assets|cost|price|count|status|state|eur|cents|percentage|ratio|z_norm|bar_units|dependent_count)$/i;
+  /^(display|previousDisplay|value|val|amount|rate|score|total|subtotal|sum|date|time|timestamp|priority|rank|income|assets|cost|price|count|status|state|eur|cents|percentage|ratio|z_norm|bar_units|dependent_count|dependentTotal)$/i;
 
-const GEOMETRY_SORT_PROPS = new Set(['x', 'y', 'ix', 'iy', 'w', 'h', 'hop', 'depth', 'index', 'line', 'column', 'row']);
+const GEOMETRY_SORT_PROPS = new Set(['x', 'y', 'ix', 'iy', 'w', 'h', 'depth', 'index', 'line', 'column', 'row']);
 
 const CSS_CALC_DOMAIN_VAR_RE =
-  /--(amount|value|val|rate|total|subtotal|sum|score|cost|price|income|assets|threshold|ratio|display|bar[-_]units|dependent[-_]count|count|metric)\b/i;
+  /--(amount|value|val|rate|total|subtotal|sum|score|cost|price|income|assets|threshold|ratio|display|bar[-_]units|dependent[-_]count|count|metric|z|z[-_]norm)\b/i;
 
 const ZERO_FALLBACK_STR_RE = /^[€$£]?\s*0([.,]0+)?\s*%?$/;
 
@@ -55,11 +55,30 @@ function getPropName(member) {
   return null;
 }
 
-function touchesOpaqueName(node) {
+function isDirectOpaqueScalarInit(node, aliases) {
+  if (!node) return false;
+  if (node.type === 'Identifier') return OPAQUE_NAME_RE.test(node.name) || Boolean(aliases?.has(node.name));
+  if (node.type === 'MemberExpression') {
+    const p = getPropName(node);
+    return Boolean(p && OPAQUE_NAME_RE.test(p));
+  }
+  if (node.type === 'ConditionalExpression') {
+    return isDirectOpaqueScalarInit(node.consequent, aliases) || isDirectOpaqueScalarInit(node.alternate, aliases);
+  }
+  if (node.type === 'LogicalExpression') {
+    return isDirectOpaqueScalarInit(node.left, aliases) || isDirectOpaqueScalarInit(node.right, aliases);
+  }
+  if (node.type === 'TSAsExpression' || node.type === 'ParenthesizedExpression') {
+    return isDirectOpaqueScalarInit(node.expression, aliases);
+  }
+  return false;
+}
+
+function touchesOpaqueName(node, aliases = null) {
   let found = false;
   walkAst(node, (n) => {
     if (found) return;
-    if (n.type === 'Identifier' && OPAQUE_NAME_RE.test(n.name)) found = true;
+    if (n.type === 'Identifier' && (OPAQUE_NAME_RE.test(n.name) || aliases?.has(n.name))) found = true;
     if (n.type === 'MemberExpression') {
       const p = getPropName(n);
       if (p && OPAQUE_NAME_RE.test(p)) found = true;
@@ -229,6 +248,14 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
     });
 
     const parsed = parseSync(isSvelte ? `${filePath}.ts` : filePath, code);
+    const opaqueAliases = new Set();
+    walkAst(parsed.program, (node) => {
+      if (node.type === 'VariableDeclarator' && node.id?.type === 'Identifier' && node.init) {
+        if (isDirectOpaqueScalarInit(node.init, opaqueAliases)) {
+          opaqueAliases.add(node.id.name);
+        }
+      }
+    });
     const report = (node, ruleCode, message) => {
       violations.push({
         code: ruleCode,
@@ -373,18 +400,18 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
 
       // ZC04 & ZC07: BinaryExpression (arithmetic + threshold compare on opaque/domain identifiers)
       if (node.type === 'BinaryExpression') {
-        if (ARITH_BIN_OPS.has(node.operator) && (touchesOpaqueName(node.left) || touchesOpaqueName(node.right))) {
+        if (ARITH_BIN_OPS.has(node.operator) && (touchesOpaqueName(node.left, opaqueAliases) || touchesOpaqueName(node.right, opaqueAliases))) {
           report(node, 'ZC04', `Arithmetic "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
         }
         if (
           node.operator === '+' &&
           !isStringExpr(node.left) &&
           !isStringExpr(node.right) &&
-          (touchesOpaqueName(node.left) || touchesOpaqueName(node.right))
+          (touchesOpaqueName(node.left, opaqueAliases) || touchesOpaqueName(node.right, opaqueAliases))
         ) {
           report(node, 'ZC04', `Addition "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
         }
-        if (REL_OPS.has(node.operator) && (touchesOpaqueName(node.left) || touchesOpaqueName(node.right))) {
+        if (REL_OPS.has(node.operator) && (touchesOpaqueName(node.left, opaqueAliases) || touchesOpaqueName(node.right, opaqueAliases))) {
           report(node, 'ZC07', `Threshold comparison "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
         }
       }

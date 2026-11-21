@@ -14,6 +14,8 @@ export const RED_META = {
   waits_on: []
 };
 
+// Green on arrival (Decision 0015 §4): #55 fixed this while the plan was in review; this behavioural check holds the fix
+// independently of Decision 0014's green tests, which match source text.
 // Decision 0015 §2 N4, issue #46 point 5 (and the law/statute/policy words of point 18). model.ts maps a source's
 // `kind` text to an origin sign (originSignForSourceKind). Rezono serves only kind "synthetic", so leaf rows show the
 // sign of Cartouche's own mapping. model.ts also links a binding to a premise by matching its value against premise

@@ -10,23 +10,17 @@ export const RED_META = {
   priority: 3,
   summary: '#46 point 12: the nightly job says what it does: no step claims to regenerate fixture 10 unless it runs the recorder, and no step passes REZONO_LIVE_DIR, which nothing reads',
   waits_on: [
-    'm1-contrast-reads-svg-fill',
     'm1-green-guard-covers-harness',
     'm1-mark-opens-slip',
     'm1-monge-unknown-and-state-colours',
     'm1-motion-between-epochs',
-    'm1-no-injected-seal-checks',
-    'm1-origin-signs-and-bindings-from-reader',
     'm1-proof-refs-only-as-served',
     'm1-propose-locked-until-served',
     'm1-reads-only-served-head-fields',
-    'm1-seal-checks-only-as-served',
     'm1-sheet-reads-gate-output',
     'm1-slip-all-witnesses',
-    'm1-slip-refuses-request-model',
     'm1-slip-why-not-why-unknown',
     'm1-time-valid-at-known-at',
-    'm1-viewer-no-browser-seal',
     'm1-viewer-prerendered-and-guarded',
     'm1-zero-compute-lint-fails-closed'
   ]

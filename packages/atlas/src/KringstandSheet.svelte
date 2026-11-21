@@ -22,6 +22,8 @@
       role?: string;
       witness_check: string;
       trust_tier: string;
+      can_propose?: boolean;
+      rights?: { readonly can_propose?: boolean };
     };
     rounds: Round[];
     sealed_rows: Row[];
@@ -50,7 +52,9 @@
       knowledge_time: fixture.manifest.knowledge_time ?? '',
       role: fixture.manifest.role ?? '',
       witness_check: fixture.manifest.witness_check === 'green' ? 'green' : 'failed',
-      trust_tier: fixture.manifest.trust_tier as TrustTier
+      trust_tier: fixture.manifest.trust_tier as TrustTier,
+      ...(fixture.manifest.can_propose !== undefined ? { can_propose: fixture.manifest.can_propose } : {}),
+      ...(fixture.manifest.rights !== undefined ? { rights: fixture.manifest.rights } : {})
     };
     const store = new DeltaStore<Row>(manifestMeta, fixture.sealed_rows);
     if (live) {
@@ -61,9 +65,15 @@
 
   let entries = $derived(storeState.entries);
   let tier = $derived(live ? live.trust_tier : storeState.seal.trustTier);
-  let sealedOk = $derived(tier === 'sealed' && fixture.manifest.witness_check === 'green');
+  let canPropose = $derived(storeState.seal.canPropose && tier === 'sealed');
   let lockReason = $derived(
-    sealedOk ? null : tier === 'provisional_engine' ? 'propose_locked_unsealed_live_stream' : 'propose_locked_not_sealed'
+    canPropose
+      ? null
+      : tier === 'provisional_engine'
+        ? 'propose_locked_unsealed_live_stream'
+        : tier !== 'sealed'
+          ? 'propose_locked_not_sealed'
+          : 'propose_locked_no_reader_grant'
   );
   let liveProofRef = $derived(live?.cert_hash ?? live?.proof_ref ?? undefined);
 
@@ -182,7 +192,7 @@
       {#if v.verb === 'propose'}
         <button
           type="button"
-          disabled={!sealedOk}
+          disabled={!canPropose}
           {...{ [M.verb]: v.verb, [M.key]: v.key }}
           data-lock-reason={lockReason}
         >[{v.key.toUpperCase()}] Propose</button>
@@ -190,7 +200,7 @@
         <button type="button" {...{ [M.verb]: v.verb, [M.key]: v.key }}>[{v.key.toUpperCase()}] {v.verb}</button>
       {/if}
     {/each}
-    <button type="submit" disabled={!sealedOk} data-lock-reason={lockReason}>Approve</button>
+    <button type="submit" disabled={!canPropose} data-lock-reason={lockReason}>Approve</button>
   </form>
 
   <table {...{ [M.part]: 'legend' }}>
