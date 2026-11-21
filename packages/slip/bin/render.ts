@@ -256,56 +256,6 @@ function sealFromManifest(manifest: ManifestMeta, roleOverride?: string): Cartou
   });
 }
 
-function extraReaderVerbs(reader?: ReaderCapabilityConfig): readonly string[] {
-  if (!reader) return [];
-  const out: string[] = [];
-  const seen = new Set<string>();
-  const addVerb = (verbName: string) => {
-    if (!seen.has(verbName)) {
-      seen.add(verbName);
-      out.push(verbName);
-    }
-  };
-  for (const v of reader.answeredVerbs ?? []) {
-    const spec = STD_VERBS.find((s) => s.verb === v || s.key === v || s.question === v);
-    if (spec) addVerb(spec.verb);
-  }
-  for (const q of reader.answeredQuestions ?? []) {
-    const spec = STD_VERBS.find((s) => s.question === q || s.verb === q);
-    if (spec) addVerb(spec.verb);
-  }
-  return out;
-}
-
-function synthesizeAnswerTable(
-  question: string,
-  verb: string,
-  row: ConformanceRowPayload | null,
-  reader?: ReaderCapabilityConfig
-): AnswerTableSpec {
-  const explicit = reader?.answersByQuestion?.[question];
-  if (explicit) return explicit;
-
-  if (question === 'grounds' && row?.grounds_distance_1) {
-    return {
-      question,
-      verb,
-      headers: ['Relation', 'Key', 'State', 'Proof'],
-      rows: row.grounds_distance_1.map((line) => ({
-        cells: [line.relation, canonicalJson(line.key), line.cell.state, line.cell.proof_ref],
-        proof_ref: line.cell.proof_ref,
-        sign: line.sign
-      }))
-    };
-  }
-  return {
-    question,
-    verb,
-    headers: ['Question', 'Status'],
-    rows: []
-  };
-}
-
 export async function render(request: SlipRenderRequest): Promise<SlipRenderResponse> {
   const slipPath = path.join(SLIP_SRC_DIR, 'Slip.svelte');
   const bundle = compileSvelteFile(slipPath);
