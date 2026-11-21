@@ -1,0 +1,33 @@
+{
+  "lock_version": "cartouche.freeze-lock/1",
+  "freeze_decision": "decisions/0007-frozen-contracts-wave-0.md",
+  "frozen_before_wave": "M1",
+  "normalization": "lf-utf8-sha256",
+  "contracts": {
+    "contracts/cartouche-scene.v2.schema.json": {
+      "contract_id": "cartouche.scene-ir/2",
+      "decision": "decisions/0002-cartouche-scene-ir-and-xd-discipline.md",
+      "sha256": "cc5e4703642da1d5583bc59c387c8fa0bb1faa83ade0ad1a941348197cd60cd7"
+    },
+    "contracts/data-marks.json": {
+      "contract_id": "cartouche.data-marks/1",
+      "decision": "decisions/0004-swisstopo-oklch-palette-and-data-marks.md",
+      "sha256": "a3a3f312317a6d73545d3aaa835ff033de519bdec9c1569561a88b15e4cffd96"
+    },
+    "contracts/server-projections.schema.json": {
+      "contract_id": "rezono.cartouche-projections/1",
+      "decision": "decisions/0005-rezono-core-five-projections.md",
+      "sha256": "bef928dd3d63ca07b210ed0e0dc906b76a9510c1751bf732617a6a6924cb3190"
+    },
+    "contracts/std-view.v2.tokens.json": {
+      "contract_id": "rezono.std-view-tokens/2",
+      "decision": "decisions/0004-swisstopo-oklch-palette-and-data-marks.md",
+      "sha256": "51be2e171e4c8aca547c192c3f0fcb898bc66bd72b3bbbd7e803bae360cbbea6"
+    },
+    "contracts/rezono-pin.json": {
+      "contract_id": "rezono.core-pin/1",
+      "decision": "decisions/0006-slip-conformance-boundary.md",
+      "sha256": "686f7c8c0a30d828d61e18c7f462df91cd1967bcaebdfe8881a3f601fdadf12e"
+    }
+  }
+}

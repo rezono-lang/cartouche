@@ -59,7 +59,10 @@ export interface TableTwin {
   readonly rows: readonly (readonly string[])[];
 }
 
+export const CARTOUCHE_SCENE_SCHEMA_VERSION = 'cartouche.scene/2' as const;
+
 export interface CartoucheScene {
+  readonly schemaVersion: typeof CARTOUCHE_SCENE_SCHEMA_VERSION;
   readonly archetype: SheetArchetype;
   readonly projection: '2d' | 'orthographic' | 'perspective';
   readonly axes: readonly AxisSpec[];

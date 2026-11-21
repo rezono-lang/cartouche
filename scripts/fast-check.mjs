@@ -22,10 +22,11 @@ const greenTests = fs
 const steps = [
   ['TypeScript Strict Type-Check (tsc --noEmit)', [tscBin, '--noEmit']],
   ['Zero-Compute & Determinism AST Lint', ['scripts/zero-compute-lint.mjs']],
+  ['Frozen Wave-0 Contract & Fixture Guard', ['--experimental-strip-types', '--no-warnings', 'scripts/contract-freeze-guard.mjs']],
   ['Decision-Driven Red-Guard', ['scripts/decision-red-guard.mjs']],
   ['Privacy Leak & Domain-Free Guard', ['scripts/leak-and-domain-check.mjs']],
   ['Runtime License Policy Guard', ['scripts/license-check.mjs']],
-  ['Green Foundation, Mutation & AST Invariant Tests', ['--experimental-strip-types', '--no-warnings', '--test', ...greenTests]]
+  ['Green Foundation, Mutation, Contract & AST Invariant Tests', ['--experimental-strip-types', '--no-warnings', '--test', ...greenTests]]
 ];
 
 for (const [label, args] of steps) {

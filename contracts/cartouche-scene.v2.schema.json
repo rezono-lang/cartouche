@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rezono.org/schemas/cartouche/cartouche-scene.v2.schema.json",
+  "title": "CartoucheScene v2 Intermediate Representation & xD-Discipline Contract",
+  "description": "Frozen Wave-0 contract for every compiled Cartouche sheet before DOM, SVG, WebGPU (Threlte v8), PixiJS, or Typst rendering. Enforced by packages/scene-ir/src/xd-guard.ts and geometry-invariants.ts.",
+  "x_contract": {
+    "id": "cartouche.scene-ir/2",
+    "version": "2.0.0-frozen",
+    "decision": "decisions/0002-cartouche-scene-ir-and-xd-discipline.md",
+    "freeze_decision": "decisions/0007-frozen-contracts-wave-0.md",
+    "frozen_before_wave": "M1"
+  },
+  "x_discipline_laws": [
+    {
+      "code": "XD_UNKNOWN_SCHEMA_VERSION",
+      "rule": "CartoucheScene.schemaVersion must strictly equal 'cartouche.scene/2'."
+    },
+    {
+      "code": "XD_NO_PERSPECTIVE",
+      "rule": "projection === 'perspective' is unconditionally rejected; only '2d' and 'orthographic' are permitted."
+    },
+    {
+      "code": "XD_NOMINAL_Z_FORBIDDEN",
+      "rule": "An axis with axis === 'z' must never bind to kind === 'nominal', dim === 'D1', or dim === 'D8'."
+    },
+    {
+      "code": "XD_MISSING_TABLE_TWIN",
+      "rule": "Every scene with projection === 'orthographic' must supply a non-empty accessible tableTwin.headers."
+    },
+    {
+      "code": "XD_UNKNOWN_AT_ZERO_FORBIDDEN",
+      "rule": "In archetype === 'relief-3d', every node with state === 'unknown' must bind to an unknownManifolds entry with zFloorZeroForbidden === true."
+    },
+    {
+      "code": "XD_MONGE_Z_NOT_STRATIFIED",
+      "rule": "In archetype === 'monge-fold', the Z axis must declare kind === 'stratified'."
+    },
+    {
+      "code": "XD_BITEMPORAL_REQUIRES_BITEMPORAL_AXES",
+      "rule": "In archetype === 'bitemporal-stair', axes must include at least two bitemporal axes (Valid Time and Knowledge Time)."
+    }
+  ],
+  "x_geometric_invariants": [
+    {
+      "code": "GEOM_BBOX_OVERLAP",
+      "rule": "Sibling node bounding boxes on the same sheet must never overlap."
+    },
+    {
+      "code": "MONGE_MISSING_COORDS",
+      "rule": "Every node on archetype === 'monge-fold' must provide mongeCoords { x, y }."
+    },
+    {
+      "code": "MONGE_X_COLLISION",
+      "rule": "All nodes on archetype === 'monge-fold' must have strictly unique X coordinates (Plane II collision-free)."
+    },
+    {
+      "code": "MONGE_Y_COLLISION",
+      "rule": "All nodes on archetype === 'monge-fold' must have strictly unique Y coordinates (Plane III collision-free)."
+    },
+    {
+      "code": "EPI_MISSING_PROOF",
+      "rule": "Every SceneNodeMark must carry a non-empty proofRef."
+    },
+    {
+      "code": "EPI_ABSENT_NO_SWEEP",
+      "rule": "Every node with state === 'absent' must carry a non-empty completenessWitnessRef."
+    },
+    {
+      "code": "EPI_UNKNOWN_HAS_DIGIT",
+      "rule": "A node with state === 'unknown' must never carry any ASCII digit in cell.display."
+    },
+    {
+      "code": "EPI_DRIFT_SINGLE_SIDED",
+      "rule": "Every SceneDriftEdge must carry both statedProofRef and observedProofRef."
+    }
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "archetype",
+    "projection",
+    "axes",
+    "horizon",
+    "nodes",
+    "driftEdges",
+    "unknownManifolds",
+    "usedSigns",
+    "tableTwin",
+    "seal"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "cartouche.scene/2"
+    },
+    "archetype": {
+      "type": "string",
+      "enum": [
+        "relief-3d",
+        "flow-split",
+        "kringstand",
+        "causal-ripple",
+        "bitemporal-stair",
+        "monge-fold"
+      ]
+    },
+    "projection": {
+      "type": "string",
+      "enum": ["2d", "orthographic", "perspective"]
+    },
+    "axes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/AxisSpec" }
+    },
+    "horizon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complete", "reason"],
+      "properties": {
+        "complete": { "type": "boolean" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/SceneNodeMark" }
+    },
+    "driftEdges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/SceneDriftEdge" }
+    },
+    "unknownManifolds": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Unknown3DManifold" }
+    },
+    "usedSigns": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "decision",
+          "legislator",
+          "design",
+          "observation",
+          "derived",
+          "valid",
+          "changed",
+          "violated",
+          "drift",
+          "absent",
+          "unknown",
+          "not_applicable",
+          "invalid",
+          "supposed"
+        ]
+      }
+    },
+    "tableTwin": { "$ref": "#/$defs/TableTwin" },
+    "seal": { "$ref": "#/$defs/CartoucheSeal" }
+  },
+  "$defs": {
+    "AxisSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["axis", "dim", "kind", "label"],
+      "properties": {
+        "axis": { "type": "string", "enum": ["x", "y", "z"] },
+        "dim": { "type": "string", "enum": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"] },
+        "kind": {
+          "type": "string",
+          "enum": ["nominal", "ordinal", "stratified", "metric", "bitemporal", "polar"]
+        },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "BoundingBox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "x", "y", "w", "h"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number", "exclusiveMinimum": 0 },
+        "h": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "OpaqueDisplayCell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "display", "previousDisplay", "reason", "proofRef", "completenessWitnessRef"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["known", "unknown", "not_applicable", "invalid", "absent"]
+        },
+        "display": { "type": ["string", "null"] },
+        "previousDisplay": { "type": ["string", "null"] },
+        "reason": { "type": ["string", "null"] },
+        "proofRef": { "type": "string", "minLength": 1 },
+        "completenessWitnessRef": { "type": ["string", "null"] }
+      }
+    },
+    "SceneNodeMark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "sign", "state", "proofRef", "box"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "sign": {
+          "type": "string",
+          "enum": ["decision", "legislator", "design", "observation", "derived"]
+        },
+        "state": {
+          "type": "string",
+          "enum": ["known", "unknown", "not_applicable", "invalid", "absent", "valid", "changed", "violated"]
+        },
+        "proofRef": { "type": "string", "minLength": 1 },
+        "completenessWitnessRef": { "type": ["string", "null"] },
+        "cell": { "$ref": "#/$defs/OpaqueDisplayCell" },
+        "box": { "$ref": "#/$defs/BoundingBox" },
+        "mongeCoords": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          }
+        }
+      }
+    },
+    "SceneDriftEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "from", "to", "label", "statedProofRef", "observedProofRef"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "statedProofRef": { "type": "string", "minLength": 1 },
+        "observedProofRef": { "type": "string", "minLength": 1 }
+      }
+    },
+    "Unknown3DManifold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subjectId", "kind", "reason", "proofRef", "zFloorZeroForbidden"],
+      "properties": {
+        "subjectId": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["uncertainty_curtain", "uncertainty_prism"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "proofRef": { "type": "string", "minLength": 1 },
+        "zFloorZeroForbidden": { "const": true }
+      }
+    },
+    "TableTwin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["headers", "rows"],
+      "properties": {
+        "headers": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "CartoucheSeal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifestId",
+        "epoch",
+        "knowledgeTime",
+        "role",
+        "witnessCheck",
+        "trustTier",
+        "provisionalCount",
+        "canPropose"
+      ],
+      "properties": {
+        "manifestId": { "type": "string", "minLength": 1 },
+        "epoch": { "type": "integer", "minimum": 0 },
+        "knowledgeTime": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "witnessCheck": { "type": "string", "enum": ["green", "failed"] },
+        "trustTier": {
+          "type": "string",
+          "enum": ["sealed", "provisional_checked", "provisional_engine"]
+        },
+        "provisionalCount": { "type": "integer", "minimum": 0 },
+        "canPropose": { "type": "boolean" }
+      }
+    }
+  }
+}

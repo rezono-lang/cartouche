@@ -1,32 +1,239 @@
 {
-  "sheet": "data-sheet",
-  "part": "data-part",
-  "sign": "data-sign",
-  "state": "data-state",
-  "reason": "data-reason",
-  "verb": "data-verb",
-  "key": "data-key",
-  "line": "data-line",
-  "relation": "data-relation",
-  "depth": "data-depth",
-  "polarity": "data-polarity",
-  "path": "data-path",
-  "answer": "data-answer",
-  "check": "data-check",
-  "stop": "data-stop",
-  "status": "data-status",
-  "turn": "data-turn",
-  "trust_tier": "data-trust-tier",
-  "proof_ref": "data-proof-ref",
-  "slip_table": "table[data-sheet=slip]",
-  "sentence": "[data-part=sentence]",
-  "sentence_link": "[data-part=sentence] a[data-line]",
-  "total_line": "tr[data-line][data-part=total]",
-  "value_cell": "td[data-part=value]",
-  "seal": "[data-part=seal]",
-  "manifest_hash": "[data-part=manifest-hash]",
-  "legend_table": "table[data-part=legend]",
-  "table_twin": "table[data-part=twin]",
-  "unserved": "[data-part=unserved]",
-  "propose_action": "button[data-verb=p]"
+  "contract_id": "cartouche.data-marks/1",
+  "version": "1.0.0-frozen",
+  "decision": "decisions/0004-swisstopo-oklch-palette-and-data-marks.md",
+  "conformance_decision": "decisions/0006-slip-conformance-boundary.md",
+  "freeze_decision": "decisions/0007-frozen-contracts-wave-0.md",
+  "description": "Frozen DOM & SVG data-* test anchors shared across @rezono/slip and all six Atlas sheets. Tests must bind exclusively to these structural attributes, never to CSS classes or translated prose.",
+  "attributes": {
+    "theme": {
+      "attr": "data-cartouche-theme",
+      "scope": "dom",
+      "targets": ["html", "section", "div", "cartouche-atlas", "rezono-slip"],
+      "values": ["swisstopo", "obsidian", "forced"]
+    },
+    "sheet": {
+      "attr": "data-sheet",
+      "scope": "both",
+      "targets": ["table", "section", "svg"],
+      "values": ["slip", "relief-3d", "flow-split", "kringstand", "causal-ripple", "bitemporal-stair", "monge-fold"]
+    },
+    "projection": {
+      "attr": "data-projection",
+      "scope": "both",
+      "targets": ["section", "svg", "canvas"],
+      "values": ["2d", "orthographic"]
+    },
+    "fold_angle": {
+      "attr": "data-fold-angle",
+      "scope": "both",
+      "targets": ["section", "svg", "canvas"],
+      "pattern": "^([0-9]|[1-8][0-9]|90)$"
+    },
+    "trust_tier": {
+      "attr": "data-trust-tier",
+      "scope": "both",
+      "targets": ["section", "aside", "div", "svg"],
+      "values": ["sealed", "provisional_checked", "provisional_engine"]
+    },
+    "part": {
+      "attr": "data-part",
+      "scope": "both",
+      "targets": ["div", "section", "table", "tr", "td", "span", "g"],
+      "values": [
+        "sentence",
+        "total",
+        "value",
+        "seal",
+        "manifest-hash",
+        "legend",
+        "twin",
+        "unserved",
+        "prism",
+        "levers",
+        "adjacent-worlds",
+        "horizon",
+        "curtain",
+        "unknown-band"
+      ]
+    },
+    "line": {
+      "attr": "data-line",
+      "scope": "dom",
+      "targets": ["tr", "a"],
+      "pattern": "^[0-9]+$"
+    },
+    "relation": {
+      "attr": "data-relation",
+      "scope": "both",
+      "targets": ["tr", "g"],
+      "pattern": "^[a-zA-Z0-9_.:-]+$"
+    },
+    "key": {
+      "attr": "data-key",
+      "scope": "both",
+      "targets": ["tr", "button", "g"],
+      "description": "Canonical JSON key on a line or single-character keyboard shortcut on button[data-verb]."
+    },
+    "depth": {
+      "attr": "data-depth",
+      "scope": "dom",
+      "targets": ["tr"],
+      "pattern": "^[0-9]+$"
+    },
+    "polarity": {
+      "attr": "data-polarity",
+      "scope": "dom",
+      "targets": ["tr"],
+      "values": ["positive", "negative"]
+    },
+    "path": {
+      "attr": "data-path",
+      "scope": "dom",
+      "targets": ["tr"],
+      "description": "CalcWitness step path (constants have no step and emit no tr[data-path])."
+    },
+    "sign": {
+      "attr": "data-sign",
+      "scope": "both",
+      "targets": ["span", "tr", "g", "path", "rect", "circle"],
+      "values": [
+        "decision",
+        "legislator",
+        "design",
+        "observation",
+        "derived",
+        "valid",
+        "changed",
+        "violated",
+        "drift",
+        "absent",
+        "unknown",
+        "not_applicable",
+        "invalid",
+        "supposed"
+      ]
+    },
+    "state": {
+      "attr": "data-state",
+      "scope": "both",
+      "targets": ["td", "tr", "g", "rect", "div"],
+      "values": ["known", "unknown", "not_applicable", "invalid", "absent", "valid", "changed", "violated"]
+    },
+    "reason": {
+      "attr": "data-reason",
+      "scope": "both",
+      "targets": ["td", "div", "g", "span"],
+      "description": "Published epistemic reason; mandatory whenever data-state is not known/valid."
+    },
+    "verb": {
+      "attr": "data-verb",
+      "scope": "dom",
+      "targets": ["button"],
+      "values": ["why", "depends", "missing", "suppose", "compare", "propose", "w", "d", "m", "s", "c", "p"]
+    },
+    "answer": {
+      "attr": "data-answer",
+      "scope": "dom",
+      "targets": ["table"],
+      "description": "Question term opened by a verb (e.g. grounds, reach, gap, sweep, scenario)."
+    },
+    "check": {
+      "attr": "data-check",
+      "scope": "dom",
+      "targets": ["li", "tr", "div", "span"],
+      "description": "Seal check id (reader-hashes, publisher-record, page-hashes, page-witnesses) or red sweep check id."
+    },
+    "stop": {
+      "attr": "data-stop",
+      "scope": "dom",
+      "targets": ["button", "span", "li"],
+      "pattern": "^[0-9]+$"
+    },
+    "status": {
+      "attr": "data-status",
+      "scope": "both",
+      "targets": ["button", "span", "li", "div", "g"],
+      "values": ["green", "warning", "red", "not_computed", "unavailable"]
+    },
+    "turn": {
+      "attr": "data-turn",
+      "scope": "dom",
+      "targets": ["button", "span", "li"],
+      "values": ["turns", "same", "unknown"]
+    },
+    "proof_ref": {
+      "attr": "data-proof-ref",
+      "scope": "both",
+      "targets": ["g", "path", "rect", "circle", "tr", "td", "button", "a"],
+      "description": "Mandatory witness or source reference on every drawn mark."
+    },
+    "completeness_ref": {
+      "attr": "data-completeness-ref",
+      "scope": "both",
+      "targets": ["g", "tr", "td", "div"],
+      "description": "Mandatory completeness witness reference on every absent mark."
+    },
+    "stated_proof_ref": {
+      "attr": "data-stated-proof-ref",
+      "scope": "both",
+      "targets": ["g", "path", "line", "tr"],
+      "description": "Normative proof reference on a dual-sided drift mark."
+    },
+    "observed_proof_ref": {
+      "attr": "data-observed-proof-ref",
+      "scope": "both",
+      "targets": ["g", "path", "line", "tr"],
+      "description": "Empirical observation proof reference on a dual-sided drift mark."
+    },
+    "layer": {
+      "attr": "data-layer",
+      "scope": "both",
+      "targets": ["g", "tr", "div"],
+      "values": ["stated", "observed", "both", "sealed", "provisional"]
+    },
+    "gate": {
+      "attr": "data-gate",
+      "scope": "both",
+      "targets": ["g", "tr", "span"],
+      "values": ["FACT", "AND", "OR"]
+    },
+    "load_bearing": {
+      "attr": "data-load-bearing",
+      "scope": "both",
+      "targets": ["g", "tr", "span"],
+      "values": ["true", "false"]
+    }
+  },
+  "selectors": {
+    "slip_table": "table[data-sheet=\"slip\"]",
+    "sentence": "[data-part=\"sentence\"]",
+    "sentence_link": "[data-part=\"sentence\"] a[data-line]",
+    "slip_line": "table[data-sheet=\"slip\"] tr[data-line]",
+    "total_line": "tr[data-line][data-part=\"total\"]",
+    "value_cell": "td[data-part=\"value\"]",
+    "verb_button": "button[data-verb][data-key]",
+    "answer_table": "table[data-answer]",
+    "seal": "[data-part=\"seal\"]",
+    "seal_check": "[data-part=\"seal\"] [data-check]",
+    "manifest_hash": "[data-part=\"manifest-hash\"]",
+    "legend_table": "table[data-part=\"legend\"]",
+    "legend_sign_row": "table[data-part=\"legend\"] tr[data-sign]",
+    "table_twin": "table[data-part=\"twin\"]",
+    "unserved": "[data-part=\"unserved\"]",
+    "sweep_stop": "[data-stop][data-status]",
+    "fold_old": "td[data-part=\"value\"] del",
+    "fold_new": "td[data-part=\"value\"] ins",
+    "propose_action": "button[data-verb=\"propose\"], button[data-verb=\"p\"]",
+    "svg_mark": "svg [data-proof-ref]",
+    "svg_drift": "svg [data-sign=\"drift\"][data-stated-proof-ref][data-observed-proof-ref]"
+  },
+  "invariants": [
+    "No test selector may match translated prose or CSS utility class names.",
+    "Every [data-sign] drawn outside table[data-part=\"legend\"] must appear as a tr[data-sign] inside table[data-part=\"legend\"].",
+    "Every table (table[data-sheet=\"slip\"], table[data-answer], table[data-part=\"legend\"], table[data-part=\"twin\"]) must include at least one <th> header cell.",
+    "Every td[data-part=\"value\"][data-state=\"unknown\"] must carry [data-reason] and a [data-sign] child, and contain zero ASCII digits (/[0-9]/).",
+    "A variant fold displays the old value inside <del> and the new value inside <ins>; red and not_computed stops emit no <ins>.",
+    "Every SVG mark carries [data-proof-ref]; every [data-sign=\"drift\"] carries both [data-stated-proof-ref] and [data-observed-proof-ref]; every [data-state=\"absent\"] carries [data-completeness-ref]."
+  ]
 }

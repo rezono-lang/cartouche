@@ -1,15 +1,127 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://rezono.org/schemas/cartouche/server-projections-v2.json",
-  "title": "Cartouche Five Minimal Server Projections",
+  "$id": "https://rezono.org/schemas/cartouche/server-projections.schema.json",
+  "title": "Cartouche Five Minimal Server Projections & Fixture Payload Contract",
+  "description": "Frozen Wave-0 contract for the five domain-neutral projections published by Rezono core and consumed zero-compute by Cartouche: (1) layer_tag + absent.sweep_witness, (2) cut_set, (3) sweep_2d, (4) bitemporal_grid, and (5) slip_enrichment.",
+  "x_contract": {
+    "id": "rezono.cartouche-projections/1",
+    "version": "1.0.0-frozen",
+    "decision": "decisions/0005-rezono-core-five-projections.md",
+    "freeze_decision": "decisions/0007-frozen-contracts-wave-0.md",
+    "frozen_before_wave": "M1",
+    "projections": [
+      "layer_tag",
+      "cut_set",
+      "sweep_2d",
+      "bitemporal_grid",
+      "slip_enrichment"
+    ]
+  },
   "type": "object",
+  "required": ["fixture_id"],
   "properties": {
-    "layer_tag": {
+    "fixture_id": { "type": "string", "minLength": 1 },
+    "manifest": { "$ref": "#/$defs/ManifestMeta" },
+    "horizon": { "$ref": "#/$defs/Horizon" },
+    "http_status": { "type": "integer", "enum": [200, 410, 403, 503] },
+    "unserved": { "$ref": "#/$defs/UnservedPayload" },
+    "layer_tag": { "$ref": "#/$defs/LayerTag" },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ProjectedNode" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ProjectedEdge" }
+    },
+    "focal_id": { "type": "string", "minLength": 1 },
+    "dependent_count": { "type": "integer", "minimum": 0 },
+    "forbidden_leaks_check": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "subjects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ProjectedSubject" }
+    },
+    "rounds": { "type": "array" },
+    "sealed_rows": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/KringRow" }
+    },
+    "live_provisional_delta": { "$ref": "#/$defs/LiveProvisionalDelta" },
+    "projection": { "type": "string", "enum": ["2d", "orthographic"] },
+    "fold_angle_deg": { "type": "number", "minimum": 0, "maximum": 90 },
+    "services": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/MongeService" }
+    },
+    "drift_arcs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/DriftArc" }
+    },
+    "cut_set": { "$ref": "#/$defs/CutSet" },
+    "sweep_2d": { "$ref": "#/$defs/Sweep2D" },
+    "bitemporal_grid": { "$ref": "#/$defs/BitemporalGrid" },
+    "slip_enrichment": { "$ref": "#/$defs/SlipEnrichment" }
+  },
+  "$defs": {
+    "EpistemicSign": {
+      "type": "string",
+      "enum": ["decision", "legislator", "design", "observation", "derived"]
+    },
+    "LayerTag": {
       "type": "string",
       "enum": ["stated", "observed", "both"]
     },
-    "cut_set": {
+    "TrustTier": {
+      "type": "string",
+      "enum": ["sealed", "provisional_checked", "provisional_engine"]
+    },
+    "ManifestMeta": {
       "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "epoch", "knowledge_time", "role", "witness_check", "trust_tier"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^sha256:[a-f0-9]+$" },
+        "epoch": { "type": "integer", "minimum": 0 },
+        "knowledge_time": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "witness_check": { "type": "string", "enum": ["green", "failed"] },
+        "trust_tier": { "$ref": "#/$defs/TrustTier" }
+      }
+    },
+    "Horizon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complete", "reason"],
+      "properties": {
+        "complete": { "type": "boolean" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "OpaqueCell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "proof_ref"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["known", "unknown", "not_applicable", "invalid", "absent"]
+        },
+        "display": { "type": ["string", "null"] },
+        "previous_display": { "type": ["string", "null"] },
+        "reason": { "type": ["string", "null"] },
+        "unit": { "type": ["string", "null"] },
+        "revised": { "type": "boolean" },
+        "z_norm": { "type": "number", "minimum": 0, "maximum": 1 },
+        "proof_ref": { "type": "string", "minLength": 1 },
+        "completeness_witness_ref": { "type": ["string", "null"] }
+      }
+    },
+    "CutSet": {
+      "type": "object",
+      "additionalProperties": false,
       "required": ["load_bearing", "redundancy_margin", "gate"],
       "properties": {
         "load_bearing": { "type": "boolean" },
@@ -17,33 +129,315 @@
         "gate": { "type": "string", "enum": ["FACT", "AND", "OR"] }
       }
     },
-    "sweep_2d": {
+    "ProjectedNode": {
       "type": "object",
-      "required": ["x_axis", "y_axis", "z_axis", "cells"],
+      "additionalProperties": false,
+      "required": ["id", "label", "sign", "state", "proof_ref"],
       "properties": {
-        "x_axis": { "type": "object", "required": ["label", "stops", "kind"] },
-        "y_axis": { "type": "object", "required": ["label", "stops", "kind"] },
-        "z_axis": { "type": "object", "required": ["label", "unit", "kind"] },
-        "cells": { "type": "array" },
-        "unknown_manifolds": { "type": "array" }
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "zone": { "type": "string", "minLength": 1 },
+        "hop": { "type": "integer", "minimum": 0 },
+        "sign": { "$ref": "#/$defs/EpistemicSign" },
+        "state": {
+          "type": "string",
+          "enum": ["valid", "changed", "violated", "absent", "unknown", "not_applicable", "invalid"]
+        },
+        "layer": { "$ref": "#/$defs/LayerTag" },
+        "display": { "type": ["string", "null"] },
+        "previous_display": { "type": ["string", "null"] },
+        "reason": { "type": ["string", "null"] },
+        "cut_set": { "$ref": "#/$defs/CutSet" },
+        "proof_ref": { "type": "string", "minLength": 1 },
+        "completeness_witness_ref": { "type": ["string", "null"] }
       }
     },
-    "bitemporal_grid": {
+    "ProjectedEdge": {
       "type": "object",
-      "required": ["valid_times", "epochs", "matrix"],
+      "additionalProperties": false,
+      "required": ["id", "from", "to", "layer", "kind"],
       "properties": {
-        "valid_times": { "type": "array", "items": { "type": "string" } },
-        "epochs": { "type": "array", "items": { "type": "string" } },
-        "matrix": { "type": "array" }
+        "id": { "type": "string", "minLength": 1 },
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "layer": { "$ref": "#/$defs/LayerTag" },
+        "kind": { "type": "string", "enum": ["standard", "absent", "drift"] },
+        "label": { "type": "string" },
+        "proof_ref": { "type": "string", "minLength": 1 },
+        "completeness_witness_ref": { "type": ["string", "null"] },
+        "stated_proof_ref": { "type": "string", "minLength": 1 },
+        "observed_proof_ref": { "type": "string", "minLength": 1 }
       }
     },
-    "slip_enrichment": {
+    "ProjectedSubject": {
       "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "amount_cell", "citation"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "state": { "type": "string", "enum": ["valid", "changed", "violated", "unknown", "absent"] },
+        "amount_cell": { "$ref": "#/$defs/OpaqueCell" },
+        "income_cell": { "$ref": "#/$defs/OpaqueCell" },
+        "assets_cell": { "$ref": "#/$defs/OpaqueCell" },
+        "cliff_distance_display": { "type": "string" },
+        "citation": { "type": "string", "minLength": 1 }
+      }
+    },
+    "Sweep2D": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projection", "x_axis", "y_axis", "z_axis", "cells", "unknown_manifolds"],
+      "properties": {
+        "projection": { "const": "orthographic" },
+        "x_axis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dim", "kind", "label", "stops"],
+          "properties": {
+            "dim": { "type": "string", "enum": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"] },
+            "kind": { "type": "string", "enum": ["metric", "ordinal", "bitemporal"] },
+            "label": { "type": "string", "minLength": 1 },
+            "stops": { "type": "array", "minItems": 2, "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        "y_axis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dim", "kind", "label", "stops"],
+          "properties": {
+            "dim": { "type": "string", "enum": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"] },
+            "kind": { "type": "string", "enum": ["metric", "ordinal", "bitemporal"] },
+            "label": { "type": "string", "minLength": 1 },
+            "stops": { "type": "array", "minItems": 2, "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        "z_axis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dim", "kind", "label", "unit"],
+          "properties": {
+            "dim": { "type": "string", "enum": ["D2", "D3", "D4", "D5", "D6", "D7"] },
+            "kind": { "type": "string", "enum": ["metric", "stratified", "ordinal"] },
+            "label": { "type": "string", "minLength": 1 },
+            "unit": { "type": "string", "minLength": 1 }
+          }
+        },
+        "cells": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ix", "iy", "z_norm", "cell"],
+            "properties": {
+              "ix": { "type": "integer", "minimum": 0 },
+              "iy": { "type": "integer", "minimum": 0 },
+              "z_norm": { "type": "number", "minimum": 0, "maximum": 1 },
+              "cell": { "$ref": "#/$defs/OpaqueCell" }
+            }
+          }
+        },
+        "cliff_distances": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["subject_id", "display", "proof_ref"],
+            "properties": {
+              "subject_id": { "type": "string", "minLength": 1 },
+              "display": { "type": "string", "minLength": 1 },
+              "proof_ref": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "unknown_manifolds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["subject_id", "kind", "fixed_axis", "fixed_index", "span_axis", "reason", "proof_ref"],
+            "properties": {
+              "subject_id": { "type": "string", "minLength": 1 },
+              "kind": { "type": "string", "enum": ["uncertainty_curtain", "uncertainty_prism"] },
+              "fixed_axis": { "type": "string", "enum": ["x", "y"] },
+              "fixed_index": { "type": "integer", "minimum": 0 },
+              "span_axis": { "type": "string", "enum": ["x", "y"] },
+              "reason": { "type": "string", "minLength": 1 },
+              "proof_ref": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "BitemporalGrid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projection", "valid_times", "epochs", "matrix"],
+      "properties": {
+        "projection": { "type": "string", "enum": ["2d", "orthographic"] },
+        "valid_times": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "epochs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "matrix": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/OpaqueCell" }
+          }
+        }
+      }
+    },
+    "SlipEnrichment": {
+      "type": "object",
+      "additionalProperties": false,
       "required": ["prism_5", "missing_levers", "adjacent_worlds_delta1"],
       "properties": {
-        "prism_5": { "type": "array", "minItems": 5, "maxItems": 5 },
-        "missing_levers": { "type": "array" },
-        "adjacent_worlds_delta1": { "type": "array" }
+        "prism_5": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "label", "ratio_display", "bar_units", "state"],
+            "properties": {
+              "key": { "type": "string", "enum": ["norm", "observed", "fog", "cliff", "role"] },
+              "label": { "type": "string", "minLength": 1 },
+              "ratio_display": { "type": "string", "minLength": 1 },
+              "bar_units": { "type": "number", "minimum": 0, "maximum": 100 },
+              "state": {
+                "type": "string",
+                "enum": ["valid", "changed", "violated", "unknown", "absent", "not_applicable"]
+              }
+            }
+          }
+        },
+        "missing_levers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "unblocks", "redundant"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "label": { "type": "string", "minLength": 1 },
+              "unblocks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+              "redundant": { "type": "boolean" }
+            }
+          }
+        },
+        "adjacent_worlds_delta1": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "sector", "label", "outcome_display", "proof_ref"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "sector": { "type": "string", "enum": ["repair", "certainty", "cliff"] },
+              "label": { "type": "string", "minLength": 1 },
+              "outcome_display": { "type": "string", "minLength": 1 },
+              "proof_ref": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "KringRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "lane", "label", "sign", "state", "proof_ref"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "lane": { "type": "string", "enum": ["needed", "waiting", "ready", "done", "stuck", "absent", "unknown"] },
+        "label": { "type": "string", "minLength": 1 },
+        "sign": { "$ref": "#/$defs/EpistemicSign" },
+        "state": { "type": "string", "enum": ["valid", "changed", "violated", "absent", "unknown"] },
+        "reason": { "type": ["string", "null"] },
+        "display": { "type": ["string", "null"] },
+        "proof_ref": { "type": "string", "minLength": 1 },
+        "completeness_witness_ref": { "type": ["string", "null"] }
+      }
+    },
+    "LiveProvisionalDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["round_id", "latency_ms", "trust_tier", "changes"],
+      "properties": {
+        "round_id": { "type": "string", "minLength": 1 },
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "trust_tier": { "type": "string", "enum": ["provisional_checked", "provisional_engine"] },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["weight", "row"],
+            "properties": {
+              "weight": { "type": "integer", "enum": [1, -1] },
+              "row": { "$ref": "#/$defs/KringRow" }
+            }
+          }
+        }
+      }
+    },
+    "MongeService": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "short", "sign", "x", "y", "state", "round_states", "proof_ref"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "short": { "type": "string", "minLength": 1 },
+        "sign": { "$ref": "#/$defs/EpistemicSign" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "state": { "type": "string", "enum": ["valid", "changed", "violated", "absent", "unknown"] },
+        "reason": { "type": ["string", "null"] },
+        "display": { "type": ["string", "null"] },
+        "round_states": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["valid", "changed", "violated", "absent", "unknown"] }
+        },
+        "proof_ref": { "type": "string", "minLength": 1 },
+        "completeness_witness_ref": { "type": ["string", "null"] }
+      }
+    },
+    "DriftArc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "from", "to", "label", "stated_proof_ref", "observed_proof_ref"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "stated_proof_ref": { "type": "string", "minLength": 1 },
+        "observed_proof_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "UnservedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "reason_message_id"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": ["publication_withdrawn", "object_hash_mismatch", "role_unserved"]
+        },
+        "superseded_by": { "type": ["string", "null"] },
+        "reason_message_id": { "type": "string", "minLength": 1 },
+        "withdrawn_by_decision_ref": { "type": ["string", "null"] }
       }
     }
   }

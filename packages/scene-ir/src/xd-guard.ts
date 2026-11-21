@@ -1,17 +1,38 @@
 /**
- * Decision 0002: xD-Discipline Guard.
+ * Decision 0002 & 0007: xD-Discipline Guard (frozen contract cartouche.scene-ir/2).
  * Rejects dishonest or perspective-distorted projections at compile time before a pixel renders.
  */
 
+import { CARTOUCHE_SCENE_SCHEMA_VERSION } from './types.ts';
 import type { CartoucheScene } from './types.ts';
 
+export const XD_LAW_CODES = Object.freeze([
+  'XD_UNKNOWN_SCHEMA_VERSION',
+  'XD_NO_PERSPECTIVE',
+  'XD_NOMINAL_Z_FORBIDDEN',
+  'XD_MISSING_TABLE_TWIN',
+  'XD_UNKNOWN_AT_ZERO_FORBIDDEN',
+  'XD_MONGE_Z_NOT_STRATIFIED',
+  'XD_BITEMPORAL_REQUIRES_BITEMPORAL_AXES'
+] as const);
+
+export type XDLawCode = (typeof XD_LAW_CODES)[number];
+
 export interface DisciplineViolation {
-  readonly code: string;
+  readonly code: XDLawCode;
   readonly message: string;
 }
 
 export function validateXDDiscipline(scene: CartoucheScene): readonly DisciplineViolation[] {
   const violations: DisciplineViolation[] = [];
+
+  // Law 0: Frozen CartoucheScene v2 schemaVersion is mandatory.
+  if (scene.schemaVersion !== CARTOUCHE_SCENE_SCHEMA_VERSION) {
+    violations.push({
+      code: 'XD_UNKNOWN_SCHEMA_VERSION',
+      message: `Scene schemaVersion must be "${CARTOUCHE_SCENE_SCHEMA_VERSION}", received "${String(scene.schemaVersion)}".`
+    });
+  }
 
   // Law 1: Perspective 3D is strictly forbidden in Cartouche.
   if (scene.projection === 'perspective') {
@@ -49,6 +70,25 @@ export function validateXDDiscipline(scene: CartoucheScene): readonly Discipline
           message: `Unknown subject "${un.id}" in 3D relief lacks a hatched uncertainty_curtain manifold (unknown must never sit at z=0).`
         });
       }
+    }
+  }
+
+  // Law 5: Monge folding sheets must stratify the Z axis (norm || observed strata).
+  if (scene.archetype === 'monge-fold' && (!zAxis || zAxis.kind !== 'stratified')) {
+    violations.push({
+      code: 'XD_MONGE_Z_NOT_STRATIFIED',
+      message: `Monge folding sheet "${scene.archetype}" requires a Z axis with kind === "stratified".`
+    });
+  }
+
+  // Law 6: Bitemporal staircase sheets require at least two bitemporal axes (Valid Time x Knowledge Time).
+  if (scene.archetype === 'bitemporal-stair') {
+    const btAxes = scene.axes.filter((a) => a.kind === 'bitemporal');
+    if (btAxes.length < 2) {
+      violations.push({
+        code: 'XD_BITEMPORAL_REQUIRES_BITEMPORAL_AXES',
+        message: `Bitemporal staircase sheet requires at least 2 bitemporal axes (Valid Time x Knowledge Time), found ${btAxes.length}.`
+      });
     }
   }
 

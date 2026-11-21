@@ -14,6 +14,7 @@
     "fast-check": "node scripts/fast-check.mjs",
     "test:green": "node --experimental-strip-types --no-warnings --test tests/green/*.test.mjs",
     "lint:zero-compute": "node scripts/zero-compute-lint.mjs",
+    "lint:contracts": "node --experimental-strip-types --no-warnings scripts/contract-freeze-guard.mjs",
     "lint:decisions": "node scripts/decision-red-guard.mjs",
     "lint:leaks": "node scripts/leak-and-domain-check.mjs",
     "lint:licenses": "node scripts/license-check.mjs",

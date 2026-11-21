@@ -6,8 +6,21 @@
 
 import type { BoundingBox, CartoucheScene } from './types.ts';
 
+export const GEOM_INVARIANT_CODES = Object.freeze([
+  'GEOM_BBOX_OVERLAP',
+  'MONGE_MISSING_COORDS',
+  'MONGE_X_COLLISION',
+  'MONGE_Y_COLLISION',
+  'EPI_MISSING_PROOF',
+  'EPI_ABSENT_NO_SWEEP',
+  'EPI_UNKNOWN_HAS_DIGIT',
+  'EPI_DRIFT_SINGLE_SIDED'
+] as const);
+
+export type GeomInvariantCode = (typeof GEOM_INVARIANT_CODES)[number];
+
 export interface InvariantViolation {
-  readonly code: string;
+  readonly code: GeomInvariantCode;
   readonly message: string;
 }
 

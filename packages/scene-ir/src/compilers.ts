@@ -5,6 +5,7 @@
 
 import { asOpaqueCell, DeltaStore, renderOpaqueText } from '../../reader-core/src/index.ts';
 import type { ManifestMeta } from '../../reader-core/src/index.ts';
+import { CARTOUCHE_SCENE_SCHEMA_VERSION } from './types.ts';
 import type { CartoucheScene, SceneDriftEdge, SceneNodeMark, Unknown3DManifold } from './types.ts';
 import { assertXDDiscipline } from './xd-guard.ts';
 
@@ -46,6 +47,7 @@ export function compileFlowSplitScene(fixture: {
   const usedSigns = [...new Set([...nodes.map((n) => n.sign), ...nodes.map((n) => n.state), ...(driftEdges.length ? ['drift'] : [])])].sort();
 
   const scene: CartoucheScene = {
+    schemaVersion: CARTOUCHE_SCENE_SCHEMA_VERSION,
     archetype: 'flow-split',
     projection: '2d',
     axes: [
@@ -106,6 +108,7 @@ export function compileSubsidyReliefScene(fixture: {
   }));
 
   const scene: CartoucheScene = {
+    schemaVersion: CARTOUCHE_SCENE_SCHEMA_VERSION,
     archetype: 'relief-3d',
     projection: fixture.sweep_2d.projection,
     axes: [
@@ -161,6 +164,7 @@ export function compileMongeScene(fixture: {
   }));
 
   const scene: CartoucheScene = {
+    schemaVersion: CARTOUCHE_SCENE_SCHEMA_VERSION,
     archetype: 'monge-fold',
     projection: fixture.projection,
     axes: [
