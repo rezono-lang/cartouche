@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DATA_MARKS, STD_VERBS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
+import { buildAnswerTable } from '../../packages/slip/src/slip-verbs.ts';
 import { auditA11y, parseHtml } from '../../scripts/svelte-test-harness.mjs';
 import { loadJson } from '../../scripts/contract-validators.mjs';
 
@@ -197,4 +198,16 @@ test('M1 conformance [verbs-that-answer]: line-level button[data-verb="propose"]
   } finally {
     await win.happyDOM.close();
   }
+});
+
+test('M1 conformance [verbs-that-answer]: buildAnswerTable never fabricates rows for reach/gap when reader supplies no answer', () => {
+  const fx09 = loadJson(ROOT, FX_09);
+  const busyRow = fx09.slip_conformance.rows['busy::group-a'];
+  const reachSpec = STD_VERBS.find((s) => s.question === 'reach');
+  const gapSpec = STD_VERBS.find((s) => s.question === 'gap');
+  const groundsSpec = STD_VERBS.find((s) => s.question === 'grounds');
+
+  assert.equal(buildAnswerTable(reachSpec, busyRow, null).rows.length, 0);
+  assert.equal(buildAnswerTable(gapSpec, busyRow, null).rows.length, 0);
+  assert.equal(buildAnswerTable(groundsSpec, busyRow, null).rows.length, busyRow.grounds_distance_1.length);
 });

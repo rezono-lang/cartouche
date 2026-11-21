@@ -114,8 +114,9 @@ export function isLineVerbDisabled(spec: StdVerbSpec, proposeAllowed: boolean): 
 
 /**
  * Builds the table[data-answer="<question>"] payload for an opened verb.
- * Prefers reader-supplied answersByQuestion; otherwise projects directly from published row marks
- * without client-side compute or fabricated proof refs.
+ * Strictly honest: returns rows ONLY from reader.answersByQuestion[question], or from
+ * published row.grounds_distance_1 when question === 'grounds'. Never fabricates rows
+ * for unanswered questions (e.g. reach/gap/scenario without a published reader answer).
  */
 export function buildAnswerTable(
   spec: StdVerbSpec,
@@ -142,59 +143,6 @@ export function buildAnswerTable(
         proof_ref: line.cell.proof_ref,
         sign: line.sign
       }))
-    };
-  }
-
-  if (spec.question === 'reach' && row?.grounds_distance_1) {
-    return {
-      question: spec.question,
-      verb: spec.verb,
-      headers: ['Rule', 'Relation', 'Proof'],
-      rows: row.grounds_distance_1.map((line) => ({
-        cells: [row.rule_id, line.relation, line.cell.proof_ref],
-        proof_ref: line.cell.proof_ref,
-        sign: line.sign
-      }))
-    };
-  }
-
-  if (row?.grounds_distance_1 && row.grounds_distance_1.length > 0) {
-    return {
-      question: spec.question,
-      verb: spec.verb,
-      headers: ['Question', 'Relation', 'State', 'Proof'],
-      rows: row.grounds_distance_1.map((line) => ({
-        cells: [spec.question, line.relation, line.cell.state, line.cell.proof_ref],
-        proof_ref: line.cell.proof_ref,
-        sign: line.sign
-      }))
-    };
-  }
-
-  if (row?.steps && row.steps.length > 0) {
-    return {
-      question: spec.question,
-      verb: spec.verb,
-      headers: ['Question', 'Step', 'State', 'Proof'],
-      rows: row.steps.map((step) => ({
-        cells: [spec.question, step.path, step.cell.state, step.cell.proof_ref],
-        proof_ref: step.cell.proof_ref,
-        sign: step.sign
-      }))
-    };
-  }
-
-  if (row?.result_cell) {
-    return {
-      question: spec.question,
-      verb: spec.verb,
-      headers: ['Question', 'Rule', 'State', 'Proof'],
-      rows: [
-        {
-          cells: [spec.question, row.rule_id, row.result_cell.state, row.result_cell.proof_ref],
-          proof_ref: row.result_cell.proof_ref
-        }
-      ]
     };
   }
 
