@@ -27,7 +27,7 @@ test('M3 [place-anchors-from-reader]: Anchored proof map §3', () => {
   assert.fail(
     [
       'RED TASK (Decision 0013). Acceptance, each point an assertion of the promoted test:',
-      "1. The scene compiler places each row by one fixed, recorded transform per grid (national grid in mm, geographic grid in 1e-7 degree, local grid in mm or rack units). For every placed mark in the recorded fixture, its scene position equals that transform of the anchor the reader served, exactly.",
+      "1. Anchors are rows of the view that binds the domain to Rezono's std-space theory (Rezono decision one-structure-space-and-readings §2). The scene compiler places each row by one fixed, recorded transform per grid (national grid in mm, geographic grid in 1e-7 degree, local grid in mm or rack units). For every placed mark in the recorded fixture, its scene position equals that transform of the served anchor row, exactly.",
       "2. A row the reader serves without an anchor is in the unplaced tray of the place layout and has no place coordinates anywhere in the scene IR.",
       "3. Changing a label, a name or an address-like text in the fixture leaves every position unchanged: no code path makes a place from text (mutation check).",
       "4. No geocoding, address parsing or snapping code exists under packages/ or apps/ (the zero-compute lint and the domain check cover both).",
