@@ -15,6 +15,7 @@ export * from './coverage-sheet.ts';
 export * from './question-desk.ts';
 export * from './monge-model.ts';
 export * from './key-page-model.ts';
+export * from './proof-map-model.ts';
 export * from './i18n-mf2.ts';
 export { escapeXml } from './flow-split-svg.ts';
 
@@ -25,5 +26,6 @@ export const ATLAS_SHEETS = Object.freeze({
   CausalRippleSheet: './CausalRippleSheet.svelte',
   BitemporalStairSheet: './BitemporalStairSheet.svelte',
   MongeFoldingSheet: './MongeFoldingSheet.svelte',
-  KeyPageSheet: './KeyPageSheet.svelte'
+  KeyPageSheet: './KeyPageSheet.svelte',
+  ProofMapSheet: './ProofMapSheet.svelte'
 } as const);
