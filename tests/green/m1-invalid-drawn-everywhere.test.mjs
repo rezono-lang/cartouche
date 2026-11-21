@@ -38,7 +38,7 @@ const SHEETS = [
   },
   {
     name: 'relief-3d 04',
-    file: 'StatutoryRelief3D.svelte',
+    file: 'Relief3DSheet.svelte',
     props: () => {
       const f = fx('04-subsidy-a001-a003.json');
       f.subjects[0].state = 'invalid';

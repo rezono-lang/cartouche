@@ -20,10 +20,10 @@ const atlas = (file) => path.join(ROOT, 'packages', 'atlas', 'src', file);
 const SHEETS = [
   { name: 'flow-split 01', file: 'FlowSplitSheet.svelte', props: () => ({ fixture: fx('01-platform-drift.json') }) },
   { name: 'kringstand 03', file: 'KringstandSheet.svelte', props: () => ({ fixture: fx('03-kring-m1-to-m5-live.json') }) },
-  { name: 'relief-3d 04 (2d)', file: 'StatutoryRelief3D.svelte', props: () => ({ fixture: fx('04-subsidy-a001-a003.json') }) },
+  { name: 'relief-3d 04 (2d)', file: 'Relief3DSheet.svelte', props: () => ({ fixture: fx('04-subsidy-a001-a003.json') }) },
   {
     name: 'relief-3d 04 (orthographic)',
-    file: 'StatutoryRelief3D.svelte',
+    file: 'Relief3DSheet.svelte',
     props: () => ({ fixture: fx('04-subsidy-a001-a003.json'), projection: 'orthographic' })
   },
   { name: 'bitemporal-stair 05 (2d)', file: 'BitemporalStairSheet.svelte', props: () => ({ fixture: fx('05-subsidy-bitemporal.json') }) },

@@ -16,7 +16,7 @@ import { loadJson } from '../../scripts/contract-validators.mjs';
 const ROOT = process.cwd();
 const FX_04 = loadJson(ROOT, 'fixtures/04-subsidy-a001-a003.json');
 const FX_06 = loadJson(ROOT, 'fixtures/06-keycloak-dense-28.json');
-const RELIEF_SHEET = path.join(ROOT, 'packages', 'atlas', 'src', 'StatutoryRelief3D.svelte');
+const RELIEF_SHEET = path.join(ROOT, 'packages', 'atlas', 'src', 'Relief3DSheet.svelte');
 const RIPPLE_SHEET = path.join(ROOT, 'packages', 'atlas', 'src', 'CausalRippleSheet.svelte');
 
 test('M4 [honest-claims-domain-and-i18n]: removes unused three/@threlte deps and aligns README claims honestly', () => {

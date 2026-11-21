@@ -32,7 +32,7 @@ test('M1 [signs-only-from-contract]: renderFigure emits only contract signs for 
 const SHEETS = [
   { name: 'flow-split 01', file: 'FlowSplitSheet.svelte', props: () => ({ fixture: fx('01-platform-drift.json') }) },
   { name: 'kringstand 03', file: 'KringstandSheet.svelte', props: () => ({ fixture: fx('03-kring-m1-to-m5-live.json') }) },
-  { name: 'relief-3d 04', file: 'StatutoryRelief3D.svelte', props: () => ({ fixture: fx('04-subsidy-a001-a003.json') }) },
+  { name: 'relief-3d 04', file: 'Relief3DSheet.svelte', props: () => ({ fixture: fx('04-subsidy-a001-a003.json') }) },
   { name: 'bitemporal-stair 05', file: 'BitemporalStairSheet.svelte', props: () => ({ fixture: fx('05-subsidy-bitemporal.json') }) },
   { name: 'causal-ripple 06', file: 'CausalRippleSheet.svelte', props: () => ({ fixture: fx('06-keycloak-dense-28.json') }) },
   { name: 'monge-fold 08', file: 'MongeFoldingSheet.svelte', props: () => ({ fixture: fx('08-monge-4d-audit.json'), foldAngleDeg: 0 }) }

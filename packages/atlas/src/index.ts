@@ -15,7 +15,7 @@ export * from './i18n-mf2.ts';
 export { escapeXml } from './flow-split-svg.ts';
 
 export const ATLAS_SHEETS = Object.freeze({
-  StatutoryRelief3D: './StatutoryRelief3D.svelte',
+  Relief3DSheet: './Relief3DSheet.svelte',
   FlowSplitSheet: './FlowSplitSheet.svelte',
   KringstandSheet: './KringstandSheet.svelte',
   CausalRippleSheet: './CausalRippleSheet.svelte',

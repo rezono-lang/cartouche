@@ -11,7 +11,7 @@ import {
 import { auditA11y, parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
 const ROOT = process.cwd();
-const RELIEF_SVELTE = path.join(ROOT, 'packages', 'atlas', 'src', 'StatutoryRelief3D.svelte');
+const RELIEF_SVELTE = path.join(ROOT, 'packages', 'atlas', 'src', 'Relief3DSheet.svelte');
 const M = DATA_MARKS;
 
 function loadFixture04() {
@@ -42,10 +42,9 @@ test('M2: Sheet 01 renders orthographic Swisstopo 3D terrain, cliff markers, hat
   const model = buildReliefModel(fx, { theme: 'swisstopo', projection: 'orthographic' });
 
   // Headless Threlte v8 / Three.js orthographic scene spec (zero WebGL needed)
-  assert.equal(model.threlteScene.camera.cameraType, 'OrthographicCamera');
-  assert.equal(model.threlteScene.camera.projection, 'orthographic');
-  assert.equal(model.threlteScene.terraces.length, fx.sweep_2d.cells.length);
-  assert.equal(model.threlteScene.curtains.length, 1);
+  assert.equal(model.projection, 'orthographic');
+  assert.equal(model.gridCells.length, fx.sweep_2d.cells.length);
+  assert.equal(model.curtains.length, 1);
   assert.equal(model.curtains[0].subjectId, 'A003');
   assert.equal(model.curtains[0].zFloorZeroForbidden, true);
   assert.equal(model.curtains[0].zMin, 0);

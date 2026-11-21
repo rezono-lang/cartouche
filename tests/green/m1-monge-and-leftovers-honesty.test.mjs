@@ -4,13 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0014-round-3-client-boundary-and-guards.md',
-  summary: 'Issue #46 items 10, 12, 18: Monge unknown curtain has no fixed height and changed/not_applicable never paint valid-green; nightly-live.yml fixed; leftover threlteScene, removed deps doc, StatutoryRelief3D, and law/statute/policy removed',
-  waits_on: []
-};
-
 const ROOT = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 const MONGE_SHEET = path.join(ROOT, 'packages', 'atlas', 'src', 'MongeFoldingSheet.svelte');

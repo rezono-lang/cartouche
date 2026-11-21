@@ -2,7 +2,7 @@
   import { DATA_MARKS, PALETTES, SIGNS, paletteCss } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
   import { buildMongeFoldingModel } from './monge-model.ts';
-  import type { MongeFixtureInput, MongeNodeState, Point2D } from './monge-model.ts';
+  import type { MongeFixtureInput, MongeRoundState, Point2D } from './monge-model.ts';
 
   interface Props {
     fixture: MongeFixtureInput;
@@ -44,23 +44,27 @@
     return pos.y.toFixed(2);
   }
 
-  function roundDotFill(state: MongeNodeState): string {
+  function roundDotFill(state: MongeRoundState): string {
     if (state === 'unknown') return 'url(#monge-hatch)';
-    if (state === 'absent') return 'none';
+    if (state === 'absent' || state === 'not_applicable') return 'none';
+    if (state === 'changed') return 'var(--c-caution)';
     if (state === 'violated') return 'var(--c-violated)';
     if (state === 'invalid') return 'var(--c-paper-elev)';
-    return 'var(--c-valid)';
+    if (state === 'valid') return 'var(--c-valid)';
+    return 'none';
   }
 
-  function roundDotStroke(state: MongeNodeState): string {
+  function roundDotStroke(state: MongeRoundState): string {
     if (state === 'absent') return 'var(--c-ink-soft)';
+    if (state === 'not_applicable') return 'var(--c-ink-faint)';
+    if (state === 'changed') return 'var(--c-caution)';
     if (state === 'invalid' || state === 'violated') return 'var(--c-violated)';
     if (state === 'unknown') return 'var(--c-hatch)';
     return 'var(--c-ink)';
   }
 
-  function roundDotDash(state: MongeNodeState): string | undefined {
-    if (state === 'absent') return '2 1.5';
+  function roundDotDash(state: MongeRoundState): string | undefined {
+    if (state === 'absent' || state === 'not_applicable') return '2 1.5';
     if (state === 'invalid') return '2 1';
     return undefined;
   }
