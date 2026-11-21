@@ -16,7 +16,9 @@
  * This module runs STRICTLY at build time inside `packages/slip/bin/render.ts` and is NEVER imported by browser/page
  * bundle files (`Slip.svelte`, `slip-element.ts`, `packages/slip/src/index.ts`). Each of the 10 computations currently
  * carried over from Rezono's reference model has an explicit target disposition:
- *  1. Choosing the home row -> Target: Rezono reader/publisher (`/<pack>/home` or `head.home_claim`); build-time only here.
+ *  1. Choosing the home row -> Target: Rezono reader. Today the role's bundle names the home claim and `rows?limit=2` is
+ *     asked per relation until one has exactly one row; the reader should answer "the row this role opens on" itself.
+ *     Build-time only here.
  *  2. Pairing witnesses & calculation witnesses with lines -> Target: Rezono reader/gate (`/ask/grounds` pre-joined lines); build-time only here.
  *  3. Binding rule variables to lines via body atom positions -> Target: Rezono publisher/gate (pre-bound sentence segments with line indices); build-time only here.
  *  4. Placing aggregate totals before their contributors -> Target: Rezono reader/gate (canonical grounds order with `part: "total"` and `depth`); build-time only here.
@@ -24,8 +26,14 @@
  *  6. Choosing origin signs -> Target: Rezono publisher (`packs/std-view/key.yaml` sign attached to each published row); build-time only here.
  *  7. Parsing `known:` values and keys -> Target: Rezono reader/gate (structured `{ state, display, reason }` opaque cells); build-time only here.
  *  8. Resolving a sweep's table through kind inheritance -> Target: Rezono reader/gate (bound target relation/slot on `/sweeps`); build-time only here.
- *  9. Normalising stop statuses and turns -> Target: Rezono reader/gate (canonical `green|warning|red|not_computed|unavailable` and `turns|same|unknown|null`); build-time only here.
- * 10. Pairing a variant's difference entries with lines into folds -> Target: Build-time scene compiler (`bin/render.ts`) / Rezono `/sweeps` fold projection; never computed in browser.
+ *  9. Normalising stop statuses and turns -> Dropped, not moved: the reader already serves the canonical values
+ *     (`green|warning|red|not_computed|unavailable`, `turns|same|unknown`). Rezono's page mapped an unknown status to
+ *     `unavailable`, dropped an unknown turn and rewrote a turn on an unavailable stop to `unknown`; Cartouche refuses
+ *     such an answer instead (issue #23 §2), so nothing the reader did not say is shown.
+ * 10. Pairing a variant's difference entries with lines into folds -> Target: Rezono reader. Its `scenario` answer
+ *     already pairs `changed` rows by Rezono's "same row" rule (decisions/viewer-slip.md, Turning points); a fold per
+ *     slip line (relation, key, old and new cell) belongs in that answer. Until then: build time here, never in the
+ *     browser.
  */
 import type {
 	AnswerTable,
@@ -1284,20 +1292,26 @@ async function populateLineSweeps(
 			const seriesByIndex = new Map(seriesRes.body.series.map((cell) => [cell.index, cell]));
 
 			const stops: SweepStop[] = sweep.cells.map((cell: BoundSweepCellResponse) => {
-				const status: SweepStopStatus = VALID_STOP_STATUSES.has(cell.status)
-					? cell.status
-					: 'unavailable';
+				// Cartouche: an answer outside the canonical values is refused, not normalised (issue #23 §2). Rezono's page
+				// mapped an unknown status to `unavailable`, dropped an unknown turn and rewrote a turn on an unavailable
+				// stop to `unknown`.
+				if (!VALID_STOP_STATUSES.has(cell.status)) {
+					throw new Error(`reader /sweeps: unknown stop status "${String(cell.status)}" at stop ${cell.index}`);
+				}
+				const status: SweepStopStatus = cell.status;
 				const seriesCell = seriesByIndex.get(cell.index);
 				let turn: SweepTurnStatus | undefined;
 				let causes: string[] | undefined;
-				if (seriesCell?.turn && VALID_TURN_STATUSES.has(seriesCell.turn)) {
-					if (status === 'unavailable') {
-						turn = 'unknown';
-					} else {
-						turn = seriesCell.turn;
-						if (turn === 'turns' && Array.isArray(seriesCell.causes)) {
-							causes = [...seriesCell.causes];
-						}
+				if (seriesCell?.turn !== undefined && seriesCell.turn !== null) {
+					if (!VALID_TURN_STATUSES.has(seriesCell.turn)) {
+						throw new Error(`reader sweep series: unknown turn "${String(seriesCell.turn)}" at stop ${cell.index}`);
+					}
+					if (status === 'unavailable' && seriesCell.turn !== 'unknown') {
+						throw new Error(`reader sweep series: turn "${seriesCell.turn}" at stop ${cell.index}, which the role cannot see`);
+					}
+					turn = seriesCell.turn;
+					if (turn === 'turns' && Array.isArray(seriesCell.causes)) {
+						causes = [...seriesCell.causes];
 					}
 				}
 				const manifest =
