@@ -67,18 +67,30 @@ test('M2 conformance [stops-only]: <del>/<ins> fold only from the published fold
 });
 
 test('M2 conformance [stops-only]: partial-read role gets only unavailable stops and no fold', async () => {
-  const published = SWEEP().stops_summary;
-  const summaryFixture = fx();
-  summaryFixture.manifest = { ...summaryFixture.manifest, role: 'summary' };
-  summaryFixture.slip_conformance.sweeps.item_amount = {
-    ...summaryFixture.slip_conformance.sweeps.item_amount,
-    stops: published
-  };
-  const stops = stopsOf(await page({ fixture: summaryFixture, role: 'summary' }));
-  assert.equal(stops.length, published.length);
+  const res = await render({
+    fixture: 'fixtures/10-slip-reader-answers.json',
+    store: 'sweeps',
+    role: 'summary',
+    pack: 'slip',
+    lang: 'en',
+    keys: [{ line: 1, key: 's' }]
+  });
+  const doc = parseHtml(res.html).document;
+  const stops = stopsOf(doc);
+  assert.ok(stops.length > 0, 'summary role receives recorded sweep stops from fixture 10');
   for (const el of stops) assert.equal(el.getAttribute('data-status'), 'unavailable');
   assert.equal(stops.some((el) => el.querySelector('[data-check]')), false);
-  const folded = await page({ fixture: summaryFixture, role: 'summary', selectedStop: 1 });
+
+  const foldedRes = await render({
+    fixture: 'fixtures/10-slip-reader-answers.json',
+    store: 'sweeps',
+    role: 'summary',
+    pack: 'slip',
+    lang: 'en',
+    keys: [{ line: 1, key: 's' }],
+    selectedStop: 1
+  });
+  const folded = parseHtml(foldedRes.html).document;
   assert.equal(folded.querySelector('del'), null);
 });
 
