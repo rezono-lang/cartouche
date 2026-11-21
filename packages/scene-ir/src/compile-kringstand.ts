@@ -62,7 +62,7 @@ function buildRowCell(row: KringstandRowInput): OpaqueDisplayCell | undefined {
     return asOpaqueCell({
       state: 'unknown',
       display: row.display ?? null,
-      reason: row.reason ?? 'unspecified',
+      reason: row.reason ?? null,
       proof_ref: row.proof_ref
     });
   }

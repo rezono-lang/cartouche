@@ -58,7 +58,7 @@ function buildNodeCell(node: CausalRippleNodeInput): OpaqueDisplayCell | undefin
     return asOpaqueCell({
       state: 'unknown',
       display: node.display ?? null,
-      reason: node.reason ?? 'unspecified',
+      reason: node.reason ?? null,
       proof_ref: node.proof_ref
     });
   }

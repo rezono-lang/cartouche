@@ -103,6 +103,11 @@ test('M1 Sheet 03 (kringstand): compiles fixture 03 into valid CartoucheScene v2
     ]
   });
   assert.ok(checkGeometricInvariants(badDrift).some((v) => v.code === 'EPI_DRIFT_SINGLE_SIDED'));
+
+  // Rejects unknown row without explicit epistemic reason (never fabricates a default)
+  const missingReason = structuredClone(fx);
+  delete missingReason.sealed_rows[7].reason;
+  assert.throws(() => compileKringstandScene(missingReason), /explicit reason/);
 });
 
 test('M1 Sheet 04 (causal-ripple): compiles fixture 06 into valid CartoucheScene v2 preserving incomplete horizon and opaque tokens', () => {
@@ -130,6 +135,19 @@ test('M1 Sheet 04 (causal-ripple): compiles fixture 06 into valid CartoucheScene
 
   // Determinism
   assert.equal(canonicalJson(scene), canonicalJson(compileCausalRippleScene(fx)));
+
+  // Rejects unknown node without explicit epistemic reason (never fabricates a default)
+  const missingReason = structuredClone(fx);
+  missingReason.nodes.push({
+    id: 'obs-unexplained',
+    label: 'Unexplained Probe',
+    hop: 2,
+    sign: 'observation',
+    state: 'unknown',
+    display: null,
+    proof_ref: 'p:unexplained'
+  });
+  assert.throws(() => compileCausalRippleScene(missingReason), /explicit reason/);
 });
 
 test('M1 Sheet 05 (bitemporal-stair): compiles fixture 05 into valid orthographic CartoucheScene v2 with hollow not_applicable and unknown curtains', () => {
@@ -185,6 +203,11 @@ test('M1 Sheet 05 (bitemporal-stair): compiles fixture 05 into valid orthographi
   const badPerspective = structuredClone(fx);
   badPerspective.bitemporal_grid.projection = 'perspective';
   assert.throws(() => compileBitemporalScene(badPerspective), /XD_NO_PERSPECTIVE/);
+
+  // Rejects missing matrix cell instead of shifting Table Twin columns
+  const truncatedMatrix = structuredClone(fx);
+  truncatedMatrix.bitemporal_grid.matrix[1].pop();
+  assert.throws(() => compileBitemporalScene(truncatedMatrix), /missing bitemporal matrix cell/);
 
   // Determinism
   assert.equal(canonicalJson(scene), canonicalJson(compileBitemporalScene(fx)));

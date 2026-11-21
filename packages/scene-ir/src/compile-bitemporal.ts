@@ -56,7 +56,9 @@ export function compileBitemporalScene(fixture: BitemporalFixtureInput): Cartouc
     for (let validIdx = 0; validIdx < grid.valid_times.length; validIdx++) {
       const validTime = grid.valid_times[validIdx]!;
       const raw = matrixRow[validIdx];
-      if (!raw) continue;
+      if (!raw) {
+        throw new Error(`Contract violation: missing bitemporal matrix cell at (${epochLabel}, ${validTime}).`);
+      }
 
       const cell: OpaqueDisplayCell = asOpaqueCell({
         state: raw.state,
@@ -99,7 +101,7 @@ export function compileBitemporalScene(fixture: BitemporalFixtureInput): Cartouc
         unknownManifolds.push({
           subjectId: nodeId,
           kind: 'uncertainty_curtain',
-          reason: cell.reason ?? 'unspecified',
+          reason: cell.reason!,
           proofRef: cell.proofRef,
           zFloorZeroForbidden: true
         });
