@@ -1,7 +1,7 @@
 {
   "fixture_id": "10-slip-reader-answers",
   "manifest": {
-    "id": "sha256:b301e58c0708d277add32d884f9bb0f4b27f9f85c317b7d605f3cfc7e8b9dad3",
+    "id": "sha256:e0efb897ef8bebd6dc7736c620cead35c2805c88b8b821e7c742ce70fb9f1fb2",
     "epoch": 1,
     "knowledge_time": "2026-01-01T00:00:00Z",
     "role": "reader",
@@ -18,7 +18,7 @@
       "sweeps": "tests/slip/slip_support.py publish_sweeps, then drop_variant(v-item_amount-03-3)"
     },
     "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the commit by .github/workflows/rezono-reader-parity.yml: every request packages/slip/src/model.ts sends for the slip tests' pages, with the reader's status and body as served. Git dates of the sweeps repository fixed at 2026-01-01T00:00:00Z.",
-    "recorded_by": null
+    "recorded_by": "https://github.com/rezono-lang/cartouche/actions/runs/44955704968"
   },
   "reader_answers": {
     "main": {
@@ -2026,7 +2026,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "b301e58c0708d277add32d884f9bb0f4b27f9f85c317b7d605f3cfc7e8b9dad3",
+            "manifest_sha256": "e0efb897ef8bebd6dc7736c620cead35c2805c88b8b821e7c742ce70fb9f1fb2",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
@@ -5271,7 +5271,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "b301e58c0708d277add32d884f9bb0f4b27f9f85c317b7d605f3cfc7e8b9dad3",
+            "manifest_sha256": "e0efb897ef8bebd6dc7736c620cead35c2805c88b8b821e7c742ce70fb9f1fb2",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
@@ -7965,7 +7965,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "24d54ebc06c4e0afef5309c34058fc5f49157db3c40a20a196dfc2145fd49946",
+            "manifest_sha256": "19809f9e056ec410e9e1bc6f916d2d2cb2cea56a22e4fb4eb2183185e0b7072d",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
@@ -10860,7 +10860,7 @@
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
             "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "24d54ebc06c4e0afef5309c34058fc5f49157db3c40a20a196dfc2145fd49946",
+            "manifest_sha256": "19809f9e056ec410e9e1bc6f916d2d2cb2cea56a22e4fb4eb2183185e0b7072d",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
