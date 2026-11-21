@@ -134,7 +134,17 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'sheet.coverage.summary_untested': 'Untested',
     'sheet.coverage.summary_unused_kinds': 'Unused kinds',
     'sheet.coverage.summary_unused_slots': 'Unused slots',
-    'sheet.coverage.open_slip': 'Open slip'
+    'sheet.coverage.open_slip': 'Open slip',
+    'reason.premise_missing': 'Required premise missing',
+    'reason.unbacked_front_response': 'No declared question matched',
+    'reason.question_not_allowed': 'Question not declared for this role',
+    'desk.title': 'Question Desk',
+    'desk.questions_heading': 'Declared questions',
+    'desk.col_subject': 'Subject',
+    'desk.col_value': 'Value',
+    'desk.col_slip': 'Slip',
+    'desk.open_slip': 'Open slip',
+    'desk.unknown_because': 'Unknown, because {$reason}'
   }),
   nl: Object.freeze({
     'sheet.relief.title': 'Orthografisch Reliëf',
@@ -262,7 +272,17 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'sheet.coverage.summary_untested': 'Ongetest',
     'sheet.coverage.summary_unused_kinds': 'Ongebruikte soorten',
     'sheet.coverage.summary_unused_slots': 'Ongebruikte velden',
-    'sheet.coverage.open_slip': 'Open strook'
+    'sheet.coverage.open_slip': 'Open strook',
+    'reason.premise_missing': 'Vereiste premisse ontbreekt',
+    'reason.unbacked_front_response': 'Geen verklaarde vraag passend',
+    'reason.question_not_allowed': 'Vraag niet verklaard voor deze rol',
+    'desk.title': 'Vragenbalie',
+    'desk.questions_heading': 'Verklaarde vragen',
+    'desk.col_subject': 'Onderwerp',
+    'desk.col_value': 'Waarde',
+    'desk.col_slip': 'Strook',
+    'desk.open_slip': 'Open strook',
+    'desk.unknown_because': 'Onbekend, omdat {$reason}'
   })
 });
 
