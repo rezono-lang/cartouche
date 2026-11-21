@@ -53,6 +53,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: Cache Playwright Chromium
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
       - name: Run complete fast-check (tsc + AST zero-compute lint + contract freeze + tests)
         run: npm run fast-check
         env:
