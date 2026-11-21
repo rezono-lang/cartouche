@@ -293,6 +293,8 @@
 </section>
 
 <style>
+  .bt-sheet { font-family: var(--font-sans); }
+  [data-part="manifest-hash"], code { font-family: var(--font-mono); }
   .zs { transform: scaleY(var(--z)); }
   .hollow { background: transparent; border: 1px dashed currentColor; }
   .hatched { background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px); }

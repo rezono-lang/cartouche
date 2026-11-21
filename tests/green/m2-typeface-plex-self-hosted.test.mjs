@@ -4,35 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { paletteCss } from '../../packages/reader-core/src/palette.ts';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0012-proof-first-plan.md',
-  summary:
-    'One real typeface pair, self-hosted: a sans and a mono (for example IBM Plex Sans and Plex Mono, OFL-1.1) as woff2 files in the repository with their licence text, used by every sheet and the slip, fetched from no third-party host',
-  waits_on: [
-    'm1-absent-never-valid-colour',
-    'm1-claims-match-build',
-    'm1-contrast-wcag-aa',
-    'm1-forced-colors-reduced-motion',
-    'm1-green-guard-covers-harness',
-    'm1-invalid-drawn-everywhere',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-no-borrowed-proof-refs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-proof-tree',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
-
 // Decision 0012 §7. Fonts are assets, not code; OFL-1.1 is allowed for self-hosted font files with their licence next
 // to them. Rezono's packs/std-view/key.yaml names system-ui and ui-monospace today: propose the pair there too, so the
 // key stays one.

@@ -344,7 +344,11 @@
     color: var(--c-ink);
     border: 1px solid var(--c-rule);
     padding: 0.75rem;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
+  }
+  [data-part="manifest-hash"],
+  code {
+    font-family: var(--font-mono);
   }
   .relief-curtain-banner {
     background: repeating-linear-gradient(45deg, transparent 0 5px, var(--c-hatch) 5px 6px);

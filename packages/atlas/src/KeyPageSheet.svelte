@@ -141,3 +141,8 @@
     </svg>
   {/if}
 </section>
+
+<style>
+  section { font-family: var(--font-sans); }
+  [data-part="manifest-hash"], code { font-family: var(--font-mono); }
+</style>

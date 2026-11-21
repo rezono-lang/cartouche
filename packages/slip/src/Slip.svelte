@@ -805,4 +805,12 @@
     padding: 0.25rem 0.5rem;
     text-align: left;
   }
+  .cartouche-slip-root {
+    font-family: var(--font-sans);
+  }
+  [data-part="manifest-hash"],
+  [data-part="value"],
+  code {
+    font-family: var(--font-mono);
+  }
 </style>

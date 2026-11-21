@@ -320,3 +320,8 @@
     </tbody>
   </table>
 </section>
+
+<style>
+  .monge-sheet { font-family: var(--font-sans); }
+  [data-part="manifest-hash"], code { font-family: var(--font-mono); }
+</style>

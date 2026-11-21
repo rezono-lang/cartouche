@@ -196,3 +196,13 @@
     {/if}
   </section>
 </section>
+
+<style>
+  section[data-sheet="flow-split"] {
+    font-family: var(--font-sans);
+  }
+  [data-part="manifest-hash"],
+  code {
+    font-family: var(--font-mono);
+  }
+</style>
