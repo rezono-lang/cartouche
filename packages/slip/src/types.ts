@@ -25,7 +25,8 @@ export interface Label {
 
 export interface QuestionStep {
   readonly trace?: unknown;
-  readonly suppose?: string | { readonly delta?: string };
+  /** Typed as Rezono's model reads it; std-explain writes `suppose: given` (a string), so `.delta` is undefined there. */
+  readonly suppose?: { readonly delta?: string };
 }
 
 export interface Question {
@@ -177,7 +178,7 @@ export interface SeriesCell {
   readonly index: number;
   readonly value: string;
   readonly status: string;
-  readonly turn?: string;
+  readonly turn?: SweepTurnStatus;
   readonly causes?: readonly string[];
   readonly counts?: readonly DifferenceCount[];
 }
@@ -210,8 +211,8 @@ export type SweepTurnStatus = 'turns' | 'same' | 'unknown';
 export interface BoundSweepCellResponse {
   readonly index: number;
   readonly value: string;
-  readonly status: string;
-  readonly checks?: readonly { readonly name: string; readonly status: string }[];
+  readonly status: SweepStopStatus;
+  readonly checks?: readonly SweepCheckInfo[];
   readonly manifest?: string;
 }
 
@@ -275,3 +276,139 @@ export interface MessageFiller {
 
 /** One reader route: a path asked, the status and JSON body answered. */
 export type ReaderHandler = (request: Request) => Promise<Response>;
+
+// ---- The slip's view (ported) ----
+
+export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+
+export interface SweepCheckInfo {
+  readonly name: string;
+  readonly status: 'green' | 'warning' | 'red' | 'unavailable';
+}
+
+export interface SweepStop {
+  readonly index: number;
+  readonly value: string;
+  readonly status: SweepStopStatus;
+  readonly statusLabel: string;
+  readonly turn?: SweepTurnStatus | undefined;
+  readonly causes?: readonly string[] | undefined;
+  readonly manifest?: string | undefined;
+  readonly checks?: readonly SweepCheckInfo[] | undefined;
+}
+
+export interface LineSweep {
+  readonly name: string;
+  readonly stops: readonly SweepStop[];
+  readonly unavailable: boolean;
+  readonly unavailableNote?: string | undefined;
+  readonly samplesNote: string;
+}
+
+export interface SignInfo {
+  readonly name: string;
+  readonly glyph: string;
+  readonly label: string;
+  readonly form?: string | undefined;
+}
+
+export type ValueState = 'known' | 'unknown' | 'not_applicable' | 'invalid' | 'absent';
+
+export interface LineFold {
+  readonly oldValue: string;
+  readonly newValue: string;
+  readonly newState: ValueState;
+  readonly newReason: string;
+  readonly newSign?: SignInfo | undefined;
+}
+
+export interface LineVerb {
+  readonly verb: string;
+  readonly label: string;
+  readonly key: string;
+  readonly question: string;
+  readonly answerShape: string;
+  readonly primary?: boolean | undefined;
+}
+
+export interface AnswerTableCell {
+  readonly text: string;
+  readonly sign?: SignInfo | undefined;
+}
+
+export interface AnswerTableRow {
+  readonly depth?: number | undefined;
+  readonly cells: readonly AnswerTableCell[];
+}
+
+export interface AnswerTable {
+  readonly question: string;
+  readonly shape: string;
+  readonly heading: string;
+  readonly headers: readonly string[];
+  readonly rows: readonly AnswerTableRow[];
+  readonly cutMessage?: string | undefined;
+  readonly moreLabel?: string | undefined;
+}
+
+export interface RowSelection {
+  readonly relation: string;
+  readonly key: readonly string[];
+}
+
+export interface SentenceSegment {
+  readonly text: string;
+  readonly line?: number | undefined;
+}
+
+export interface SlipLine {
+  index: number;
+  relation: string;
+  key: string;
+  depth: number;
+  polarity: 'positive' | 'negative';
+  part?: 'total' | undefined;
+  path?: string | undefined;
+  label: string;
+  value: string;
+  state: ValueState;
+  reason: string;
+  valueSign?: SignInfo | undefined;
+  origin: string;
+  originSign?: SignInfo | undefined;
+  verbs: LineVerb[];
+  sweep?: LineSweep | undefined;
+}
+
+export interface SlipSeal {
+  readonly manifestSha256: string;
+  readonly witnessCheck?: WitnessCheckStatus | undefined;
+  readonly manifestLabel: string;
+  readonly readerHashesLabel: string;
+  readonly sealSign?: SignInfo | undefined;
+}
+
+export interface SlipView {
+  kind: 'slip' | 'relations';
+  lang: string;
+  pack: string;
+  manifestId: string;
+  /** Cartouche: the head the reader served (the seal quotes it). */
+  head: HeadResponse;
+  row?: RowSelection | undefined;
+  sentence: SentenceSegment[];
+  lines: SlipLine[];
+  relations: Array<{ id: string; label: string }>;
+  seal: SlipSeal;
+  headers: { line: string; value: string; origin: string; verbs: string };
+  legendHeaders: { title: string; sign: string; meaning: string };
+  signCatalog: SignInfo[];
+  supposedSign?: SignInfo | undefined;
+  labels: { relationsHeading: string; closeAnswer: string };
+  answersByKey: Record<string, AnswerTable>;
+  /**
+   * Cartouche: the folds of every variant a stop of this slip names, computed at build time from the variant's
+   * published difference. Rezono's page fetched each difference in the browser (loadVariantFolds) when a stop was picked.
+   */
+  foldsByVariant: Record<string, Record<number, LineFold>>;
+}
