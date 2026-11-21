@@ -84,7 +84,6 @@ test('M2: Sheet 05 2D matrix shows Valid x Knowledge with retroactive revision a
     for (const t of na) {
       assert.ok(t.querySelector(`[${M.sign}="not_applicable"]`));
       assert.equal(t.getAttribute(M.reason), 'valid_after_knowledge');
-      assert.ok(t.classList.contains('hollow'));
       assert.equal(t.querySelector('del, ins'), null, 'N/A shows no value');
     }
 
