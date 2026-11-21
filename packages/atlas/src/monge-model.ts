@@ -135,25 +135,65 @@ export function normalizeFoldAngle(angleDeg: number | undefined): number {
   return Math.trunc(raw);
 }
 
+interface FoldTrig {
+  readonly cosFold: number;
+  readonly sinFold: number;
+  readonly cosY: number;
+  readonly sinY: number;
+  readonly cosP: number;
+  readonly sinP: number;
+}
+
+// Exact cross-engine constants for the canonical 0° / 40° / 90° Monge fold presets.
+const PRESET_TRIG: Readonly<Record<number, FoldTrig>> = Object.freeze({
+  0: Object.freeze({ cosFold: 1, sinFold: 0, cosY: 1, sinY: 0, cosP: 1, sinP: 0 }),
+  40: Object.freeze({
+    cosFold: 0.766044443118978,
+    sinFold: 0.6427876096865393,
+    cosY: 0.9791843235052687,
+    sinY: 0.20297305387890792,
+    cosP: 0.9692012977199335,
+    sinP: 0.24626986112392522
+  }),
+  90: Object.freeze({
+    cosFold: 0,
+    sinFold: 1,
+    cosY: 0.8960506064381762,
+    sinY: 0.44395192386200863,
+    cosP: 0.8472551110134161,
+    sinP: 0.5311861979208834
+  })
+});
+
+function resolveFoldTrig(foldAngleDeg: number): FoldTrig {
+  if (Object.prototype.hasOwnProperty.call(PRESET_TRIG, foldAngleDeg)) {
+    return PRESET_TRIG[foldAngleDeg]!;
+  }
+  const foldRad = foldAngleDeg * DEG_TO_RAD;
+  const blend = foldAngleDeg / 90;
+  const yaw = 0.46 * blend;
+  const pitch = 0.56 * blend;
+  return {
+    cosFold: Math.cos(foldRad),
+    sinFold: Math.sin(foldRad),
+    cosY: Math.cos(yaw),
+    sinY: Math.sin(yaw),
+    cosP: Math.cos(pitch),
+    sinP: Math.sin(pitch)
+  };
+}
+
 /**
  * Pure linear orthographic projection (zero perspective divide).
  * At foldAngleDeg = 0° it renders an exact top-down 2D flat net.
  * As foldAngleDeg increases toward 90°, it rotates smoothly into an orthographic axonometric view.
  */
-function projectOrtho(x3: number, y3: number, z3: number, foldRad: number): Point2D {
-  const blend = foldRad / (Math.PI / 2);
-  const yaw = 0.46 * blend;
-  const pitch = 0.56 * blend;
-  const cosY = Math.cos(yaw);
-  const sinY = Math.sin(yaw);
-  const cosP = Math.cos(pitch);
-  const sinP = Math.sin(pitch);
-
-  const rx = x3 * cosY - y3 * sinY;
-  const ry = x3 * sinY + y3 * cosY;
+function projectOrtho(x3: number, y3: number, z3: number, trig: FoldTrig): Point2D {
+  const rx = x3 * trig.cosY - y3 * trig.sinY;
+  const ry = x3 * trig.sinY + y3 * trig.cosY;
 
   const sx = ORIGIN_X + rx * SCALE;
-  const sy = ORIGIN_Y - (ry * cosP + z3 * sinP) * SCALE;
+  const sy = ORIGIN_Y - (ry * trig.cosP + z3 * trig.sinP) * SCALE;
   return { x: sx, y: sy };
 }
 
@@ -165,16 +205,16 @@ function quadToPoints(pts: readonly Point2D[]): string {
   return pts.map(fmtPt).join(' ');
 }
 
-function plane2Point(u: number, h: number, foldRad: number): Point2D {
-  const y3 = PLANE_HALF_Y + h * Math.cos(foldRad);
-  const z3 = h * Math.sin(foldRad);
-  return projectOrtho(u, y3, z3, foldRad);
+function plane2Point(u: number, h: number, trig: FoldTrig): Point2D {
+  const y3 = PLANE_HALF_Y + h * trig.cosFold;
+  const z3 = h * trig.sinFold;
+  return projectOrtho(u, y3, z3, trig);
 }
 
-function plane3Point(v: number, h: number, foldRad: number): Point2D {
-  const x3 = PLANE_HALF_X + h * Math.cos(foldRad);
-  const z3 = h * Math.sin(foldRad);
-  return projectOrtho(x3, v, z3, foldRad);
+function plane3Point(v: number, h: number, trig: FoldTrig): Point2D {
+  const x3 = PLANE_HALF_X + h * trig.cosFold;
+  const z3 = h * trig.sinFold;
+  return projectOrtho(x3, v, z3, trig);
 }
 
 export function buildMongeFoldingModel(
@@ -184,7 +224,7 @@ export function buildMongeFoldingModel(
   const foldAngleDeg = normalizeFoldAngle(
     foldAngleOverride !== undefined ? foldAngleOverride : fixture.fold_angle_deg
   );
-  const foldRad = foldAngleDeg * DEG_TO_RAD;
+  const trig = resolveFoldTrig(foldAngleDeg);
   const projection: '2d' | 'orthographic' = foldAngleDeg === 0 ? '2d' : 'orthographic';
 
   // Compile via scene-ir compiler (enforces xD-Discipline Guard: Law 0, 1, 2, 3, 5).
@@ -245,11 +285,11 @@ export function buildMongeFoldingModel(
       });
     }
 
-    const p1 = projectOrtho(s.x, s.y, 0, foldRad);
-    const hinge2 = projectOrtho(s.x, PLANE_HALF_Y, 0, foldRad);
-    const top2 = plane2Point(s.x, WALL_DEPTH, foldRad);
-    const hinge3 = projectOrtho(PLANE_HALF_X, s.y, 0, foldRad);
-    const top3 = plane3Point(s.y, WALL_DEPTH, foldRad);
+    const p1 = projectOrtho(s.x, s.y, 0, trig);
+    const hinge2 = projectOrtho(s.x, PLANE_HALF_Y, 0, trig);
+    const top2 = plane2Point(s.x, WALL_DEPTH, trig);
+    const hinge3 = projectOrtho(PLANE_HALF_X, s.y, 0, trig);
+    const top3 = plane3Point(s.y, WALL_DEPTH, trig);
 
     const roundMarks: MongeRoundMark[] = [];
     const states = s.round_states ?? [];
@@ -262,8 +302,8 @@ export function buildMongeFoldingModel(
       roundMarks.push({
         roundId: rounds[i]!,
         state: st,
-        plane2: plane2Point(s.x, h, foldRad),
-        plane3: plane3Point(s.y, h, foldRad)
+        plane2: plane2Point(s.x, h, trig),
+        plane3: plane3Point(s.y, h, trig)
       });
     }
 
@@ -271,10 +311,10 @@ export function buildMongeFoldingModel(
     if (s.state === 'unknown') {
       // Hatched uncertainty curtain rising off z = 0 (never collapsed to z = 0).
       const halfSpan = 0.16;
-      const b0 = projectOrtho(s.x - halfSpan, s.y, 0.08, foldRad);
-      const b1 = projectOrtho(s.x + halfSpan, s.y, 0.08, foldRad);
-      const t1 = projectOrtho(s.x + halfSpan, s.y, CURTAIN_HEIGHT, foldRad);
-      const t0 = projectOrtho(s.x - halfSpan, s.y, CURTAIN_HEIGHT, foldRad);
+      const b0 = projectOrtho(s.x - halfSpan, s.y, 0.08, trig);
+      const b1 = projectOrtho(s.x + halfSpan, s.y, 0.08, trig);
+      const t1 = projectOrtho(s.x + halfSpan, s.y, CURTAIN_HEIGHT, trig);
+      const t0 = projectOrtho(s.x - halfSpan, s.y, CURTAIN_HEIGHT, trig);
       unknownCurtain = [b0, b1, t1, t0];
     }
 
@@ -334,22 +374,22 @@ export function buildMongeFoldingModel(
   });
 
   const plane1Pts: readonly Point2D[] = [
-    projectOrtho(-PLANE_HALF_X, -PLANE_HALF_Y, 0, foldRad),
-    projectOrtho(PLANE_HALF_X, -PLANE_HALF_Y, 0, foldRad),
-    projectOrtho(PLANE_HALF_X, PLANE_HALF_Y, 0, foldRad),
-    projectOrtho(-PLANE_HALF_X, PLANE_HALF_Y, 0, foldRad)
+    projectOrtho(-PLANE_HALF_X, -PLANE_HALF_Y, 0, trig),
+    projectOrtho(PLANE_HALF_X, -PLANE_HALF_Y, 0, trig),
+    projectOrtho(PLANE_HALF_X, PLANE_HALF_Y, 0, trig),
+    projectOrtho(-PLANE_HALF_X, PLANE_HALF_Y, 0, trig)
   ];
   const plane2Pts: readonly Point2D[] = [
-    projectOrtho(-PLANE_HALF_X, PLANE_HALF_Y, 0, foldRad),
-    projectOrtho(PLANE_HALF_X, PLANE_HALF_Y, 0, foldRad),
-    plane2Point(PLANE_HALF_X, WALL_DEPTH, foldRad),
-    plane2Point(-PLANE_HALF_X, WALL_DEPTH, foldRad)
+    projectOrtho(-PLANE_HALF_X, PLANE_HALF_Y, 0, trig),
+    projectOrtho(PLANE_HALF_X, PLANE_HALF_Y, 0, trig),
+    plane2Point(PLANE_HALF_X, WALL_DEPTH, trig),
+    plane2Point(-PLANE_HALF_X, WALL_DEPTH, trig)
   ];
   const plane3Pts: readonly Point2D[] = [
-    projectOrtho(PLANE_HALF_X, -PLANE_HALF_Y, 0, foldRad),
-    projectOrtho(PLANE_HALF_X, PLANE_HALF_Y, 0, foldRad),
-    plane3Point(PLANE_HALF_Y, WALL_DEPTH, foldRad),
-    plane3Point(-PLANE_HALF_Y, WALL_DEPTH, foldRad)
+    projectOrtho(PLANE_HALF_X, -PLANE_HALF_Y, 0, trig),
+    projectOrtho(PLANE_HALF_X, PLANE_HALF_Y, 0, trig),
+    plane3Point(PLANE_HALF_Y, WALL_DEPTH, trig),
+    plane3Point(-PLANE_HALF_Y, WALL_DEPTH, trig)
   ];
 
   const planes: readonly MongePlaneQuad[] = [
@@ -357,19 +397,19 @@ export function buildMongeFoldingModel(
       id: 'plane-1',
       label: 'Plane I (X × Y)',
       points: quadToPoints(plane1Pts),
-      labelPos: projectOrtho(-PLANE_HALF_X + 0.15, -PLANE_HALF_Y + 0.15, 0, foldRad)
+      labelPos: projectOrtho(-PLANE_HALF_X + 0.15, -PLANE_HALF_Y + 0.15, 0, trig)
     },
     {
       id: 'plane-2',
       label: 'Plane II (X × Strata)',
       points: quadToPoints(plane2Pts),
-      labelPos: plane2Point(-PLANE_HALF_X + 0.15, WALL_DEPTH - 0.18, foldRad)
+      labelPos: plane2Point(-PLANE_HALF_X + 0.15, WALL_DEPTH - 0.18, trig)
     },
     {
       id: 'plane-3',
       label: 'Plane III (Y × Strata)',
       points: quadToPoints(plane3Pts),
-      labelPos: plane3Point(-PLANE_HALF_Y + 0.15, WALL_DEPTH - 0.18, foldRad)
+      labelPos: plane3Point(-PLANE_HALF_Y + 0.15, WALL_DEPTH - 0.18, trig)
     }
   ];
 

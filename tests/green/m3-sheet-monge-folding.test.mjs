@@ -57,10 +57,10 @@ test('M3 Sheet 06 (monge-fold): folds 0° flat <-> 40° <-> 90° orthographic pr
       const unkText = unkG.querySelector('text')?.textContent ?? '';
       assert.equal(/[0-9]/.test(unkText), false, 'unknown SVG label must carry zero ASCII digits');
 
-      // Synchronized accessible Table Twin
+      // Synchronized accessible Table Twin (no client-rounded numeric coordinate columns)
       const twin = root.querySelector(`table[${M.part}="twin"]`);
       assert.ok(twin);
-      assert.ok(twin.querySelectorAll('th').length >= 5);
+      assert.equal(twin.querySelectorAll('th').length, 4);
       assert.equal(twin.querySelectorAll('tbody tr').length, FX_08.services.length);
       const unkCell = twin.querySelector(`td[${M.part}="value"][${M.state}="unknown"]`);
       assert.ok(unkCell);

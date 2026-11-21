@@ -209,8 +209,7 @@
     <thead>
       <tr>
         <th scope="col">Entity</th>
-        <th scope="col">X</th>
-        <th scope="col">Y</th>
+        <th scope="col">Sign</th>
         <th scope="col">State</th>
         <th scope="col">Proof</th>
       </tr>
@@ -219,8 +218,7 @@
       {#each model.services as svc (svc.id)}
         <tr {...{ [M.key]: svc.id, [M.state]: svc.state, [M.proof_ref]: svc.proofRef }}>
           <td>{svc.label}</td>
-          <td>{svc.mongeCoords.x.toFixed(2)}</td>
-          <td>{svc.mongeCoords.y.toFixed(2)}</td>
+          <td>{svc.sign}</td>
           <td
             {...{
               [M.part]: 'value',
