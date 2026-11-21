@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Build-time prerenderer for apps/atlas-viewer (Decision 0014, Issue #46 items 1-2).
- * Compiles all 6 CartoucheScene Typst exports and prerenders @rezono/slip HTML from
- * Rezono's recorded reader answers (fixtures/10-slip-reader-answers.json) + 410 unserved
- * (fixtures/07-unserved-410.json) at build time so the browser viewer NEVER constructs
- * DeltaStore, compiles scenes, runs exportTypst, or passes a browser-built seal to Slip.
+ * Build-time prerenderer for apps/atlas-viewer (Decision 0014 & Decision 0015 N2, Issue #46 items 1-2).
+ * Prerenders ALL 6 Atlas sheets, @rezono/slip HTML (from fixtures/10-slip-reader-answers.json +
+ * 07-unserved-410.json), and all 7 CartoucheScene Typst exports at build time so the browser bundle
+ * holds ZERO scene compilers, ZERO layout models, ZERO DeltaStore, ZERO Typst exporter, and ZERO
+ * golden fixture JSON files.
  */
 
 import fs from 'node:fs';
@@ -19,9 +19,11 @@ import { compileCausalRippleScene } from '../packages/scene-ir/src/compile-causa
 import { compileBitemporalScene } from '../packages/scene-ir/src/compile-bitemporal.ts';
 import { exportTypst } from '../packages/scene-ir/src/typst-export.ts';
 import { render as renderSlip } from '../packages/slip/bin/render.ts';
+import { renderSvelte } from './svelte-test-harness.mjs';
 
 const ROOT = process.cwd();
 const loadJson = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
+const sheetPath = (name) => path.join(ROOT, 'packages', 'atlas', 'src', name);
 
 function collectReasons(items) {
   const out = {};
@@ -30,6 +32,11 @@ function collectReasons(items) {
     if (id && item.reason) out[id] = item.reason;
   }
   return out;
+}
+
+async function renderSheetHtml(svelteFile, props) {
+  const { html, head } = await renderSvelte(svelteFile, props);
+  return `${head}${html}`;
 }
 
 const fx01 = loadJson('fixtures/01-platform-drift.json');
@@ -41,6 +48,7 @@ const fx06 = loadJson('fixtures/06-keycloak-dense-28.json');
 const fx08 = loadJson('fixtures/08-monge-4d-audit.json');
 
 const PALETTES = ['swisstopo', 'obsidian', 'forced'];
+const LOCALES = ['en', 'nl'];
 const SLIP_ROWS = [
   { id: 'flagged::item-a::12', row: { relation: 'flagged', key: ['item-a', '12'] } },
   { id: 'group_size::group-a::2', row: { relation: 'group_size', key: ['group-a', '2'] } },
@@ -51,6 +59,49 @@ const SLIP_ROWS = [
     row: { relation: 'calc__capped_amount', key: ['item-c', '', 'unknown', 'fact recorded_amount.amount is missing'] }
   }
 ];
+
+const sheetsHtml = {
+  relief: {},
+  flowFull: {},
+  flowRestricted: {},
+  kringstand: await renderSheetHtml(sheetPath('KringstandSheet.svelte'), { fixture: fx03 }),
+  ripple: {},
+  bitemporal: {},
+  monge: {}
+};
+
+for (const theme of PALETTES) {
+  sheetsHtml.relief[theme] = {};
+  sheetsHtml.ripple[theme] = {};
+  for (const lang of LOCALES) {
+    sheetsHtml.relief[theme][lang] = await renderSheetHtml(sheetPath('Relief3DSheet.svelte'), {
+      fixture: fx04,
+      theme,
+      lang
+    });
+    sheetsHtml.ripple[theme][lang] = await renderSheetHtml(sheetPath('CausalRippleSheet.svelte'), {
+      fixture: fx06,
+      theme,
+      lang
+    });
+  }
+  sheetsHtml.flowFull[theme] = await renderSheetHtml(sheetPath('FlowSplitSheet.svelte'), {
+    fixture: fx01,
+    theme
+  });
+  sheetsHtml.flowRestricted[theme] = await renderSheetHtml(sheetPath('FlowSplitSheet.svelte'), {
+    fixture: fx02,
+    theme
+  });
+  sheetsHtml.bitemporal[theme] = await renderSheetHtml(sheetPath('BitemporalStairSheet.svelte'), {
+    fixture: fx05,
+    theme
+  });
+  sheetsHtml.monge[theme] = await renderSheetHtml(sheetPath('MongeFoldingSheet.svelte'), {
+    fixture: fx08,
+    theme
+  });
+}
 
 const servedHtml = {};
 const unservedHtml = {};
@@ -98,15 +149,7 @@ const typst = {
 };
 
 const output = {
-  sheets: {
-    relief: fx04,
-    flowFull: fx01,
-    flowRestricted: fx02,
-    kringstand: fx03,
-    ripple: fx06,
-    bitemporal: fx05,
-    monge: fx08
-  },
+  sheetsHtml,
   slip: {
     rowKeys: SLIP_ROWS.map((r) => r.id),
     servedHtml,
@@ -118,4 +161,6 @@ const output = {
 const outPath = path.join(ROOT, 'fixtures', 'viewer', 'prerendered.json');
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, `${JSON.stringify(output, null, 2)}\n`, 'utf8');
-console.log(`✅ Prerendered viewer artifact written to fixtures/viewer/prerendered.json (${SLIP_ROWS.length} slip rows x ${PALETTES.length} palettes + 7 Typst sheets).`);
+console.log(
+  `✅ Prerendered viewer artifact written to fixtures/viewer/prerendered.json (7 sheets + ${SLIP_ROWS.length} slip rows x ${PALETTES.length} palettes + 7 Typst exports).`
+);
