@@ -6,14 +6,6 @@ import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { render } from '../../packages/slip/bin/render.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M1',
-  decision: 'decisions/0015-quality-round-3.md',
-  priority: 2,
-  summary: '#46 point 8: every proof reference on the slip is one its input served (the reader answer, or the fixture), never one Cartouche made up (sweep:<name>#<i>, manifest id as subject, rowProofRef); AGENTS.md promises no verifiable witness that nothing verifies',
-  waits_on: []
-};
-
 // Decision 0015 §4, issue #46 point 8. Cartouche makes up proof references: render.ts fixtureSweeps
 // (`sweep:<name>#<i>`), render.ts createSlipModel (the subject's ref is the manifest id) and slip-props.ts rowProofRef
 // (`<manifest>:<relation>:<key>`). Rezono's recorded answers hold no witness reference today, so the honest slip shows

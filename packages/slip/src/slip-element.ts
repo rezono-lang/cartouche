@@ -172,12 +172,16 @@ function resolveSignSpec(signName: string): SignSpec {
   return spec;
 }
 
-function renderSignSpan(signName: string, proofRef: string, reason?: string | null): string {
+function proofRefAttr(proofRef: string | null | undefined): string {
+  return proofRef ? ` ${DATA_MARKS.proof_ref}="${escapeHtml(proofRef)}"` : '';
+}
+
+function renderSignSpan(signName: string, proofRef: string | null | undefined, reason?: string | null): string {
   const spec = resolveSignSpec(signName);
   const reasonAttr = reason ? ` ${DATA_MARKS.reason}="${escapeHtml(reason)}"` : '';
   return (
-    `<span class="cartouche-sign" role="img" ${DATA_MARKS.sign}="${escapeHtml(signName)}" ` +
-    `${DATA_MARKS.proof_ref}="${escapeHtml(proofRef)}"${reasonAttr} aria-label="${escapeHtml(signName)}">` +
+    `<span class="cartouche-sign" role="img" ${DATA_MARKS.sign}="${escapeHtml(signName)}"` +
+    `${proofRefAttr(proofRef)}${reasonAttr} aria-label="${escapeHtml(signName)}">` +
     `<span aria-hidden="true">${escapeHtml(spec.glyph)}</span></span>`
   );
 }
@@ -309,11 +313,11 @@ export function renderSlipElementHtml(state: SlipElementState): string {
     );
     for (const spectrum of model.prism5) {
       parts.push(
-        `<tr ${DATA_MARKS.key}="${escapeHtml(spectrum.key)}" ${DATA_MARKS.state}="${escapeHtml(spectrum.state)}" ` +
-          `${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">` +
+        `<tr ${DATA_MARKS.key}="${escapeHtml(spectrum.key)}" ${DATA_MARKS.state}="${escapeHtml(spectrum.state)}"` +
+          `${proofRefAttr(model.proofRef)}>` +
           `<td>${escapeHtml(spectrum.label)}</td>` +
           `<td><span aria-hidden="true" style="width: ${spectrum.bar_units}%"></span></td>` +
-          `<td ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">${escapeHtml(spectrum.ratio_display)}</td>` +
+          `<td${proofRefAttr(model.proofRef)}>${escapeHtml(spectrum.ratio_display)}</td>` +
           `</tr>`
       );
     }
@@ -341,7 +345,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
           : '';
       parts.push(
         `<button type="button" ${DATA_MARKS.verb}="${escapeHtml(spec.verb)}" ` +
-          `${DATA_MARKS.key}="${escapeHtml(spec.key)}" ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}" ` +
+          `${DATA_MARKS.key}="${escapeHtml(spec.key)}"${proofRefAttr(model.proofRef)} ` +
           `aria-pressed="${pressed}"${disabledAttrs}>` +
           `<kbd>${escapeHtml(spec.key.toUpperCase())}</kbd><span>${escapeHtml(spec.verb)}</span>${lockedBadge}</button>`
       );
@@ -428,10 +432,10 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       `<thead><tr><th scope="col">Line</th><th scope="col">Sign</th><th scope="col">Subject</th><th scope="col">Proof</th></tr></thead>`,
       `<tbody><tr id="slip-line-0" ${DATA_MARKS.line}="0" ${DATA_MARKS.relation}="subject" ` +
         `${DATA_MARKS.key}="${escapeHtml(canonicalJson([model.subjectId]))}" ${DATA_MARKS.polarity}="positive" ` +
-        `${DATA_MARKS.depth}="0" ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">` +
+        `${DATA_MARKS.depth}="0"${proofRefAttr(model.proofRef)}>` +
         `<td>0</td><td>${renderSignSpan('derived', model.proofRef)}</td>` +
         `<td>${escapeHtml(model.subjectId)}</td>` +
-        `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="known" ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">${escapeHtml(model.proofRef)}</td>` +
+        `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="known"${proofRefAttr(model.proofRef)}>${escapeHtml(model.proofRef ?? 'no proof')}</td>` +
         `</tr></tbody></table>`
     );
   }
@@ -444,8 +448,8 @@ export function renderSlipElementHtml(state: SlipElementState): string {
     );
     for (const lever of model.missingLevers) {
       parts.push(
-        `<tr ${DATA_MARKS.key}="${escapeHtml(lever.id)}" ${DATA_MARKS.load_bearing}="${lever.redundant ? 'false' : 'true'}" ` +
-          `${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">` +
+        `<tr ${DATA_MARKS.key}="${escapeHtml(lever.id)}" ${DATA_MARKS.load_bearing}="${lever.redundant ? 'false' : 'true'}"` +
+          `${proofRefAttr(model.proofRef)}>` +
           `<td>${escapeHtml(lever.label)}</td>` +
           `<td>${escapeHtml(lever.unblocks.join(', '))}</td>` +
           `<td>${lever.redundant ? 'redundant' : 'load-bearing'}</td></tr>`

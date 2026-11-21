@@ -411,7 +411,7 @@
               <tr
                 data-key={spectrum.key}
                 data-state={spectrum.state}
-                data-proof-ref={model.proofRef}
+                data-proof-ref={model.proofRef ?? undefined}
               >
                 <td>{spectrum.label}</td>
                 <td>
@@ -419,7 +419,7 @@
                     <span class="slip-prism-fill" style="width: {spectrum.bar_units}%"></span>
                   </span>
                 </td>
-                <td data-proof-ref={model.proofRef}>{spectrum.ratio_display}</td>
+                <td data-proof-ref={model.proofRef ?? undefined}>{spectrum.ratio_display}</td>
               </tr>
             {/each}
           </tbody>
@@ -436,7 +436,7 @@
             class="slip-verb-btn"
             data-verb={spec.verb}
             data-key={spec.key}
-            data-proof-ref={model.proofRef}
+            data-proof-ref={model.proofRef ?? undefined}
             aria-pressed={currentVerb === spec.key}
             aria-disabled={locked ? 'true' : undefined}
             disabled={locked}
@@ -569,16 +569,16 @@
             data-key={canonicalJson([model.subjectId])}
             data-polarity="positive"
             data-depth="0"
-            data-proof-ref={model.proofRef}
+            data-proof-ref={model.proofRef ?? undefined}
           >
             <td>0</td>
             <td>
-              <span class="cartouche-sign" role="img" aria-label="derived" data-sign="derived" data-proof-ref={model.proofRef}>
+              <span class="cartouche-sign" role="img" aria-label="derived" data-sign="derived" data-proof-ref={model.proofRef ?? undefined}>
                 <span aria-hidden="true">{glyphForSign('derived')}</span>
               </span>
             </td>
             <td>{model.subjectId}</td>
-            <td data-part="value" data-state="known" data-proof-ref={model.proofRef}>{model.proofRef}</td>
+            <td data-part="value" data-state="known" data-proof-ref={model.proofRef ?? undefined}>{model.proofRef ?? 'no proof'}</td>
           </tr>
         </tbody>
       </table>
@@ -600,7 +600,7 @@
               <tr
                 data-key={lever.id}
                 data-load-bearing={lever.redundant ? 'false' : 'true'}
-                data-proof-ref={model.proofRef}
+                data-proof-ref={model.proofRef ?? undefined}
               >
                 <td>{lever.label}</td>
                 <td>{lever.unblocks.join(', ')}</td>
