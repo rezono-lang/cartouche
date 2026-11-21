@@ -19,6 +19,18 @@ const DOMAIN_SORT_PROP_RE =
 
 const GEOMETRY_SORT_PROPS = new Set(['x', 'y', 'ix', 'iy', 'w', 'h', 'depth', 'index', 'line', 'column', 'row']);
 
+const GEOMETRY_ARITH_PROPS = new Set([
+  'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'dx', 'dy', 'px', 'py',
+  'midX', 'midY', 'topY', 'curtainY', 'screenX', 'screenY',
+  'w', 'h', 'width', 'height', 'ix', 'iy', 'row', 'col', 'column', 'hop',
+  'depth', 'left', 'right', 'top', 'bottom',
+  'radius', 'angle', 'offset', 'pad', 'gap',
+  'cosY', 'sinY', 'cosP', 'sinP', 'cosFold', 'sinFold',
+  'length', 'size', 'index', 'line', 'byteLength', 'start', 'end'
+]);
+
+const STRUCTURAL_LENGTH_PROPS = new Set(['length', 'size', 'byteLength']);
+
 const CSS_CALC_DOMAIN_VAR_RE =
   /--(amount|value|val|rate|total|subtotal|sum|score|cost|price|income|assets|threshold|ratio|display|bar[-_]units|dependent[-_]count|count|metric|z|z[-_]norm)\b/i;
 
@@ -72,6 +84,30 @@ function isDirectOpaqueScalarInit(node, aliases) {
     return isDirectOpaqueScalarInit(node.expression, aliases);
   }
   return false;
+}
+
+function findNonGeometryMember(node) {
+  if (!node || typeof node !== 'object') return null;
+  if (node.type === 'ParenthesizedExpression' || node.type === 'TSAsExpression' || node.type === 'TSNonNullExpression') {
+    return findNonGeometryMember(node.expression);
+  }
+  if (node.type === 'ConditionalExpression') {
+    return findNonGeometryMember(node.consequent) ?? findNonGeometryMember(node.alternate);
+  }
+  if (node.type === 'LogicalExpression' || node.type === 'BinaryExpression') {
+    return findNonGeometryMember(node.left) ?? findNonGeometryMember(node.right);
+  }
+  if (node.type === 'UnaryExpression') {
+    return findNonGeometryMember(node.argument);
+  }
+  if (node.type === 'MemberExpression') {
+    if (node.object?.type === 'Identifier' && (node.object.name === 'Math' || node.object.name === 'Number')) return null;
+    const p = getPropName(node);
+    if (p && STRUCTURAL_LENGTH_PROPS.has(p)) return null;
+    if (p && !GEOMETRY_ARITH_PROPS.has(p)) return p;
+    return null;
+  }
+  return null;
 }
 
 function touchesOpaqueName(node, aliases = null) {
@@ -214,13 +250,12 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
         const inner = cm[1];
         const varCount = (inner.match(/\bvar\s*\(/gi) ?? []).length;
         const hasDomainVar = CSS_CALC_DOMAIN_VAR_RE.test(inner);
-        const hasAdditiveOnVar = varCount > 0 && /[+-]\s+(?!0\b)/.test(inner);
-        if (hasDomainVar || varCount >= 2 || hasAdditiveOnVar) {
+        if (hasDomainVar || varCount > 0) {
           violations.push({
             code: 'ZC13',
             file: filePath,
             line: lineAt(blockStart + cm.index),
-            message: `CSS calc(${inner.trim()}) computes derived values on published tokens (Decision 0001).`
+            message: `CSS calc(${inner.trim()}) computes derived values on custom properties (Decision 0001, fail-closed).`
           });
         }
       }
@@ -338,27 +373,34 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
                 const leading = code.slice(Math.max(0, (node.start ?? 0) - 90), node.start ?? 0);
                 const isGeometrySort = /@cartouche-geometry-sort/.test(leading);
                 const accessedProps = [];
-                let hasPropSub = false;
+                let hasNumericSub = false;
                 walkAst(cb, (n) => {
                   if (n.type === 'MemberExpression') {
                     const p = getPropName(n);
                     if (p) accessedProps.push(p);
                   }
                   if (n.type === 'BinaryExpression' && n.operator === '-') {
-                    if (n.left?.type === 'MemberExpression' || n.right?.type === 'MemberExpression') {
-                      hasPropSub = true;
+                    if (
+                      n.left?.type === 'MemberExpression' ||
+                      n.right?.type === 'MemberExpression' ||
+                      n.left?.type === 'Identifier' ||
+                      n.right?.type === 'Identifier'
+                    ) {
+                      hasNumericSub = true;
                     }
                   }
                 });
                 const hasNonGeometryProp = accessedProps.some((p) => !GEOMETRY_SORT_PROPS.has(p));
-                if (isGeometrySort && hasNonGeometryProp) {
+                if (isGeometrySort && (hasNonGeometryProp || (hasNumericSub && accessedProps.length === 0))) {
                   report(
                     node,
                     'ZC06',
-                    `@cartouche-geometry-sort may only sort on pure layout coordinates (${[...GEOMETRY_SORT_PROPS].join(', ')}), not "${accessedProps.find((p) => !GEOMETRY_SORT_PROPS.has(p))}".`
+                    accessedProps.length === 0
+                      ? `@cartouche-geometry-sort requires sorting on explicit layout coordinates (${[...GEOMETRY_SORT_PROPS].join(', ')}), not bare numeric values.`
+                      : `@cartouche-geometry-sort may only sort on pure layout coordinates (${[...GEOMETRY_SORT_PROPS].join(', ')}), not "${accessedProps.find((p) => !GEOMETRY_SORT_PROPS.has(p))}".`
                   );
-                } else if (!isGeometrySort && hasPropSub) {
-                  report(node, 'ZC06', `.${prop}() uses numeric property subtraction; use canonical key order or tag explicit geometry sorts.`);
+                } else if (!isGeometrySort && hasNumericSub) {
+                  report(node, 'ZC06', `.${prop}() uses numeric subtraction; use canonical key order or tag explicit geometry sorts.`);
                 }
               }
             }
@@ -398,10 +440,17 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
         }
       }
 
-      // ZC04 & ZC07: BinaryExpression (arithmetic + threshold compare on opaque/domain identifiers)
+      // ZC04 & ZC07: BinaryExpression (arithmetic + threshold compare on opaque/domain identifiers, fail-closed on non-geometry fields)
       if (node.type === 'BinaryExpression') {
-        if (ARITH_BIN_OPS.has(node.operator) && (touchesOpaqueName(node.left, opaqueAliases) || touchesOpaqueName(node.right, opaqueAliases))) {
-          report(node, 'ZC04', `Arithmetic "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
+        if (ARITH_BIN_OPS.has(node.operator)) {
+          if (touchesOpaqueName(node.left, opaqueAliases) || touchesOpaqueName(node.right, opaqueAliases)) {
+            report(node, 'ZC04', `Arithmetic "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
+          } else {
+            const badProp = findNonGeometryMember(node.left) ?? findNonGeometryMember(node.right);
+            if (badProp !== null) {
+              report(node, 'ZC04', `Arithmetic "${code.slice(node.start, node.end).slice(0, 60)}" on non-geometry field ".${badProp}" violates Decision 0001 (fail-closed).`);
+            }
+          }
         }
         if (
           node.operator === '+' &&
@@ -411,8 +460,18 @@ export function lintSourceCode(source, filePath = 'inline.ts') {
         ) {
           report(node, 'ZC04', `Addition "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
         }
-        if (REL_OPS.has(node.operator) && (touchesOpaqueName(node.left, opaqueAliases) || touchesOpaqueName(node.right, opaqueAliases))) {
-          report(node, 'ZC07', `Threshold comparison "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
+        if (REL_OPS.has(node.operator)) {
+          if (touchesOpaqueName(node.left, opaqueAliases) || touchesOpaqueName(node.right, opaqueAliases)) {
+            report(node, 'ZC07', `Threshold comparison "${code.slice(node.start, node.end).slice(0, 60)}" on opaque/domain value violates Decision 0001.`);
+          } else if (
+            (node.left?.type === 'Literal' && typeof node.left.value === 'number') ||
+            (node.right?.type === 'Literal' && typeof node.right.value === 'number')
+          ) {
+            const badProp = findNonGeometryMember(node.left) ?? findNonGeometryMember(node.right);
+            if (badProp !== null) {
+              report(node, 'ZC07', `Threshold comparison "${code.slice(node.start, node.end).slice(0, 60)}" on non-geometry field ".${badProp}" violates Decision 0001 (fail-closed).`);
+            }
+          }
         }
       }
 
