@@ -121,6 +121,26 @@ export const STD_VERBS: readonly StdVerbSpec[] = Object.freeze([
   Object.freeze({ verb: 'propose', key: 'p', primary: true })
 ]);
 
+export const FORCED_COLORS_CSS = `@media (forced-colors: active) {
+  [data-cartouche-theme] {
+    --c-desk: Canvas;
+    --c-paper: Canvas;
+    --c-paper-elev: Canvas;
+    --c-paper-tint: Canvas;
+    --c-limestone: Canvas;
+    --c-ink: CanvasText;
+    --c-ink-soft: CanvasText;
+    --c-ink-faint: GrayText;
+    --c-rule: ButtonBorder;
+    --c-rule-strong: CanvasText;
+    --c-proof: LinkText;
+    --c-valid: CanvasText;
+    --c-caution: Mark;
+    --c-violated: Highlight;
+    --c-hatch: CanvasText;
+  }
+}`;
+
 export function paletteCss(name: PaletteName): string {
   const p = PALETTES[name];
   return [
@@ -140,6 +160,7 @@ export function paletteCss(name: PaletteName): string {
     `  --c-caution: ${p.caution};`,
     `  --c-violated: ${p.violated};`,
     `  --c-hatch: ${p.hatchStroke};`,
-    `}`
+    `}`,
+    FORCED_COLORS_CSS
   ].join('\n');
 }
