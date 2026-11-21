@@ -61,6 +61,8 @@ function walk(dir, ignore = new Set(['.git', 'node_modules', 'dist', '.rezono-li
 const files = walk(ROOT);
 const violations = [];
 
+const DOMAIN_FREE_DIRS = ['packages', 'apps'];
+
 for (const file of files) {
   const rel = path.relative(ROOT, file).replace(/\\/g, '/');
   if (rel === 'scripts/leak-and-domain-check.mjs') continue;
@@ -71,10 +73,10 @@ for (const file of files) {
       violations.push(`${rel}: matched private/machine-path pattern ${re}`);
     }
   }
-  if (rel.startsWith('packages/')) {
+  if (DOMAIN_FREE_DIRS.some((dir) => rel.startsWith(`${dir}/`))) {
     const found = findDomainWordViolation(text);
     if (found) {
-      violations.push(`${rel}: hardcoded domain term "${found}" found inside domain-neutral package.`);
+      violations.push(`${rel}: hardcoded domain term "${found}" found inside domain-neutral ${rel.split('/')[0]}/ directory.`);
     }
   }
 }
@@ -83,4 +85,4 @@ if (violations.length > 0) {
   console.error('❌ leak-and-domain-check FAILED:\n' + violations.map((v) => `  - ${v}`).join('\n'));
   process.exit(1);
 }
-console.log(`✅ leak-and-domain-check passed (${files.length} files scanned; packages/ 100% domain-free).`);
+console.log(`✅ leak-and-domain-check passed (${files.length} files scanned; packages/ and apps/ 100% domain-free).`);

@@ -1,0 +1,975 @@
+{
+  "sheets": {
+    "relief": {
+      "fixture_id": "04-subsidy-a001-a003",
+      "manifest": {
+        "id": "sha256:3e9b7104a1f8c2d9e4b5a6c7d8e9f0a1b2c3",
+        "epoch": 42,
+        "knowledge_time": "2026-11-20T21:40:00Z",
+        "role": "caseworker",
+        "witness_check": "green",
+        "trust_tier": "sealed"
+      },
+      "subjects": [
+        {
+          "id": "A001",
+          "state": "valid",
+          "amount_cell": {
+            "state": "known",
+            "display": "€ 2.694",
+            "unit": "EUR",
+            "proof_ref": "witness:sub-A001"
+          },
+          "income_cell": {
+            "state": "known",
+            "display": "€ 34.000",
+            "unit": "EUR",
+            "proof_ref": "fact:tax-A001"
+          },
+          "assets_cell": {
+            "state": "known",
+            "display": "€ 18.000",
+            "unit": "EUR",
+            "proof_ref": "fact:assets-A001"
+          },
+          "cliff_distance_display": "€ 2.000 to Art. 5 cliff",
+          "citation": "Article 5 · Council Decision 2026-047"
+        },
+        {
+          "id": "A003",
+          "state": "unknown",
+          "amount_cell": {
+            "state": "unknown",
+            "display": null,
+            "reason": "income_statement_not_received",
+            "proof_ref": "witness:sub-A003-missing"
+          },
+          "income_cell": {
+            "state": "unknown",
+            "display": null,
+            "reason": "income_statement_not_received",
+            "proof_ref": "fact:tax-A003-missing"
+          },
+          "assets_cell": {
+            "state": "known",
+            "display": "€ 24.000",
+            "unit": "EUR",
+            "proof_ref": "fact:assets-A003"
+          },
+          "citation": "Article 3 · Council Decision 2026-047"
+        }
+      ],
+      "sweep_2d": {
+        "projection": "orthographic",
+        "x_axis": {
+          "dim": "D7",
+          "kind": "metric",
+          "label": "Taxable Income",
+          "stops": [
+            "€ 18k",
+            "€ 28k",
+            "€ 34k",
+            "€ 42k"
+          ]
+        },
+        "y_axis": {
+          "dim": "D7",
+          "kind": "metric",
+          "label": "Household Assets",
+          "stops": [
+            "€ 0k",
+            "€ 18k",
+            "€ 36k",
+            "€ 45k"
+          ]
+        },
+        "z_axis": {
+          "dim": "D7",
+          "kind": "metric",
+          "label": "Subsidy Amount",
+          "unit": "EUR"
+        },
+        "cells": [
+          {
+            "ix": 0,
+            "iy": 0,
+            "z_norm": 1,
+            "cell": {
+              "state": "known",
+              "display": "€ 5.000",
+              "proof_ref": "sw:0-0"
+            }
+          },
+          {
+            "ix": 1,
+            "iy": 1,
+            "z_norm": 0.89,
+            "cell": {
+              "state": "known",
+              "display": "€ 4.450",
+              "proof_ref": "sw:1-1"
+            }
+          },
+          {
+            "ix": 2,
+            "iy": 1,
+            "z_norm": 0.54,
+            "cell": {
+              "state": "known",
+              "display": "€ 2.694",
+              "proof_ref": "sw:2-1"
+            }
+          },
+          {
+            "ix": 3,
+            "iy": 1,
+            "z_norm": 0,
+            "cell": {
+              "state": "known",
+              "display": "€ 0",
+              "proof_ref": "sw:3-1"
+            }
+          },
+          {
+            "ix": 2,
+            "iy": 3,
+            "z_norm": 0,
+            "cell": {
+              "state": "known",
+              "display": "€ 0",
+              "proof_ref": "sw:2-3"
+            }
+          }
+        ],
+        "unknown_manifolds": [
+          {
+            "subject_id": "A003",
+            "kind": "uncertainty_curtain",
+            "fixed_axis": "y",
+            "fixed_index": 1,
+            "span_axis": "x",
+            "reason": "income_statement_not_received",
+            "proof_ref": "witness:sub-A003-missing"
+          }
+        ]
+      }
+    },
+    "flowFull": {
+      "fixture_id": "01-platform-drift",
+      "manifest": {
+        "id": "sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0",
+        "epoch": 42,
+        "knowledge_time": "2026-11-20T21:40:00Z",
+        "role": "platform_admin",
+        "witness_check": "green",
+        "trust_tier": "sealed"
+      },
+      "horizon": {
+        "complete": true,
+        "reason": null
+      },
+      "nodes": [
+        {
+          "id": "svc-gateway",
+          "label": "Gateway",
+          "zone": "ingress",
+          "sign": "origin_design",
+          "state": "valid",
+          "layer": "both",
+          "proof_ref": "proof:gw-01"
+        },
+        {
+          "id": "svc-keycloak",
+          "label": "Keycloak",
+          "zone": "platform",
+          "sign": "origin_decision",
+          "state": "valid",
+          "layer": "both",
+          "proof_ref": "proof:kc-01"
+        },
+        {
+          "id": "svc-orders",
+          "label": "Orders API",
+          "zone": "consumers",
+          "sign": "origin_design",
+          "state": "changed",
+          "layer": "both",
+          "proof_ref": "proof:ord-19"
+        },
+        {
+          "id": "svc-vault",
+          "label": "Vault",
+          "zone": "storage",
+          "sign": "origin_decision",
+          "state": "violated",
+          "layer": "both",
+          "proof_ref": "proof:vlt-88"
+        },
+        {
+          "id": "svc-postgres",
+          "label": "Postgres",
+          "zone": "storage",
+          "sign": "origin_observation",
+          "state": "valid",
+          "layer": "both",
+          "proof_ref": "proof:pg-42"
+        },
+        {
+          "id": "svc-backup",
+          "label": "Backup Store",
+          "zone": "recovery",
+          "sign": "origin_decision",
+          "state": "absent",
+          "layer": "stated",
+          "proof_ref": "proof:dr-05",
+          "completeness_witness_ref": "sweep:complete-ns-12-of-12"
+        },
+        {
+          "id": "svc-edge-04",
+          "label": "Edge-04",
+          "zone": "recovery",
+          "sign": "origin_design",
+          "state": "unknown",
+          "reason": "telemetry_timeout",
+          "display": null,
+          "layer": "both",
+          "proof_ref": "proof:edge-04-timeout"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "from": "svc-gateway",
+          "to": "svc-keycloak",
+          "layer": "both",
+          "kind": "standard",
+          "proof_ref": "proof:e1"
+        },
+        {
+          "id": "e2",
+          "from": "svc-gateway",
+          "to": "svc-orders",
+          "layer": "both",
+          "kind": "standard",
+          "proof_ref": "proof:e2"
+        },
+        {
+          "id": "e3",
+          "from": "svc-keycloak",
+          "to": "svc-vault",
+          "layer": "both",
+          "kind": "standard",
+          "proof_ref": "proof:e3"
+        },
+        {
+          "id": "e4",
+          "from": "svc-orders",
+          "to": "svc-postgres",
+          "layer": "both",
+          "kind": "standard",
+          "proof_ref": "proof:e4"
+        },
+        {
+          "id": "e-backup",
+          "from": "svc-keycloak",
+          "to": "svc-backup",
+          "layer": "stated",
+          "kind": "absent",
+          "proof_ref": "proof:dr-policy",
+          "completeness_witness_ref": "sweep:complete-ns-12-of-12"
+        },
+        {
+          "id": "e-drift-vault",
+          "from": "svc-orders",
+          "to": "svc-vault",
+          "layer": "both",
+          "kind": "drift",
+          "label": "TCP/8200",
+          "stated_proof_ref": "policy:netpol-04#L42",
+          "observed_proof_ref": "obs:hubble-ep42#L419"
+        }
+      ],
+      "slip_enrichment": {
+        "prism_5": [
+          {
+            "key": "norm",
+            "label": "Policy",
+            "ratio_display": "100%",
+            "bar_units": 100,
+            "state": "valid"
+          },
+          {
+            "key": "observed",
+            "label": "Hubble",
+            "ratio_display": "72%",
+            "bar_units": 72,
+            "state": "violated"
+          },
+          {
+            "key": "fog",
+            "label": "Unknown",
+            "ratio_display": "14%",
+            "bar_units": 14,
+            "state": "unknown"
+          },
+          {
+            "key": "cliff",
+            "label": "Margin",
+            "ratio_display": "0",
+            "bar_units": 10,
+            "state": "changed"
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "ratio_display": "Full",
+            "bar_units": 100,
+            "state": "valid"
+          }
+        ],
+        "missing_levers": [
+          {
+            "id": "lever-edge04",
+            "label": "Restore Edge-04 probe",
+            "unblocks": [
+              "svc-edge-04"
+            ],
+            "redundant": false
+          }
+        ],
+        "adjacent_worlds_delta1": [
+          {
+            "id": "w-deny-8200",
+            "sector": "repair",
+            "label": "Deny orders-api -> vault:8200",
+            "outcome_display": "0 Drift",
+            "proof_ref": "suppose:deny-8200"
+          },
+          {
+            "id": "w-probe-edge04",
+            "sector": "certainty",
+            "label": "Receive Edge-04 heartbeat",
+            "outcome_display": "Clears Unknown",
+            "proof_ref": "suppose:edge04-ok"
+          },
+          {
+            "id": "w-failover-down",
+            "sector": "cliff",
+            "label": "Failover B offline",
+            "outcome_display": "Margin drops to 0",
+            "proof_ref": "suppose:failover-down"
+          }
+        ]
+      }
+    },
+    "flowRestricted": {
+      "fixture_id": "02-platform-tenant-a",
+      "manifest": {
+        "id": "sha256:4c2e80a1b9d4f7e2a1c3d5e7f90123456789",
+        "epoch": 42,
+        "knowledge_time": "2026-11-20T21:40:00Z",
+        "role": "tenant_a",
+        "witness_check": "green",
+        "trust_tier": "sealed"
+      },
+      "horizon": {
+        "complete": false,
+        "reason": "not_read_in_full"
+      },
+      "nodes": [
+        {
+          "id": "svc-gateway",
+          "label": "Gateway",
+          "zone": "ingress",
+          "sign": "origin_design",
+          "state": "valid",
+          "layer": "both",
+          "proof_ref": "proof:gw-01"
+        },
+        {
+          "id": "svc-keycloak",
+          "label": "Keycloak",
+          "zone": "platform",
+          "sign": "origin_decision",
+          "state": "valid",
+          "layer": "both",
+          "proof_ref": "proof:kc-01"
+        },
+        {
+          "id": "svc-orders",
+          "label": "Orders API",
+          "zone": "consumers",
+          "sign": "origin_design",
+          "state": "valid",
+          "layer": "both",
+          "proof_ref": "proof:ord-19"
+        },
+        {
+          "id": "svc-postgres",
+          "label": "Postgres",
+          "zone": "storage",
+          "sign": "origin_observation",
+          "state": "valid",
+          "layer": "both",
+          "proof_ref": "proof:pg-42"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "from": "svc-gateway",
+          "to": "svc-keycloak",
+          "layer": "both",
+          "kind": "standard",
+          "proof_ref": "proof:e1"
+        },
+        {
+          "id": "e2",
+          "from": "svc-gateway",
+          "to": "svc-orders",
+          "layer": "both",
+          "kind": "standard",
+          "proof_ref": "proof:e2"
+        },
+        {
+          "id": "e4",
+          "from": "svc-orders",
+          "to": "svc-postgres",
+          "layer": "both",
+          "kind": "standard",
+          "proof_ref": "proof:e4"
+        }
+      ],
+      "forbidden_leaks_check": [
+        "svc-vault",
+        "svc-backup",
+        "e-drift-vault"
+      ]
+    },
+    "kringstand": {
+      "fixture_id": "03-kring-m1-to-m5-live",
+      "manifest": {
+        "id": "sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0",
+        "epoch": 42,
+        "knowledge_time": "2026-11-20T21:40:00Z",
+        "role": "platform_admin",
+        "witness_check": "green",
+        "trust_tier": "sealed"
+      },
+      "rounds": [
+        {
+          "id": "m-1",
+          "time": "2026-11-20T21:10:00Z",
+          "cert_hash": "sha256:1a0c90",
+          "sealed": true
+        },
+        {
+          "id": "m-2",
+          "time": "2026-11-20T21:20:00Z",
+          "cert_hash": "sha256:4b8e12",
+          "sealed": true
+        },
+        {
+          "id": "m-3",
+          "time": "2026-11-20T21:30:00Z",
+          "cert_hash": "sha256:7d214f",
+          "sealed": true
+        },
+        {
+          "id": "m-4",
+          "time": "2026-11-20T21:40:00Z",
+          "cert_hash": "sha256:8f4ac2",
+          "sealed": true
+        }
+      ],
+      "sealed_rows": [
+        {
+          "key": "step:vault-rule-patch",
+          "lane": "needed",
+          "label": "vault-rule-patch",
+          "sign": "origin_decision",
+          "state": "valid",
+          "proof_ref": "round:m-4#needed-1"
+        },
+        {
+          "key": "step:canary-smoke",
+          "lane": "waiting",
+          "label": "canary-smoke",
+          "sign": "origin_observation",
+          "state": "changed",
+          "reason": "awaiting_probe",
+          "proof_ref": "round:m-4#wait-1"
+        },
+        {
+          "key": "step:policy-push",
+          "lane": "ready",
+          "label": "policy-push",
+          "sign": "origin_decision",
+          "state": "valid",
+          "proof_ref": "round:m-4#ready-1"
+        },
+        {
+          "key": "step:cert-issuer",
+          "lane": "done",
+          "label": "cert-issuer",
+          "sign": "derived",
+          "state": "valid",
+          "proof_ref": "round:m-4#done-1"
+        },
+        {
+          "key": "step:ingress-sync",
+          "lane": "done",
+          "label": "ingress-sync",
+          "sign": "derived",
+          "state": "valid",
+          "proof_ref": "round:m-4#done-2"
+        },
+        {
+          "key": "step:pg-replica",
+          "lane": "done",
+          "label": "pg-replica",
+          "sign": "derived",
+          "state": "valid",
+          "proof_ref": "round:m-4#done-3"
+        },
+        {
+          "key": "target:legacy-proxy",
+          "lane": "absent",
+          "label": "legacy-proxy-01",
+          "sign": "derived",
+          "state": "absent",
+          "proof_ref": "round:m-4#absent-1",
+          "completeness_witness_ref": "sweep:complete-m4"
+        },
+        {
+          "key": "target:edge-node-04",
+          "lane": "unknown",
+          "label": "edge-node-04",
+          "sign": "derived",
+          "state": "unknown",
+          "reason": "telemetry_timeout",
+          "display": null,
+          "proof_ref": "round:m-4#unk-1"
+        }
+      ],
+      "live_provisional_delta": {
+        "round_id": "m-5",
+        "latency_ms": 142,
+        "trust_tier": "provisional_engine",
+        "changes": [
+          {
+            "weight": 1,
+            "row": {
+              "key": "step:worker-07",
+              "lane": "ready",
+              "label": "worker-07",
+              "sign": "origin_observation",
+              "state": "changed",
+              "proof_ref": "stream:m5-draft-142ms"
+            }
+          }
+        ]
+      }
+    },
+    "ripple": {
+      "fixture_id": "06-keycloak-dense-28",
+      "manifest": {
+        "id": "sha256:77c1d2e3f4a5b6c7d8e9f01234567890abcd",
+        "epoch": 42,
+        "knowledge_time": "2026-11-20T21:40:00Z",
+        "role": "platform_admin",
+        "witness_check": "green",
+        "trust_tier": "provisional_checked"
+      },
+      "focal_id": "svc-keycloak",
+      "horizon": {
+        "complete": false,
+        "reason": "depth_limit_hop_2"
+      },
+      "dependent_count": 28,
+      "nodes": [
+        {
+          "id": "svc-keycloak",
+          "label": "Keycloak A",
+          "hop": 0,
+          "sign": "origin_decision",
+          "state": "valid",
+          "cut_set": {
+            "load_bearing": false,
+            "redundancy_margin": 1,
+            "gate": "FACT"
+          },
+          "proof_ref": "p:kc"
+        },
+        {
+          "id": "svc-failover",
+          "label": "Failover B",
+          "hop": 0,
+          "sign": "origin_observation",
+          "state": "valid",
+          "cut_set": {
+            "load_bearing": false,
+            "redundancy_margin": 1,
+            "gate": "FACT"
+          },
+          "proof_ref": "p:fb"
+        },
+        {
+          "id": "g-quorum",
+          "label": "IAM Quorum",
+          "hop": 1,
+          "sign": "derived",
+          "state": "valid",
+          "cut_set": {
+            "load_bearing": false,
+            "redundancy_margin": 1,
+            "gate": "OR"
+          },
+          "proof_ref": "p:quorum"
+        },
+        {
+          "id": "obs-tls",
+          "label": "Hubble TLS",
+          "hop": 1,
+          "sign": "origin_observation",
+          "state": "valid",
+          "cut_set": {
+            "load_bearing": true,
+            "redundancy_margin": 0,
+            "gate": "FACT"
+          },
+          "proof_ref": "p:tls"
+        },
+        {
+          "id": "g-rpo",
+          "label": "DR RPO 15m",
+          "hop": 2,
+          "sign": "derived",
+          "state": "violated",
+          "previous_display": "valid",
+          "display": "violated",
+          "cut_set": {
+            "load_bearing": true,
+            "redundancy_margin": 0,
+            "gate": "AND"
+          },
+          "proof_ref": "p:rpo"
+        }
+      ]
+    },
+    "bitemporal": {
+      "fixture_id": "05-subsidy-bitemporal",
+      "manifest": {
+        "id": "sha256:9d11a0b2c3d4e5f60718293a4b5c6d7e8f90",
+        "epoch": 42,
+        "knowledge_time": "2026-11-20T21:40:00Z",
+        "role": "auditor",
+        "witness_check": "green",
+        "trust_tier": "sealed"
+      },
+      "bitemporal_grid": {
+        "projection": "orthographic",
+        "valid_times": [
+          "2026-11-10",
+          "2026-11-14",
+          "2026-11-18",
+          "2026-11-20"
+        ],
+        "epochs": [
+          "ep-39",
+          "ep-40",
+          "ep-41",
+          "ep-42"
+        ],
+        "matrix": [
+          [
+            {
+              "state": "unknown",
+              "display": null,
+              "reason": "income_statement_not_received",
+              "proof_ref": "bt:39-10"
+            },
+            {
+              "state": "not_applicable",
+              "display": null,
+              "reason": "valid_after_knowledge",
+              "proof_ref": "bt:39-14"
+            },
+            {
+              "state": "not_applicable",
+              "display": null,
+              "reason": "valid_after_knowledge",
+              "proof_ref": "bt:39-18"
+            },
+            {
+              "state": "not_applicable",
+              "display": null,
+              "reason": "valid_after_knowledge",
+              "proof_ref": "bt:39-20"
+            }
+          ],
+          [
+            {
+              "state": "known",
+              "display": "€ 2.694",
+              "z_norm": 0.9,
+              "proof_ref": "bt:40-10"
+            },
+            {
+              "state": "known",
+              "display": "€ 2.694",
+              "z_norm": 0.9,
+              "proof_ref": "bt:40-14"
+            },
+            {
+              "state": "not_applicable",
+              "display": null,
+              "reason": "valid_after_knowledge",
+              "proof_ref": "bt:40-18"
+            },
+            {
+              "state": "not_applicable",
+              "display": null,
+              "reason": "valid_after_knowledge",
+              "proof_ref": "bt:40-20"
+            }
+          ],
+          [
+            {
+              "state": "known",
+              "display": "€ 1.920",
+              "previous_display": "€ 2.694",
+              "revised": true,
+              "z_norm": 0.64,
+              "proof_ref": "bt:41-10"
+            },
+            {
+              "state": "known",
+              "display": "€ 1.920",
+              "previous_display": "€ 2.694",
+              "revised": true,
+              "z_norm": 0.64,
+              "proof_ref": "bt:41-14"
+            },
+            {
+              "state": "unknown",
+              "display": null,
+              "reason": "review_pending",
+              "proof_ref": "bt:41-18"
+            },
+            {
+              "state": "not_applicable",
+              "display": null,
+              "reason": "valid_after_knowledge",
+              "proof_ref": "bt:41-20"
+            }
+          ],
+          [
+            {
+              "state": "known",
+              "display": "€ 1.920",
+              "revised": true,
+              "z_norm": 0.64,
+              "proof_ref": "bt:42-10"
+            },
+            {
+              "state": "known",
+              "display": "€ 1.920",
+              "revised": true,
+              "z_norm": 0.64,
+              "proof_ref": "bt:42-14"
+            },
+            {
+              "state": "known",
+              "display": "€ 1.920",
+              "z_norm": 0.64,
+              "proof_ref": "bt:42-18"
+            },
+            {
+              "state": "known",
+              "display": "€ 1.920",
+              "z_norm": 0.64,
+              "proof_ref": "bt:42-20"
+            }
+          ]
+        ]
+      }
+    },
+    "monge": {
+      "fixture_id": "08-monge-4d-audit",
+      "manifest": {
+        "id": "sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0",
+        "epoch": 42,
+        "knowledge_time": "2026-11-20T21:40:00Z",
+        "role": "auditor",
+        "witness_check": "green",
+        "trust_tier": "sealed"
+      },
+      "projection": "orthographic",
+      "fold_angle_deg": 40,
+      "rounds": [
+        "m-1",
+        "m-2",
+        "m-3",
+        "m-4"
+      ],
+      "services": [
+        {
+          "id": "gw",
+          "label": "Gateway",
+          "short": "GW",
+          "sign": "origin_design",
+          "x": -1.6,
+          "y": 0.18,
+          "state": "valid",
+          "round_states": [
+            "valid",
+            "valid",
+            "valid",
+            "valid"
+          ],
+          "proof_ref": "p:gw"
+        },
+        {
+          "id": "kc",
+          "label": "Keycloak",
+          "short": "KC",
+          "sign": "origin_decision",
+          "x": -0.92,
+          "y": -0.66,
+          "state": "valid",
+          "round_states": [
+            "valid",
+            "valid",
+            "valid",
+            "valid"
+          ],
+          "proof_ref": "p:kc"
+        },
+        {
+          "id": "orders",
+          "label": "Orders API",
+          "short": "ORD",
+          "sign": "origin_design",
+          "x": -0.3,
+          "y": 0.6,
+          "state": "violated",
+          "round_states": [
+            "valid",
+            "valid",
+            "valid",
+            "violated"
+          ],
+          "proof_ref": "p:ord"
+        },
+        {
+          "id": "vault",
+          "label": "Vault",
+          "short": "VLT",
+          "sign": "origin_decision",
+          "x": 0.36,
+          "y": -0.24,
+          "state": "violated",
+          "round_states": [
+            "valid",
+            "valid",
+            "valid",
+            "violated"
+          ],
+          "proof_ref": "p:vlt"
+        },
+        {
+          "id": "dr",
+          "label": "Backup Store",
+          "short": "DR",
+          "sign": "origin_decision",
+          "x": 1.02,
+          "y": -1.08,
+          "state": "absent",
+          "round_states": [
+            "valid",
+            "valid",
+            "absent",
+            "absent"
+          ],
+          "proof_ref": "p:dr",
+          "completeness_witness_ref": "sweep:m3-m4"
+        },
+        {
+          "id": "ed",
+          "label": "Edge-04",
+          "short": "E04",
+          "sign": "origin_design",
+          "x": 1.56,
+          "y": 1.02,
+          "state": "unknown",
+          "reason": "telemetry_timeout",
+          "display": null,
+          "round_states": [
+            "valid",
+            "valid",
+            "valid",
+            "unknown"
+          ],
+          "proof_ref": "p:ed"
+        }
+      ],
+      "drift_arcs": [
+        {
+          "id": "arc-8200",
+          "from": "orders",
+          "to": "vault",
+          "label": "TCP/8200",
+          "stated_proof_ref": "policy:netpol-04",
+          "observed_proof_ref": "obs:hubble-ep42"
+        }
+      ]
+    }
+  },
+  "slip": {
+    "rowKeys": [
+      "flagged::item-a::12",
+      "group_size::group-a::2",
+      "busy::group-a",
+      "calc__capped_amount::item-a",
+      "calc__capped_amount::item-c"
+    ],
+    "servedHtml": {
+      "swisstopo": {
+        "flagged::item-a::12": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"swisstopo\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Item </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">item-a</a><!--]--><!--[-1--><span> is flagged with amount </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">12</a><!--]--><!--[-1--><span>, and nothing holds it.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"held\" data-key=\"[&quot;item-a&quot;]\" data-polarity=\"negative\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">there is no held (item-a)</td><!--[-1--><td data-part=\"value\" data-state=\"absent\" data-proof-ref=\"m-1\" data-completeness-ref=\"m-1:snapshot:held\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"absent\" data-sign=\"absent\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">⦸</span></span> <!--[-1--><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"item__amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">amount: item-a</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><button type=\"button\" data-verb=\"suppose\" data-key=\"s\" data-proof-ref=\"m-1\" aria-expanded=\"false\"><kbd>S</kbd> <span>suppose</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"absent\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">⦸</span></td><td class=\"svelte-1w0mfm8\">absent</td><td class=\"svelte-1w0mfm8\">state</td><td class=\"svelte-1w0mfm8\">dashed-hollow-strike</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "group_size::group-a::2": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"swisstopo\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Group </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">group-a</a><!--]--><!--[-1--><span> has </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">2</a><!--]--><!--[-1--><span> items.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"group\" data-key=\"[&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-part=\"total\" data-relation=\"item__group\" data-key=\"[&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">Total · group</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">2</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-2\" tabindex=\"0\" data-line=\"2\" data-relation=\"item__group\" data-key=\"[&quot;item-a&quot;,&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">2</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group: item-a</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-3\" tabindex=\"0\" data-line=\"3\" data-relation=\"item__group\" data-key=\"[&quot;item-b&quot;,&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">3</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group: item-b</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "busy::group-a": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"swisstopo\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Group </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">group-a</a><!--]--><!--[-1--><span> is busy with </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">2</a><!--]--><!--[-1--><span> items.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"group_size\" data-key=\"[&quot;group-a&quot;,&quot;2&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">group size</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a, 2</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"why\" data-key=\"w\" data-proof-ref=\"m-1\"><kbd>W</kbd> <span>why</span></button><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "calc__capped_amount::item-a": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"swisstopo\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Calculated by capped_amount: 12</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Calculation proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Step</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"calc__capped_amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;,&quot;known&quot;,&quot;&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-path=\"at_most_twenty/value\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">operation min</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"recorded_amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-path=\"at_most_twenty/value/0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">fact recorded amount</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"why\" data-key=\"w\" data-proof-ref=\"m-1\"><kbd>W</kbd> <span>why</span></button><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "calc__capped_amount::item-c": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"swisstopo\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Calculated by capped_amount: unknown (fact recorded_amount.amount is missing)</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Calculation proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Step</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"calc__capped_amount\" data-key=\"[&quot;item-c&quot;,&quot;&quot;,&quot;unknown&quot;,&quot;fact recorded_amount.amount is missing&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-path=\"at_most_twenty/value\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">operation min</td><!--[-1--><td data-part=\"value\" data-state=\"unknown\" data-reason=\"fact recorded_amount.amount is missing\" data-proof-ref=\"m-1\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"unknown\" data-sign=\"unknown\" data-proof-ref=\"m-1\" data-reason=\"fact recorded_amount.amount is missing\"><span aria-hidden=\"true\">▨</span></span> <!--[0--><span>fact recorded_amount.amount is missing</span><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"recorded_amount\" data-key=\"[&quot;item-c&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-path=\"at_most_twenty/value/0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">fact recorded amount</td><!--[-1--><td data-part=\"value\" data-state=\"unknown\" data-reason=\"fact recorded_amount.amount is missing\" data-proof-ref=\"m-1\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"unknown\" data-sign=\"unknown\" data-proof-ref=\"m-1\" data-reason=\"fact recorded_amount.amount is missing\"><span aria-hidden=\"true\">▨</span></span> <!--[0--><span>fact recorded_amount.amount is missing</span><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><tr data-sign=\"unknown\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">▨</span></td><td class=\"svelte-1w0mfm8\">unknown</td><td class=\"svelte-1w0mfm8\">state</td><td class=\"svelte-1w0mfm8\">diagonal-hatch-45</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->"
+      },
+      "obsidian": {
+        "flagged::item-a::12": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"obsidian\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Item </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">item-a</a><!--]--><!--[-1--><span> is flagged with amount </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">12</a><!--]--><!--[-1--><span>, and nothing holds it.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"held\" data-key=\"[&quot;item-a&quot;]\" data-polarity=\"negative\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">there is no held (item-a)</td><!--[-1--><td data-part=\"value\" data-state=\"absent\" data-proof-ref=\"m-1\" data-completeness-ref=\"m-1:snapshot:held\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"absent\" data-sign=\"absent\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">⦸</span></span> <!--[-1--><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"item__amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">amount: item-a</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><button type=\"button\" data-verb=\"suppose\" data-key=\"s\" data-proof-ref=\"m-1\" aria-expanded=\"false\"><kbd>S</kbd> <span>suppose</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"absent\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">⦸</span></td><td class=\"svelte-1w0mfm8\">absent</td><td class=\"svelte-1w0mfm8\">state</td><td class=\"svelte-1w0mfm8\">dashed-hollow-strike</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "group_size::group-a::2": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"obsidian\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Group </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">group-a</a><!--]--><!--[-1--><span> has </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">2</a><!--]--><!--[-1--><span> items.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"group\" data-key=\"[&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-part=\"total\" data-relation=\"item__group\" data-key=\"[&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">Total · group</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">2</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-2\" tabindex=\"0\" data-line=\"2\" data-relation=\"item__group\" data-key=\"[&quot;item-a&quot;,&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">2</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group: item-a</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-3\" tabindex=\"0\" data-line=\"3\" data-relation=\"item__group\" data-key=\"[&quot;item-b&quot;,&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">3</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group: item-b</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "busy::group-a": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"obsidian\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Group </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">group-a</a><!--]--><!--[-1--><span> is busy with </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">2</a><!--]--><!--[-1--><span> items.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"group_size\" data-key=\"[&quot;group-a&quot;,&quot;2&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">group size</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a, 2</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"why\" data-key=\"w\" data-proof-ref=\"m-1\"><kbd>W</kbd> <span>why</span></button><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "calc__capped_amount::item-a": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"obsidian\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Calculated by capped_amount: 12</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Calculation proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Step</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"calc__capped_amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;,&quot;known&quot;,&quot;&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-path=\"at_most_twenty/value\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">operation min</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"recorded_amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-path=\"at_most_twenty/value/0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">fact recorded amount</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"why\" data-key=\"w\" data-proof-ref=\"m-1\"><kbd>W</kbd> <span>why</span></button><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "calc__capped_amount::item-c": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"obsidian\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Calculated by capped_amount: unknown (fact recorded_amount.amount is missing)</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Calculation proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Step</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"calc__capped_amount\" data-key=\"[&quot;item-c&quot;,&quot;&quot;,&quot;unknown&quot;,&quot;fact recorded_amount.amount is missing&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-path=\"at_most_twenty/value\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">operation min</td><!--[-1--><td data-part=\"value\" data-state=\"unknown\" data-reason=\"fact recorded_amount.amount is missing\" data-proof-ref=\"m-1\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"unknown\" data-sign=\"unknown\" data-proof-ref=\"m-1\" data-reason=\"fact recorded_amount.amount is missing\"><span aria-hidden=\"true\">▨</span></span> <!--[0--><span>fact recorded_amount.amount is missing</span><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"recorded_amount\" data-key=\"[&quot;item-c&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-path=\"at_most_twenty/value/0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">fact recorded amount</td><!--[-1--><td data-part=\"value\" data-state=\"unknown\" data-reason=\"fact recorded_amount.amount is missing\" data-proof-ref=\"m-1\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"unknown\" data-sign=\"unknown\" data-proof-ref=\"m-1\" data-reason=\"fact recorded_amount.amount is missing\"><span aria-hidden=\"true\">▨</span></span> <!--[0--><span>fact recorded_amount.amount is missing</span><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><tr data-sign=\"unknown\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">▨</span></td><td class=\"svelte-1w0mfm8\">unknown</td><td class=\"svelte-1w0mfm8\">state</td><td class=\"svelte-1w0mfm8\">diagonal-hatch-45</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->"
+      },
+      "forced": {
+        "flagged::item-a::12": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"forced\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Item </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">item-a</a><!--]--><!--[-1--><span> is flagged with amount </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">12</a><!--]--><!--[-1--><span>, and nothing holds it.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"held\" data-key=\"[&quot;item-a&quot;]\" data-polarity=\"negative\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">there is no held (item-a)</td><!--[-1--><td data-part=\"value\" data-state=\"absent\" data-proof-ref=\"m-1\" data-completeness-ref=\"m-1:snapshot:held\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"absent\" data-sign=\"absent\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">⦸</span></span> <!--[-1--><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"item__amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">amount: item-a</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><button type=\"button\" data-verb=\"suppose\" data-key=\"s\" data-proof-ref=\"m-1\" aria-expanded=\"false\"><kbd>S</kbd> <span>suppose</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"absent\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">⦸</span></td><td class=\"svelte-1w0mfm8\">absent</td><td class=\"svelte-1w0mfm8\">state</td><td class=\"svelte-1w0mfm8\">dashed-hollow-strike</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "group_size::group-a::2": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"forced\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Group </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">group-a</a><!--]--><!--[-1--><span> has </span><!--]--><!--[0--><a href=\"#slip-line-1\" data-line=\"1\" data-proof-ref=\"m-1\">2</a><!--]--><!--[-1--><span> items.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"group\" data-key=\"[&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-part=\"total\" data-relation=\"item__group\" data-key=\"[&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">Total · group</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">2</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-2\" tabindex=\"0\" data-line=\"2\" data-relation=\"item__group\" data-key=\"[&quot;item-a&quot;,&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">2</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group: item-a</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-3\" tabindex=\"0\" data-line=\"3\" data-relation=\"item__group\" data-key=\"[&quot;item-b&quot;,&quot;group-a&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">3</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">group: item-b</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "busy::group-a": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"forced\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Group </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">group-a</a><!--]--><!--[-1--><span> is busy with </span><!--]--><!--[0--><a href=\"#slip-line-0\" data-line=\"0\" data-proof-ref=\"m-1\">2</a><!--]--><!--[-1--><span> items.</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Rule proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Relation</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"group_size\" data-key=\"[&quot;group-a&quot;,&quot;2&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">group size</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">group-a, 2</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"why\" data-key=\"w\" data-proof-ref=\"m-1\"><kbd>W</kbd> <span>why</span></button><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "calc__capped_amount::item-a": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"forced\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Calculated by capped_amount: 12</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Calculation proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Step</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"calc__capped_amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;,&quot;known&quot;,&quot;&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-path=\"at_most_twenty/value\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">operation min</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"recorded_amount\" data-key=\"[&quot;item-a&quot;,&quot;12&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-path=\"at_most_twenty/value/0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">fact recorded amount</td><!--[1--><td data-part=\"value\" data-state=\"known\" data-proof-ref=\"m-1\">12</td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><button type=\"button\" data-verb=\"why\" data-key=\"w\" data-proof-ref=\"m-1\"><kbd>W</kbd> <span>why</span></button><button type=\"button\" data-verb=\"depends\" data-key=\"d\" data-proof-ref=\"m-1\"><kbd>D</kbd> <span>depends</span></button><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->",
+        "calc__capped_amount::item-c": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"forced\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[-1--><!--[0--><section class=\"slip-seal\" aria-label=\"Verification seal\" data-part=\"seal\"><div class=\"slip-seal-meta\"><span class=\"slip-manifest-hash\" data-part=\"manifest-hash\">eba50271352ecd467c62b80ff7fcc6f932c129f1c699fd923cde0fc5d55b12df</span> <span class=\"slip-seal-tier\"></span> <span class=\"slip-seal-role\">reader</span></div> <ul class=\"slip-seal-checks\" aria-label=\"Seal checks\"><!--[--><li data-check=\"publisher-record\" data-status=\"green\">publisher-record: green</li><!--]--></ul></section><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[0--><!--[0--><div class=\"slip-sentence\" data-part=\"sentence\"><!--[--><!--[-1--><span>Calculated by capped_amount: unknown (fact recorded_amount.amount is missing)</span><!--]--><!--]--></div><!--]--> <table class=\"slip-table svelte-1w0mfm8\" data-sheet=\"slip\" aria-label=\"Calculation proof slip\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Line</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Step</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Value</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Actions</th></tr></thead><tbody><!--[-1--><!--]--><!--[--><tr id=\"slip-line-0\" tabindex=\"0\" data-line=\"0\" data-relation=\"calc__capped_amount\" data-key=\"[&quot;item-c&quot;,&quot;&quot;,&quot;unknown&quot;,&quot;fact recorded_amount.amount is missing&quot;]\" data-polarity=\"positive\" data-depth=\"0\" data-path=\"at_most_twenty/value\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">0</td><td class=\"svelte-1w0mfm8\"><!--[0--><span class=\"cartouche-sign\" role=\"img\" aria-label=\"derived\" data-sign=\"derived\" data-proof-ref=\"m-1\"><span aria-hidden=\"true\">○</span></span><!--]--></td><td class=\"svelte-1w0mfm8\">operation min</td><!--[-1--><td data-part=\"value\" data-state=\"unknown\" data-reason=\"fact recorded_amount.amount is missing\" data-proof-ref=\"m-1\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"unknown\" data-sign=\"unknown\" data-proof-ref=\"m-1\" data-reason=\"fact recorded_amount.amount is missing\"><span aria-hidden=\"true\">▨</span></span> <!--[0--><span>fact recorded_amount.amount is missing</span><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><tr id=\"slip-line-1\" tabindex=\"0\" data-line=\"1\" data-relation=\"recorded_amount\" data-key=\"[&quot;item-c&quot;]\" data-polarity=\"positive\" data-depth=\"1\" data-path=\"at_most_twenty/value/0\" data-proof-ref=\"m-1\"><td class=\"svelte-1w0mfm8\">1</td><td class=\"svelte-1w0mfm8\"><!--[-1--><!--]--></td><td class=\"svelte-1w0mfm8\">fact recorded amount</td><!--[-1--><td data-part=\"value\" data-state=\"unknown\" data-reason=\"fact recorded_amount.amount is missing\" data-proof-ref=\"m-1\"><span class=\"cartouche-sign\" role=\"img\" aria-label=\"unknown\" data-sign=\"unknown\" data-proof-ref=\"m-1\" data-reason=\"fact recorded_amount.amount is missing\"><span aria-hidden=\"true\">▨</span></span> <!--[0--><span>fact recorded_amount.amount is missing</span><!--]--></td><!--]--><!----><td class=\"svelte-1w0mfm8\"><!--[--><!--]--> <!--[-1--><!--]--></td></tr><!--]--></tbody></table><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--> <!--[--><!--]--> <!--[0--><table class=\"slip-legend svelte-1w0mfm8\" data-part=\"legend\" aria-label=\"Sign legend\"><thead><tr><th scope=\"col\" class=\"svelte-1w0mfm8\">Glyph</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Sign</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Kind</th><th scope=\"col\" class=\"svelte-1w0mfm8\">Pattern</th></tr></thead><tbody><!--[--><tr data-sign=\"derived\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">○</span></td><td class=\"svelte-1w0mfm8\">derived</td><td class=\"svelte-1w0mfm8\">origin</td><td class=\"svelte-1w0mfm8\">hollow-circle</td></tr><tr data-sign=\"unknown\"><td class=\"svelte-1w0mfm8\"><span aria-hidden=\"true\">▨</span></td><td class=\"svelte-1w0mfm8\">unknown</td><td class=\"svelte-1w0mfm8\">state</td><td class=\"svelte-1w0mfm8\">diagonal-hatch-45</td></tr><!--]--></tbody></table><!--]--><!--]--></div><!--]-->"
+      }
+    },
+    "unservedHtml": {
+      "swisstopo": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"swisstopo\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[0--><div class=\"slip-unserved\" role=\"alert\" data-part=\"unserved\" data-state=\"invalid\" data-reason=\"publication_withdrawn\"><h2>Publication Unserved</h2> <p class=\"slip-unserved-code\">publication_withdrawn</p> <!--[0--><p class=\"slip-unserved-reason\">unserved.withdrawn.policy_revision</p><!--]--> <!--[0--><p class=\"slip-unserved-supersede\">Superseded by: <code>sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0</code></p><!--]--> <!--[0--><p class=\"slip-unserved-decision\">Decision: <a href=\"#decision:2026-099\" data-proof-ref=\"decision:2026-099\">decision:2026-099</a></p><!--]--></div><!--]--></div><!--]-->",
+      "obsidian": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"obsidian\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[0--><div class=\"slip-unserved\" role=\"alert\" data-part=\"unserved\" data-state=\"invalid\" data-reason=\"publication_withdrawn\"><h2>Publication Unserved</h2> <p class=\"slip-unserved-code\">publication_withdrawn</p> <!--[0--><p class=\"slip-unserved-reason\">unserved.withdrawn.policy_revision</p><!--]--> <!--[0--><p class=\"slip-unserved-supersede\">Superseded by: <code>sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0</code></p><!--]--> <!--[0--><p class=\"slip-unserved-decision\">Decision: <a href=\"#decision:2026-099\" data-proof-ref=\"decision:2026-099\">decision:2026-099</a></p><!--]--></div><!--]--></div><!--]-->",
+      "forced": "<!--[--><div class=\"cartouche-slip-root svelte-1w0mfm8\" data-cartouche-theme=\"forced\" role=\"region\" aria-label=\"Proof slip\" tabindex=\"-1\"><style>{themeCssText}</style> <!--[0--><div class=\"slip-unserved\" role=\"alert\" data-part=\"unserved\" data-state=\"invalid\" data-reason=\"publication_withdrawn\"><h2>Publication Unserved</h2> <p class=\"slip-unserved-code\">publication_withdrawn</p> <!--[0--><p class=\"slip-unserved-reason\">unserved.withdrawn.policy_revision</p><!--]--> <!--[0--><p class=\"slip-unserved-supersede\">Superseded by: <code>sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0</code></p><!--]--> <!--[0--><p class=\"slip-unserved-decision\">Decision: <a href=\"#decision:2026-099\" data-proof-ref=\"decision:2026-099\">decision:2026-099</a></p><!--]--></div><!--]--></div><!--]-->"
+    }
+  },
+  "typst": {
+    "relief": "// cartouche.scene/2 -> Typst (deterministic, generated)\n#set document(title: \"Sheet 01 — Orthographic Relief\", date: none)\n#set page(paper: \"a4\", margin: (x: 18mm, y: 20mm))\n#set text(size: 9pt)\n#let sign-glyph = (origin_decision: \"◆\", origin_vendor: \"▲\", origin_design: \"■\", origin_observation: \"●\", derived: \"○\", assumption: \"╌\", drift: \"══\", screened: \"▬\", proposal: \"✎\", sealed: \"◉\", supposed: \"◇\", valid: \"✓\", changed: \"◐\", violated: \"✕\", unknown: \"▨\", not_applicable: \"–\", absent: \"⦸\", invalid: \"!\")\n#let hatch-box = box(width: 14pt, height: 9pt, stroke: 0.5pt + luma(110), clip: true)[\n  #place(top + left, line(start: (0pt, 9pt), end: (9pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (5pt, 9pt), end: (14pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (10pt, 9pt), end: (19pt, 0pt), stroke: 0.5pt + luma(110)))\n]\n#let hollow-box = box(width: 14pt, height: 9pt, stroke: (paint: luma(110), thickness: 0.5pt, dash: \"dashed\"))\n#let mark(state, origin, reason: none, display: none) = {\n  sign-glyph.at(origin)\n  h(3pt)\n  if state == \"unknown\" {\n    hatch-box\n    h(3pt)\n    reason\n  } else if state == \"not_applicable\" {\n    hollow-box\n    if reason != none { h(3pt); reason }\n  } else if state == \"absent\" {\n    sign-glyph.absent\n  } else if state == \"invalid\" {\n    sign-glyph.invalid\n  } else if display != none {\n    if state in (\"valid\", \"changed\", \"violated\") { sign-glyph.at(state); h(3pt) }\n    display\n  } else if state in (\"valid\", \"changed\", \"violated\") {\n    sign-glyph.at(state)\n  }\n}\n#let proof-cell(proof, witness: none) = {\n  raw(proof)\n  if witness != none { linebreak(); [witness: ]; raw(witness) }\n}\n#let drift-mark(src, dst, name, stated, observed) = block(width: 100%, inset: 4pt, stroke: 0.4pt + luma(150), breakable: false)[\n  #sign-glyph.drift #name: #src #sym.arrow.r #dst\n  #grid(columns: (auto, 1fr, auto), gutter: 4pt, align: horizon,\n    [stated], line(length: 100%, stroke: 0.8pt), raw(stated),\n    [observed], line(length: 100%, stroke: 0.8pt), raw(observed))\n]\n#let seal-block(manifest, epoch, knowledge, role, witness, tier, provisional) = block(width: 100%, inset: 6pt, stroke: 0.8pt)[\n  #text(weight: \"bold\")[Cartouche seal] #h(6pt) #raw(manifest) \\\n  tier: #raw(tier) #h(6pt) witness: #raw(witness) #h(6pt) role: #raw(role) \\\n  epoch: #raw(epoch) #h(6pt) knowledge time: #raw(knowledge) #h(6pt) provisional: #raw(provisional)\n]\n#let banner(text-body) = block(width: 100%, inset: 6pt, stroke: (paint: luma(40), thickness: 1.2pt, dash: \"dashed\"), text(weight: \"bold\", text-body))\n#set page(footer: align(center, text(size: 7pt, raw(\"sha256:3e9b7104a1f8c2d9e4b5a6c7d8e9f0a1b2c3 sealed\"))))\n#heading(level: 1, \"Sheet 01 — Orthographic Relief\")\n#seal-block(\"sha256:3e9b7104a1f8c2d9e4b5a6c7d8e9f0a1b2c3\", \"42\", \"2026-11-20T21:40:00Z\", \"caseworker\", \"green\", \"sealed\", \"0\")\n#heading(level: 2, \"Axes\")\n#table(columns: 4, table.header(\"Axis\", \"Dimension\", \"Kind\", \"Label\"),\n  \"x\",\n  \"D7\",\n  \"metric\",\n  \"Taxable Income\",\n  \"y\",\n  \"D7\",\n  \"metric\",\n  \"Household Assets\",\n  \"z\",\n  \"D7\",\n  \"metric\",\n  \"Subsidy Amount\",\n)\n#text(size: 8pt, \"projection: orthographic\")\n#heading(level: 2, \"Marks\")\n#table(columns: 3, table.header(\"Mark\", \"Item\", \"Proof\"),\n  mark(\"valid\", \"derived\", display: \"€ 2.694\"),\n  \"A001 · € 2.694\",\n  proof-cell(\"witness:sub-A001\"),\n  mark(\"unknown\", \"derived\", reason: \"income_statement_not_received\"),\n  \"A003 · unknown · income_statement_not_received\",\n  proof-cell(\"witness:sub-A003-missing\"),\n)\n#heading(level: 2, \"Uncertainty curtains\")\n#table(columns: 3, table.header(\"Mark\", \"Subject\", \"Proof\"),\n  mark(\"unknown\", \"derived\", reason: \"income_statement_not_received\"),\n  \"A003\",\n  proof-cell(\"witness:sub-A003-missing\"),\n)\n#heading(level: 2, \"Table twin\")\n#table(columns: 4, table.header(\"Subject\", \"Amount\", \"State\", \"Citation\"),\n  \"A001\",\n  \"€ 2.694\",\n  \"valid\",\n  \"Article 5 · Council Decision 2026-047\",\n  \"A003\",\n  \"unknown · income_statement_not_received\",\n  \"unknown\",\n  \"Article 3 · Council Decision 2026-047\",\n)\n#heading(level: 2, \"Legend\")\n#table(columns: 3, table.header(\"Sign\", \"Name\", \"Pattern\"),\n  \"○\",\n  \"derived\",\n  \"hollow-circle\",\n  \"✓\",\n  \"valid\",\n  \"solid-line\",\n  \"▨\",\n  \"unknown\",\n  \"diagonal-hatch-45\",\n)\n",
+    "flowFull": "// cartouche.scene/2 -> Typst (deterministic, generated)\n#set document(title: \"Sheet 02 — Flow & Reality-Split\", date: none)\n#set page(paper: \"a4\", margin: (x: 18mm, y: 20mm))\n#set text(size: 9pt)\n#let sign-glyph = (origin_decision: \"◆\", origin_vendor: \"▲\", origin_design: \"■\", origin_observation: \"●\", derived: \"○\", assumption: \"╌\", drift: \"══\", screened: \"▬\", proposal: \"✎\", sealed: \"◉\", supposed: \"◇\", valid: \"✓\", changed: \"◐\", violated: \"✕\", unknown: \"▨\", not_applicable: \"–\", absent: \"⦸\", invalid: \"!\")\n#let hatch-box = box(width: 14pt, height: 9pt, stroke: 0.5pt + luma(110), clip: true)[\n  #place(top + left, line(start: (0pt, 9pt), end: (9pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (5pt, 9pt), end: (14pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (10pt, 9pt), end: (19pt, 0pt), stroke: 0.5pt + luma(110)))\n]\n#let hollow-box = box(width: 14pt, height: 9pt, stroke: (paint: luma(110), thickness: 0.5pt, dash: \"dashed\"))\n#let mark(state, origin, reason: none, display: none) = {\n  sign-glyph.at(origin)\n  h(3pt)\n  if state == \"unknown\" {\n    hatch-box\n    h(3pt)\n    reason\n  } else if state == \"not_applicable\" {\n    hollow-box\n    if reason != none { h(3pt); reason }\n  } else if state == \"absent\" {\n    sign-glyph.absent\n  } else if state == \"invalid\" {\n    sign-glyph.invalid\n  } else if display != none {\n    if state in (\"valid\", \"changed\", \"violated\") { sign-glyph.at(state); h(3pt) }\n    display\n  } else if state in (\"valid\", \"changed\", \"violated\") {\n    sign-glyph.at(state)\n  }\n}\n#let proof-cell(proof, witness: none) = {\n  raw(proof)\n  if witness != none { linebreak(); [witness: ]; raw(witness) }\n}\n#let drift-mark(src, dst, name, stated, observed) = block(width: 100%, inset: 4pt, stroke: 0.4pt + luma(150), breakable: false)[\n  #sign-glyph.drift #name: #src #sym.arrow.r #dst\n  #grid(columns: (auto, 1fr, auto), gutter: 4pt, align: horizon,\n    [stated], line(length: 100%, stroke: 0.8pt), raw(stated),\n    [observed], line(length: 100%, stroke: 0.8pt), raw(observed))\n]\n#let seal-block(manifest, epoch, knowledge, role, witness, tier, provisional) = block(width: 100%, inset: 6pt, stroke: 0.8pt)[\n  #text(weight: \"bold\")[Cartouche seal] #h(6pt) #raw(manifest) \\\n  tier: #raw(tier) #h(6pt) witness: #raw(witness) #h(6pt) role: #raw(role) \\\n  epoch: #raw(epoch) #h(6pt) knowledge time: #raw(knowledge) #h(6pt) provisional: #raw(provisional)\n]\n#let banner(text-body) = block(width: 100%, inset: 6pt, stroke: (paint: luma(40), thickness: 1.2pt, dash: \"dashed\"), text(weight: \"bold\", text-body))\n#set page(footer: align(center, text(size: 7pt, raw(\"sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0 sealed\"))))\n#heading(level: 1, \"Sheet 02 — Flow & Reality-Split\")\n#seal-block(\"sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0\", \"42\", \"2026-11-20T21:40:00Z\", \"platform_admin\", \"green\", \"sealed\", \"0\")\n#heading(level: 2, \"Axes\")\n#table(columns: 4, table.header(\"Axis\", \"Dimension\", \"Kind\", \"Label\"),\n  \"x\",\n  \"D1\",\n  \"nominal\",\n  \"Zone\",\n  \"y\",\n  \"D1\",\n  \"nominal\",\n  \"Entity\",\n)\n#text(size: 8pt, \"projection: 2d\")\n#heading(level: 2, \"Marks\")\n#table(columns: 3, table.header(\"Mark\", \"Item\", \"Proof\"),\n  mark(\"valid\", \"origin_design\"),\n  \"Gateway\",\n  proof-cell(\"proof:gw-01\"),\n  mark(\"valid\", \"origin_decision\"),\n  \"Keycloak\",\n  proof-cell(\"proof:kc-01\"),\n  mark(\"changed\", \"origin_design\"),\n  \"Orders API\",\n  proof-cell(\"proof:ord-19\"),\n  mark(\"violated\", \"origin_decision\"),\n  \"Vault\",\n  proof-cell(\"proof:vlt-88\"),\n  mark(\"valid\", \"origin_observation\"),\n  \"Postgres\",\n  proof-cell(\"proof:pg-42\"),\n  mark(\"absent\", \"origin_decision\"),\n  \"Backup Store\",\n  proof-cell(\"proof:dr-05\", witness: \"sweep:complete-ns-12-of-12\"),\n  mark(\"unknown\", \"origin_design\", reason: \"telemetry_timeout\"),\n  \"Edge-04\",\n  proof-cell(\"proof:edge-04-timeout\"),\n)\n#heading(level: 2, \"Drift\")\n#drift-mark(\"svc-orders\", \"svc-vault\", \"TCP/8200\", \"policy:netpol-04#L42\", \"obs:hubble-ep42#L419\")\n#heading(level: 2, \"Table twin\")\n#table(columns: 5, table.header(\"Entity\", \"Zone\", \"Sign\", \"State\", \"Proof\"),\n  \"Gateway\",\n  \"ingress\",\n  \"origin_design\",\n  \"valid\",\n  \"proof:gw-01\",\n  \"Keycloak\",\n  \"platform\",\n  \"origin_decision\",\n  \"valid\",\n  \"proof:kc-01\",\n  \"Orders API\",\n  \"consumers\",\n  \"origin_design\",\n  \"changed\",\n  \"proof:ord-19\",\n  \"Vault\",\n  \"storage\",\n  \"origin_decision\",\n  \"violated\",\n  \"proof:vlt-88\",\n  \"Postgres\",\n  \"storage\",\n  \"origin_observation\",\n  \"valid\",\n  \"proof:pg-42\",\n  \"Backup Store\",\n  \"recovery\",\n  \"origin_decision\",\n  \"absent\",\n  \"proof:dr-05\",\n  \"Edge-04\",\n  \"recovery\",\n  \"origin_design\",\n  \"unknown\",\n  \"proof:edge-04-timeout\",\n)\n#heading(level: 2, \"Legend\")\n#table(columns: 3, table.header(\"Sign\", \"Name\", \"Pattern\"),\n  \"◆\",\n  \"origin_decision\",\n  \"solid-diamond\",\n  \"■\",\n  \"origin_design\",\n  \"solid-square\",\n  \"●\",\n  \"origin_observation\",\n  \"solid-circle\",\n  \"══\",\n  \"drift\",\n  \"double-rail\",\n  \"✓\",\n  \"valid\",\n  \"solid-line\",\n  \"◐\",\n  \"changed\",\n  \"half-fill\",\n  \"✕\",\n  \"violated\",\n  \"cross-stroke\",\n  \"▨\",\n  \"unknown\",\n  \"diagonal-hatch-45\",\n  \"⦸\",\n  \"absent\",\n  \"dashed-hollow-strike\",\n)\n",
+    "flowRestricted": "// cartouche.scene/2 -> Typst (deterministic, generated)\n#set document(title: \"Sheet 02 — Flow & Reality-Split\", date: none)\n#set page(paper: \"a4\", margin: (x: 18mm, y: 20mm))\n#set text(size: 9pt)\n#let sign-glyph = (origin_decision: \"◆\", origin_vendor: \"▲\", origin_design: \"■\", origin_observation: \"●\", derived: \"○\", assumption: \"╌\", drift: \"══\", screened: \"▬\", proposal: \"✎\", sealed: \"◉\", supposed: \"◇\", valid: \"✓\", changed: \"◐\", violated: \"✕\", unknown: \"▨\", not_applicable: \"–\", absent: \"⦸\", invalid: \"!\")\n#let hatch-box = box(width: 14pt, height: 9pt, stroke: 0.5pt + luma(110), clip: true)[\n  #place(top + left, line(start: (0pt, 9pt), end: (9pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (5pt, 9pt), end: (14pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (10pt, 9pt), end: (19pt, 0pt), stroke: 0.5pt + luma(110)))\n]\n#let hollow-box = box(width: 14pt, height: 9pt, stroke: (paint: luma(110), thickness: 0.5pt, dash: \"dashed\"))\n#let mark(state, origin, reason: none, display: none) = {\n  sign-glyph.at(origin)\n  h(3pt)\n  if state == \"unknown\" {\n    hatch-box\n    h(3pt)\n    reason\n  } else if state == \"not_applicable\" {\n    hollow-box\n    if reason != none { h(3pt); reason }\n  } else if state == \"absent\" {\n    sign-glyph.absent\n  } else if state == \"invalid\" {\n    sign-glyph.invalid\n  } else if display != none {\n    if state in (\"valid\", \"changed\", \"violated\") { sign-glyph.at(state); h(3pt) }\n    display\n  } else if state in (\"valid\", \"changed\", \"violated\") {\n    sign-glyph.at(state)\n  }\n}\n#let proof-cell(proof, witness: none) = {\n  raw(proof)\n  if witness != none { linebreak(); [witness: ]; raw(witness) }\n}\n#let drift-mark(src, dst, name, stated, observed) = block(width: 100%, inset: 4pt, stroke: 0.4pt + luma(150), breakable: false)[\n  #sign-glyph.drift #name: #src #sym.arrow.r #dst\n  #grid(columns: (auto, 1fr, auto), gutter: 4pt, align: horizon,\n    [stated], line(length: 100%, stroke: 0.8pt), raw(stated),\n    [observed], line(length: 100%, stroke: 0.8pt), raw(observed))\n]\n#let seal-block(manifest, epoch, knowledge, role, witness, tier, provisional) = block(width: 100%, inset: 6pt, stroke: 0.8pt)[\n  #text(weight: \"bold\")[Cartouche seal] #h(6pt) #raw(manifest) \\\n  tier: #raw(tier) #h(6pt) witness: #raw(witness) #h(6pt) role: #raw(role) \\\n  epoch: #raw(epoch) #h(6pt) knowledge time: #raw(knowledge) #h(6pt) provisional: #raw(provisional)\n]\n#let banner(text-body) = block(width: 100%, inset: 6pt, stroke: (paint: luma(40), thickness: 1.2pt, dash: \"dashed\"), text(weight: \"bold\", text-body))\n#set page(footer: align(center, text(size: 7pt, raw(\"sha256:4c2e80a1b9d4f7e2a1c3d5e7f90123456789 sealed\"))))\n#heading(level: 1, \"Sheet 02 — Flow & Reality-Split\")\n#seal-block(\"sha256:4c2e80a1b9d4f7e2a1c3d5e7f90123456789\", \"42\", \"2026-11-20T21:40:00Z\", \"tenant_a\", \"green\", \"sealed\", \"0\")\n#banner(\"incomplete: not_read_in_full\")\n#heading(level: 2, \"Axes\")\n#table(columns: 4, table.header(\"Axis\", \"Dimension\", \"Kind\", \"Label\"),\n  \"x\",\n  \"D1\",\n  \"nominal\",\n  \"Zone\",\n  \"y\",\n  \"D1\",\n  \"nominal\",\n  \"Entity\",\n)\n#text(size: 8pt, \"projection: 2d\")\n#heading(level: 2, \"Marks\")\n#table(columns: 3, table.header(\"Mark\", \"Item\", \"Proof\"),\n  mark(\"valid\", \"origin_design\"),\n  \"Gateway\",\n  proof-cell(\"proof:gw-01\"),\n  mark(\"valid\", \"origin_decision\"),\n  \"Keycloak\",\n  proof-cell(\"proof:kc-01\"),\n  mark(\"valid\", \"origin_design\"),\n  \"Orders API\",\n  proof-cell(\"proof:ord-19\"),\n  mark(\"valid\", \"origin_observation\"),\n  \"Postgres\",\n  proof-cell(\"proof:pg-42\"),\n)\n#heading(level: 2, \"Table twin\")\n#table(columns: 5, table.header(\"Entity\", \"Zone\", \"Sign\", \"State\", \"Proof\"),\n  \"Gateway\",\n  \"ingress\",\n  \"origin_design\",\n  \"valid\",\n  \"proof:gw-01\",\n  \"Keycloak\",\n  \"platform\",\n  \"origin_decision\",\n  \"valid\",\n  \"proof:kc-01\",\n  \"Orders API\",\n  \"consumers\",\n  \"origin_design\",\n  \"valid\",\n  \"proof:ord-19\",\n  \"Postgres\",\n  \"storage\",\n  \"origin_observation\",\n  \"valid\",\n  \"proof:pg-42\",\n)\n#heading(level: 2, \"Legend\")\n#table(columns: 3, table.header(\"Sign\", \"Name\", \"Pattern\"),\n  \"◆\",\n  \"origin_decision\",\n  \"solid-diamond\",\n  \"■\",\n  \"origin_design\",\n  \"solid-square\",\n  \"●\",\n  \"origin_observation\",\n  \"solid-circle\",\n  \"✓\",\n  \"valid\",\n  \"solid-line\",\n)\n",
+    "kringstand": "// cartouche.scene/2 -> Typst (deterministic, generated)\n#set document(title: \"Sheet 03 — Kringstand\", date: none)\n#set page(paper: \"a4\", margin: (x: 18mm, y: 20mm))\n#set text(size: 9pt)\n#let sign-glyph = (origin_decision: \"◆\", origin_vendor: \"▲\", origin_design: \"■\", origin_observation: \"●\", derived: \"○\", assumption: \"╌\", drift: \"══\", screened: \"▬\", proposal: \"✎\", sealed: \"◉\", supposed: \"◇\", valid: \"✓\", changed: \"◐\", violated: \"✕\", unknown: \"▨\", not_applicable: \"–\", absent: \"⦸\", invalid: \"!\")\n#let hatch-box = box(width: 14pt, height: 9pt, stroke: 0.5pt + luma(110), clip: true)[\n  #place(top + left, line(start: (0pt, 9pt), end: (9pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (5pt, 9pt), end: (14pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (10pt, 9pt), end: (19pt, 0pt), stroke: 0.5pt + luma(110)))\n]\n#let hollow-box = box(width: 14pt, height: 9pt, stroke: (paint: luma(110), thickness: 0.5pt, dash: \"dashed\"))\n#let mark(state, origin, reason: none, display: none) = {\n  sign-glyph.at(origin)\n  h(3pt)\n  if state == \"unknown\" {\n    hatch-box\n    h(3pt)\n    reason\n  } else if state == \"not_applicable\" {\n    hollow-box\n    if reason != none { h(3pt); reason }\n  } else if state == \"absent\" {\n    sign-glyph.absent\n  } else if state == \"invalid\" {\n    sign-glyph.invalid\n  } else if display != none {\n    if state in (\"valid\", \"changed\", \"violated\") { sign-glyph.at(state); h(3pt) }\n    display\n  } else if state in (\"valid\", \"changed\", \"violated\") {\n    sign-glyph.at(state)\n  }\n}\n#let proof-cell(proof, witness: none) = {\n  raw(proof)\n  if witness != none { linebreak(); [witness: ]; raw(witness) }\n}\n#let drift-mark(src, dst, name, stated, observed) = block(width: 100%, inset: 4pt, stroke: 0.4pt + luma(150), breakable: false)[\n  #sign-glyph.drift #name: #src #sym.arrow.r #dst\n  #grid(columns: (auto, 1fr, auto), gutter: 4pt, align: horizon,\n    [stated], line(length: 100%, stroke: 0.8pt), raw(stated),\n    [observed], line(length: 100%, stroke: 0.8pt), raw(observed))\n]\n#let seal-block(manifest, epoch, knowledge, role, witness, tier, provisional) = block(width: 100%, inset: 6pt, stroke: 0.8pt)[\n  #text(weight: \"bold\")[Cartouche seal] #h(6pt) #raw(manifest) \\\n  tier: #raw(tier) #h(6pt) witness: #raw(witness) #h(6pt) role: #raw(role) \\\n  epoch: #raw(epoch) #h(6pt) knowledge time: #raw(knowledge) #h(6pt) provisional: #raw(provisional)\n]\n#let banner(text-body) = block(width: 100%, inset: 6pt, stroke: (paint: luma(40), thickness: 1.2pt, dash: \"dashed\"), text(weight: \"bold\", text-body))\n#set page(footer: align(center, text(size: 7pt, raw(\"sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0 provisional_engine\"))))\n#heading(level: 1, \"Sheet 03 — Kringstand\")\n#seal-block(\"sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0\", \"42\", \"2026-11-20T21:40:00Z\", \"platform_admin\", \"green\", \"provisional_engine\", \"1\")\n#banner(\"provisional_engine: unsealed, Propose and approval are locked\")\n#heading(level: 2, \"Axes\")\n#table(columns: 4, table.header(\"Axis\", \"Dimension\", \"Kind\", \"Label\"),\n  \"x\",\n  \"D5\",\n  \"ordinal\",\n  \"Lane\",\n  \"y\",\n  \"D4\",\n  \"ordinal\",\n  \"Round Step\",\n)\n#text(size: 8pt, \"projection: 2d\")\n#heading(level: 2, \"Marks\")\n#table(columns: 3, table.header(\"Mark\", \"Item\", \"Proof\"),\n  mark(\"changed\", \"origin_observation\"),\n  \"canary-smoke\",\n  proof-cell(\"round:m-4#wait-1\"),\n  mark(\"valid\", \"derived\"),\n  \"cert-issuer\",\n  proof-cell(\"round:m-4#done-1\"),\n  mark(\"valid\", \"derived\"),\n  \"ingress-sync\",\n  proof-cell(\"round:m-4#done-2\"),\n  mark(\"valid\", \"derived\"),\n  \"pg-replica\",\n  proof-cell(\"round:m-4#done-3\"),\n  mark(\"valid\", \"origin_decision\"),\n  \"policy-push\",\n  proof-cell(\"round:m-4#ready-1\"),\n  mark(\"valid\", \"origin_decision\"),\n  \"vault-rule-patch\",\n  proof-cell(\"round:m-4#needed-1\"),\n  mark(\"changed\", \"origin_observation\"),\n  \"worker-07\",\n  proof-cell(\"stream:m5-draft-142ms\"),\n  mark(\"unknown\", \"derived\", reason: \"telemetry_timeout\"),\n  \"edge-node-04\",\n  proof-cell(\"round:m-4#unk-1\"),\n  mark(\"absent\", \"derived\"),\n  \"legacy-proxy-01\",\n  proof-cell(\"round:m-4#absent-1\", witness: \"sweep:complete-m4\"),\n)\n#heading(level: 2, \"Table twin\")\n#table(columns: 8, table.header(\"Key\", \"Lane\", \"Label\", \"Sign\", \"State\", \"Layer\", \"Value\", \"Proof\"),\n  \"step:canary-smoke\",\n  \"waiting\",\n  \"canary-smoke\",\n  \"origin_observation\",\n  \"changed\",\n  \"sealed\",\n  \"\",\n  \"round:m-4#wait-1\",\n  \"step:cert-issuer\",\n  \"done\",\n  \"cert-issuer\",\n  \"derived\",\n  \"valid\",\n  \"sealed\",\n  \"\",\n  \"round:m-4#done-1\",\n  \"step:ingress-sync\",\n  \"done\",\n  \"ingress-sync\",\n  \"derived\",\n  \"valid\",\n  \"sealed\",\n  \"\",\n  \"round:m-4#done-2\",\n  \"step:pg-replica\",\n  \"done\",\n  \"pg-replica\",\n  \"derived\",\n  \"valid\",\n  \"sealed\",\n  \"\",\n  \"round:m-4#done-3\",\n  \"step:policy-push\",\n  \"ready\",\n  \"policy-push\",\n  \"origin_decision\",\n  \"valid\",\n  \"sealed\",\n  \"\",\n  \"round:m-4#ready-1\",\n  \"step:vault-rule-patch\",\n  \"needed\",\n  \"vault-rule-patch\",\n  \"origin_decision\",\n  \"valid\",\n  \"sealed\",\n  \"\",\n  \"round:m-4#needed-1\",\n  \"step:worker-07\",\n  \"ready\",\n  \"worker-07\",\n  \"origin_observation\",\n  \"changed\",\n  \"provisional\",\n  \"\",\n  \"stream:m5-draft-142ms\",\n  \"target:edge-node-04\",\n  \"unknown\",\n  \"edge-node-04\",\n  \"derived\",\n  \"unknown\",\n  \"sealed\",\n  \"unknown · telemetry_timeout\",\n  \"round:m-4#unk-1\",\n  \"target:legacy-proxy\",\n  \"absent\",\n  \"legacy-proxy-01\",\n  \"derived\",\n  \"absent\",\n  \"sealed\",\n  \"⦸ absent\",\n  \"round:m-4#absent-1\",\n)\n#heading(level: 2, \"Legend\")\n#table(columns: 3, table.header(\"Sign\", \"Name\", \"Pattern\"),\n  \"◆\",\n  \"origin_decision\",\n  \"solid-diamond\",\n  \"●\",\n  \"origin_observation\",\n  \"solid-circle\",\n  \"○\",\n  \"derived\",\n  \"hollow-circle\",\n  \"✓\",\n  \"valid\",\n  \"solid-line\",\n  \"◐\",\n  \"changed\",\n  \"half-fill\",\n  \"▨\",\n  \"unknown\",\n  \"diagonal-hatch-45\",\n  \"⦸\",\n  \"absent\",\n  \"dashed-hollow-strike\",\n)\n",
+    "ripple": "// cartouche.scene/2 -> Typst (deterministic, generated)\n#set document(title: \"Sheet 04 — Causal Ripple\", date: none)\n#set page(paper: \"a4\", margin: (x: 18mm, y: 20mm))\n#set text(size: 9pt)\n#let sign-glyph = (origin_decision: \"◆\", origin_vendor: \"▲\", origin_design: \"■\", origin_observation: \"●\", derived: \"○\", assumption: \"╌\", drift: \"══\", screened: \"▬\", proposal: \"✎\", sealed: \"◉\", supposed: \"◇\", valid: \"✓\", changed: \"◐\", violated: \"✕\", unknown: \"▨\", not_applicable: \"–\", absent: \"⦸\", invalid: \"!\")\n#let hatch-box = box(width: 14pt, height: 9pt, stroke: 0.5pt + luma(110), clip: true)[\n  #place(top + left, line(start: (0pt, 9pt), end: (9pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (5pt, 9pt), end: (14pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (10pt, 9pt), end: (19pt, 0pt), stroke: 0.5pt + luma(110)))\n]\n#let hollow-box = box(width: 14pt, height: 9pt, stroke: (paint: luma(110), thickness: 0.5pt, dash: \"dashed\"))\n#let mark(state, origin, reason: none, display: none) = {\n  sign-glyph.at(origin)\n  h(3pt)\n  if state == \"unknown\" {\n    hatch-box\n    h(3pt)\n    reason\n  } else if state == \"not_applicable\" {\n    hollow-box\n    if reason != none { h(3pt); reason }\n  } else if state == \"absent\" {\n    sign-glyph.absent\n  } else if state == \"invalid\" {\n    sign-glyph.invalid\n  } else if display != none {\n    if state in (\"valid\", \"changed\", \"violated\") { sign-glyph.at(state); h(3pt) }\n    display\n  } else if state in (\"valid\", \"changed\", \"violated\") {\n    sign-glyph.at(state)\n  }\n}\n#let proof-cell(proof, witness: none) = {\n  raw(proof)\n  if witness != none { linebreak(); [witness: ]; raw(witness) }\n}\n#let drift-mark(src, dst, name, stated, observed) = block(width: 100%, inset: 4pt, stroke: 0.4pt + luma(150), breakable: false)[\n  #sign-glyph.drift #name: #src #sym.arrow.r #dst\n  #grid(columns: (auto, 1fr, auto), gutter: 4pt, align: horizon,\n    [stated], line(length: 100%, stroke: 0.8pt), raw(stated),\n    [observed], line(length: 100%, stroke: 0.8pt), raw(observed))\n]\n#let seal-block(manifest, epoch, knowledge, role, witness, tier, provisional) = block(width: 100%, inset: 6pt, stroke: 0.8pt)[\n  #text(weight: \"bold\")[Cartouche seal] #h(6pt) #raw(manifest) \\\n  tier: #raw(tier) #h(6pt) witness: #raw(witness) #h(6pt) role: #raw(role) \\\n  epoch: #raw(epoch) #h(6pt) knowledge time: #raw(knowledge) #h(6pt) provisional: #raw(provisional)\n]\n#let banner(text-body) = block(width: 100%, inset: 6pt, stroke: (paint: luma(40), thickness: 1.2pt, dash: \"dashed\"), text(weight: \"bold\", text-body))\n#set page(footer: align(center, text(size: 7pt, raw(\"sha256:77c1d2e3f4a5b6c7d8e9f01234567890abcd provisional_checked\"))))\n#heading(level: 1, \"Sheet 04 — Causal Ripple\")\n#seal-block(\"sha256:77c1d2e3f4a5b6c7d8e9f01234567890abcd\", \"42\", \"2026-11-20T21:40:00Z\", \"platform_admin\", \"green\", \"provisional_checked\", \"0\")\n#banner(\"provisional_checked: unsealed, Propose and approval are locked\")\n#banner(\"incomplete: depth_limit_hop_2\")\n#heading(level: 2, \"Axes\")\n#table(columns: 4, table.header(\"Axis\", \"Dimension\", \"Kind\", \"Label\"),\n  \"x\",\n  \"D2\",\n  \"polar\",\n  \"Causal Hop Ring\",\n  \"y\",\n  \"D1\",\n  \"nominal\",\n  \"Cut-Set Slot\",\n)\n#text(size: 8pt, \"projection: 2d\")\n#heading(level: 2, \"Marks\")\n#table(columns: 3, table.header(\"Mark\", \"Item\", \"Proof\"),\n  mark(\"valid\", \"origin_decision\"),\n  \"Keycloak A\",\n  proof-cell(\"p:kc\"),\n  mark(\"valid\", \"origin_observation\"),\n  \"Failover B\",\n  proof-cell(\"p:fb\"),\n  mark(\"valid\", \"derived\"),\n  \"IAM Quorum\",\n  proof-cell(\"p:quorum\"),\n  mark(\"valid\", \"origin_observation\"),\n  \"Hubble TLS\",\n  proof-cell(\"p:tls\"),\n  mark(\"violated\", \"derived\", display: \"violated\"),\n  \"DR RPO 15m\",\n  proof-cell(\"p:rpo\"),\n)\n#heading(level: 2, \"Table twin\")\n#table(columns: 9, table.header(\"ID\", \"Label\", \"Hop\", \"Gate\", \"Sign\", \"State\", \"Value\", \"Previous\", \"Proof\"),\n  \"svc-keycloak\",\n  \"Keycloak A\",\n  \"0\",\n  \"FACT\",\n  \"origin_decision\",\n  \"valid\",\n  \"\",\n  \"\",\n  \"p:kc\",\n  \"svc-failover\",\n  \"Failover B\",\n  \"0\",\n  \"FACT\",\n  \"origin_observation\",\n  \"valid\",\n  \"\",\n  \"\",\n  \"p:fb\",\n  \"g-quorum\",\n  \"IAM Quorum\",\n  \"1\",\n  \"OR\",\n  \"derived\",\n  \"valid\",\n  \"\",\n  \"\",\n  \"p:quorum\",\n  \"obs-tls\",\n  \"Hubble TLS\",\n  \"1\",\n  \"FACT\",\n  \"origin_observation\",\n  \"valid\",\n  \"\",\n  \"\",\n  \"p:tls\",\n  \"g-rpo\",\n  \"DR RPO 15m\",\n  \"2\",\n  \"AND\",\n  \"derived\",\n  \"violated\",\n  \"violated\",\n  \"valid\",\n  \"p:rpo\",\n)\n#heading(level: 2, \"Legend\")\n#table(columns: 3, table.header(\"Sign\", \"Name\", \"Pattern\"),\n  \"◆\",\n  \"origin_decision\",\n  \"solid-diamond\",\n  \"●\",\n  \"origin_observation\",\n  \"solid-circle\",\n  \"○\",\n  \"derived\",\n  \"hollow-circle\",\n  \"✓\",\n  \"valid\",\n  \"solid-line\",\n  \"✕\",\n  \"violated\",\n  \"cross-stroke\",\n)\n",
+    "bitemporal": "// cartouche.scene/2 -> Typst (deterministic, generated)\n#set document(title: \"Sheet 05 — Bitemporal Staircase\", date: none)\n#set page(paper: \"a4\", margin: (x: 18mm, y: 20mm))\n#set text(size: 9pt)\n#let sign-glyph = (origin_decision: \"◆\", origin_vendor: \"▲\", origin_design: \"■\", origin_observation: \"●\", derived: \"○\", assumption: \"╌\", drift: \"══\", screened: \"▬\", proposal: \"✎\", sealed: \"◉\", supposed: \"◇\", valid: \"✓\", changed: \"◐\", violated: \"✕\", unknown: \"▨\", not_applicable: \"–\", absent: \"⦸\", invalid: \"!\")\n#let hatch-box = box(width: 14pt, height: 9pt, stroke: 0.5pt + luma(110), clip: true)[\n  #place(top + left, line(start: (0pt, 9pt), end: (9pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (5pt, 9pt), end: (14pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (10pt, 9pt), end: (19pt, 0pt), stroke: 0.5pt + luma(110)))\n]\n#let hollow-box = box(width: 14pt, height: 9pt, stroke: (paint: luma(110), thickness: 0.5pt, dash: \"dashed\"))\n#let mark(state, origin, reason: none, display: none) = {\n  sign-glyph.at(origin)\n  h(3pt)\n  if state == \"unknown\" {\n    hatch-box\n    h(3pt)\n    reason\n  } else if state == \"not_applicable\" {\n    hollow-box\n    if reason != none { h(3pt); reason }\n  } else if state == \"absent\" {\n    sign-glyph.absent\n  } else if state == \"invalid\" {\n    sign-glyph.invalid\n  } else if display != none {\n    if state in (\"valid\", \"changed\", \"violated\") { sign-glyph.at(state); h(3pt) }\n    display\n  } else if state in (\"valid\", \"changed\", \"violated\") {\n    sign-glyph.at(state)\n  }\n}\n#let proof-cell(proof, witness: none) = {\n  raw(proof)\n  if witness != none { linebreak(); [witness: ]; raw(witness) }\n}\n#let drift-mark(src, dst, name, stated, observed) = block(width: 100%, inset: 4pt, stroke: 0.4pt + luma(150), breakable: false)[\n  #sign-glyph.drift #name: #src #sym.arrow.r #dst\n  #grid(columns: (auto, 1fr, auto), gutter: 4pt, align: horizon,\n    [stated], line(length: 100%, stroke: 0.8pt), raw(stated),\n    [observed], line(length: 100%, stroke: 0.8pt), raw(observed))\n]\n#let seal-block(manifest, epoch, knowledge, role, witness, tier, provisional) = block(width: 100%, inset: 6pt, stroke: 0.8pt)[\n  #text(weight: \"bold\")[Cartouche seal] #h(6pt) #raw(manifest) \\\n  tier: #raw(tier) #h(6pt) witness: #raw(witness) #h(6pt) role: #raw(role) \\\n  epoch: #raw(epoch) #h(6pt) knowledge time: #raw(knowledge) #h(6pt) provisional: #raw(provisional)\n]\n#let banner(text-body) = block(width: 100%, inset: 6pt, stroke: (paint: luma(40), thickness: 1.2pt, dash: \"dashed\"), text(weight: \"bold\", text-body))\n#set page(footer: align(center, text(size: 7pt, raw(\"sha256:9d11a0b2c3d4e5f60718293a4b5c6d7e8f90 sealed\"))))\n#heading(level: 1, \"Sheet 05 — Bitemporal Staircase\")\n#seal-block(\"sha256:9d11a0b2c3d4e5f60718293a4b5c6d7e8f90\", \"42\", \"2026-11-20T21:40:00Z\", \"auditor\", \"green\", \"sealed\", \"0\")\n#heading(level: 2, \"Axes\")\n#table(columns: 4, table.header(\"Axis\", \"Dimension\", \"Kind\", \"Label\"),\n  \"x\",\n  \"D4\",\n  \"bitemporal\",\n  \"Valid Time\",\n  \"y\",\n  \"D5\",\n  \"bitemporal\",\n  \"Knowledge Time\",\n  \"z\",\n  \"D7\",\n  \"metric\",\n  \"Projected Metric\",\n)\n#text(size: 8pt, \"projection: orthographic\")\n#heading(level: 2, \"Marks\")\n#table(columns: 3, table.header(\"Mark\", \"Item\", \"Proof\"),\n  mark(\"unknown\", \"derived\", reason: \"income_statement_not_received\"),\n  \"unknown · income_statement_not_received\",\n  proof-cell(\"bt:39-10\"),\n  mark(\"not_applicable\", \"derived\", reason: \"valid_after_knowledge\"),\n  \"–\",\n  proof-cell(\"bt:39-14\"),\n  mark(\"not_applicable\", \"derived\", reason: \"valid_after_knowledge\"),\n  \"–\",\n  proof-cell(\"bt:39-18\"),\n  mark(\"not_applicable\", \"derived\", reason: \"valid_after_knowledge\"),\n  \"–\",\n  proof-cell(\"bt:39-20\"),\n  mark(\"known\", \"derived\", display: \"€ 2.694\"),\n  \"ep-40 · 2026-11-10 · € 2.694\",\n  proof-cell(\"bt:40-10\"),\n  mark(\"known\", \"derived\", display: \"€ 2.694\"),\n  \"ep-40 · 2026-11-14 · € 2.694\",\n  proof-cell(\"bt:40-14\"),\n  mark(\"not_applicable\", \"derived\", reason: \"valid_after_knowledge\"),\n  \"–\",\n  proof-cell(\"bt:40-18\"),\n  mark(\"not_applicable\", \"derived\", reason: \"valid_after_knowledge\"),\n  \"–\",\n  proof-cell(\"bt:40-20\"),\n  mark(\"known\", \"derived\", display: \"€ 1.920\"),\n  \"ep-41 · 2026-11-10 · € 1.920\",\n  proof-cell(\"bt:41-10\"),\n  mark(\"known\", \"derived\", display: \"€ 1.920\"),\n  \"ep-41 · 2026-11-14 · € 1.920\",\n  proof-cell(\"bt:41-14\"),\n  mark(\"unknown\", \"derived\", reason: \"review_pending\"),\n  \"unknown · review_pending\",\n  proof-cell(\"bt:41-18\"),\n  mark(\"not_applicable\", \"derived\", reason: \"valid_after_knowledge\"),\n  \"–\",\n  proof-cell(\"bt:41-20\"),\n  mark(\"known\", \"derived\", display: \"€ 1.920\"),\n  \"ep-42 · 2026-11-10 · € 1.920\",\n  proof-cell(\"bt:42-10\"),\n  mark(\"known\", \"derived\", display: \"€ 1.920\"),\n  \"ep-42 · 2026-11-14 · € 1.920\",\n  proof-cell(\"bt:42-14\"),\n  mark(\"known\", \"derived\", display: \"€ 1.920\"),\n  \"ep-42 · 2026-11-18 · € 1.920\",\n  proof-cell(\"bt:42-18\"),\n  mark(\"known\", \"derived\", display: \"€ 1.920\"),\n  \"ep-42 · 2026-11-20 · € 1.920\",\n  proof-cell(\"bt:42-20\"),\n)\n#heading(level: 2, \"Uncertainty curtains\")\n#table(columns: 3, table.header(\"Mark\", \"Subject\", \"Proof\"),\n  mark(\"unknown\", \"derived\", reason: \"income_statement_not_received\"),\n  \"ep-39@2026-11-10\",\n  proof-cell(\"bt:39-10\"),\n  mark(\"unknown\", \"derived\", reason: \"review_pending\"),\n  \"ep-41@2026-11-18\",\n  proof-cell(\"bt:41-18\"),\n)\n#heading(level: 2, \"Table twin\")\n#table(columns: 5, table.header(\"Knowledge Epoch\", \"2026-11-10\", \"2026-11-14\", \"2026-11-18\", \"2026-11-20\"),\n  \"ep-39\",\n  \"unknown · income_statement_not_received\",\n  \"–\",\n  \"–\",\n  \"–\",\n  \"ep-40\",\n  \"€ 2.694\",\n  \"€ 2.694\",\n  \"–\",\n  \"–\",\n  \"ep-41\",\n  \"€ 1.920\",\n  \"€ 1.920\",\n  \"unknown · review_pending\",\n  \"–\",\n  \"ep-42\",\n  \"€ 1.920\",\n  \"€ 1.920\",\n  \"€ 1.920\",\n  \"€ 1.920\",\n)\n#heading(level: 2, \"Legend\")\n#table(columns: 3, table.header(\"Sign\", \"Name\", \"Pattern\"),\n  \"○\",\n  \"derived\",\n  \"hollow-circle\",\n  \"▨\",\n  \"unknown\",\n  \"diagonal-hatch-45\",\n  \"–\",\n  \"not_applicable\",\n  \"hollow-void\",\n)\n",
+    "monge": "// cartouche.scene/2 -> Typst (deterministic, generated)\n#set document(title: \"Sheet 06 — Monge Folding Atlas\", date: none)\n#set page(paper: \"a4\", margin: (x: 18mm, y: 20mm))\n#set text(size: 9pt)\n#let sign-glyph = (origin_decision: \"◆\", origin_vendor: \"▲\", origin_design: \"■\", origin_observation: \"●\", derived: \"○\", assumption: \"╌\", drift: \"══\", screened: \"▬\", proposal: \"✎\", sealed: \"◉\", supposed: \"◇\", valid: \"✓\", changed: \"◐\", violated: \"✕\", unknown: \"▨\", not_applicable: \"–\", absent: \"⦸\", invalid: \"!\")\n#let hatch-box = box(width: 14pt, height: 9pt, stroke: 0.5pt + luma(110), clip: true)[\n  #place(top + left, line(start: (0pt, 9pt), end: (9pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (5pt, 9pt), end: (14pt, 0pt), stroke: 0.5pt + luma(110)))\n  #place(top + left, line(start: (10pt, 9pt), end: (19pt, 0pt), stroke: 0.5pt + luma(110)))\n]\n#let hollow-box = box(width: 14pt, height: 9pt, stroke: (paint: luma(110), thickness: 0.5pt, dash: \"dashed\"))\n#let mark(state, origin, reason: none, display: none) = {\n  sign-glyph.at(origin)\n  h(3pt)\n  if state == \"unknown\" {\n    hatch-box\n    h(3pt)\n    reason\n  } else if state == \"not_applicable\" {\n    hollow-box\n    if reason != none { h(3pt); reason }\n  } else if state == \"absent\" {\n    sign-glyph.absent\n  } else if state == \"invalid\" {\n    sign-glyph.invalid\n  } else if display != none {\n    if state in (\"valid\", \"changed\", \"violated\") { sign-glyph.at(state); h(3pt) }\n    display\n  } else if state in (\"valid\", \"changed\", \"violated\") {\n    sign-glyph.at(state)\n  }\n}\n#let proof-cell(proof, witness: none) = {\n  raw(proof)\n  if witness != none { linebreak(); [witness: ]; raw(witness) }\n}\n#let drift-mark(src, dst, name, stated, observed) = block(width: 100%, inset: 4pt, stroke: 0.4pt + luma(150), breakable: false)[\n  #sign-glyph.drift #name: #src #sym.arrow.r #dst\n  #grid(columns: (auto, 1fr, auto), gutter: 4pt, align: horizon,\n    [stated], line(length: 100%, stroke: 0.8pt), raw(stated),\n    [observed], line(length: 100%, stroke: 0.8pt), raw(observed))\n]\n#let seal-block(manifest, epoch, knowledge, role, witness, tier, provisional) = block(width: 100%, inset: 6pt, stroke: 0.8pt)[\n  #text(weight: \"bold\")[Cartouche seal] #h(6pt) #raw(manifest) \\\n  tier: #raw(tier) #h(6pt) witness: #raw(witness) #h(6pt) role: #raw(role) \\\n  epoch: #raw(epoch) #h(6pt) knowledge time: #raw(knowledge) #h(6pt) provisional: #raw(provisional)\n]\n#let banner(text-body) = block(width: 100%, inset: 6pt, stroke: (paint: luma(40), thickness: 1.2pt, dash: \"dashed\"), text(weight: \"bold\", text-body))\n#set page(footer: align(center, text(size: 7pt, raw(\"sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0 sealed\"))))\n#heading(level: 1, \"Sheet 06 — Monge Folding Atlas\")\n#seal-block(\"sha256:8f4a91b2c0d1e2f3a4b5c6d7e8f9a0b1c2d0\", \"42\", \"2026-11-20T21:40:00Z\", \"auditor\", \"green\", \"sealed\", \"0\")\n#heading(level: 2, \"Axes\")\n#table(columns: 4, table.header(\"Axis\", \"Dimension\", \"Kind\", \"Label\"),\n  \"x\",\n  \"D1\",\n  \"nominal\",\n  \"Topology X\",\n  \"y\",\n  \"D1\",\n  \"nominal\",\n  \"Topology Y\",\n  \"z\",\n  \"D3\",\n  \"stratified\",\n  \"Norm || Observed Strata\",\n)\n#text(size: 8pt, \"projection: orthographic\")\n#heading(level: 2, \"Marks\")\n#table(columns: 3, table.header(\"Mark\", \"Item\", \"Proof\"),\n  mark(\"valid\", \"origin_design\"),\n  \"Gateway\",\n  proof-cell(\"p:gw\"),\n  mark(\"valid\", \"origin_decision\"),\n  \"Keycloak\",\n  proof-cell(\"p:kc\"),\n  mark(\"violated\", \"origin_design\"),\n  \"Orders API\",\n  proof-cell(\"p:ord\"),\n  mark(\"violated\", \"origin_decision\"),\n  \"Vault\",\n  proof-cell(\"p:vlt\"),\n  mark(\"absent\", \"origin_decision\"),\n  \"Backup Store\",\n  proof-cell(\"p:dr\", witness: \"sweep:m3-m4\"),\n  mark(\"unknown\", \"origin_design\", reason: \"telemetry_timeout\"),\n  \"Edge-04\",\n  proof-cell(\"p:ed\"),\n)\n#heading(level: 2, \"Drift\")\n#drift-mark(\"orders\", \"vault\", \"TCP/8200\", \"policy:netpol-04\", \"obs:hubble-ep42\")\n#heading(level: 2, \"Table twin\")\n#table(columns: 5, table.header(\"Service\", \"X\", \"Y\", \"State\", \"Proof\"),\n  \"Gateway\",\n  \"-1.6\",\n  \"0.18\",\n  \"valid\",\n  \"p:gw\",\n  \"Keycloak\",\n  \"-0.92\",\n  \"-0.66\",\n  \"valid\",\n  \"p:kc\",\n  \"Orders API\",\n  \"-0.3\",\n  \"0.6\",\n  \"violated\",\n  \"p:ord\",\n  \"Vault\",\n  \"0.36\",\n  \"-0.24\",\n  \"violated\",\n  \"p:vlt\",\n  \"Backup Store\",\n  \"1.02\",\n  \"-1.08\",\n  \"absent\",\n  \"p:dr\",\n  \"Edge-04\",\n  \"1.56\",\n  \"1.02\",\n  \"unknown\",\n  \"p:ed\",\n)\n#heading(level: 2, \"Legend\")\n#table(columns: 3, table.header(\"Sign\", \"Name\", \"Pattern\"),\n  \"◆\",\n  \"origin_decision\",\n  \"solid-diamond\",\n  \"■\",\n  \"origin_design\",\n  \"solid-square\",\n  \"══\",\n  \"drift\",\n  \"double-rail\",\n  \"✓\",\n  \"valid\",\n  \"solid-line\",\n  \"✕\",\n  \"violated\",\n  \"cross-stroke\",\n  \"▨\",\n  \"unknown\",\n  \"diagonal-hatch-45\",\n  \"⦸\",\n  \"absent\",\n  \"dashed-hollow-strike\",\n)\n"
+  }
+}

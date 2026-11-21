@@ -67,7 +67,7 @@ function extractCanonicalMarks(html) {
 
 test('M1: Slip.svelte emits canonical data-* marks, 5-bar micro-prism, [M] levers, [S] Δ=1 worlds, honest seal, legend & 0 WCAG 2.1 AA violations', async () => {
   const fx = loadFixture('01-platform-drift.json');
-  const store = new DeltaStore(fx.manifest, []);
+  const store = new DeltaStore({ ...fx.manifest, can_propose: true }, []);
   const seal = store.seal();
   const baseModel = createSlipModel({
     subjectId: 'e-drift-vault',
@@ -309,7 +309,7 @@ test('M1: <rezono-slip> Web Component handles W/D/M/S/C/P shortcuts, locks [P] o
     const el = doc.createElement(SLIP_ELEMENT_TAG);
     doc.querySelector('main').appendChild(el);
 
-    const sealedSeal = new DeltaStore(fxFlow.manifest, []).seal();
+    const sealedSeal = new DeltaStore({ ...fxFlow.manifest, can_propose: true }, []).seal();
     const sealedModel = createSlipModel({
       subjectId: 'e-drift-vault',
       proofRef: 'policy:netpol-04#L42',

@@ -71,8 +71,8 @@ test('M1: Sheet 03 renders board lanes, separate unknown band, round chronometer
   assert.deepEqual(violations, [], JSON.stringify(violations, null, 2));
 });
 
-test('M1: Sheet 03 unlocks [P] and approve only when sealed and green', async () => {
-  const sealed = { ...fixture, live_provisional_delta: null };
+test('M1: Sheet 03 unlocks [P] and approve only when sealed, green, and reader grants can_propose', async () => {
+  const sealed = { ...fixture, manifest: { ...fixture.manifest, can_propose: true }, live_provisional_delta: null };
   const { html, window: win, document: doc } = await mount(sealed);
   try {
     assert.equal(doc.querySelector(PROPOSE).hasAttribute('disabled'), false);
