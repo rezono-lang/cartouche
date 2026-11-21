@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PALETTES, SIGNS, STD_VERBS, canonicalJson, paletteCss } from '../../reader-core/src/index.ts';
-  import type { CartoucheSeal, PaletteName, RawCellInput, StdVerbSpec } from '../../reader-core/src/index.ts';
+  import type { CartoucheSeal, PaletteName, RawCellInput, SignSpec, StdVerbSpec, TrustTier } from '../../reader-core/src/index.ts';
   import type { SlipModel, VerbKey } from './slip-controller.ts';
   import SlipSeal from './SlipSeal.svelte';
   import SlipUnserved from './SlipUnserved.svelte';
@@ -141,7 +141,7 @@
   let currentVerb = $derived<VerbKey>(selectedVerb ?? activeVerb ?? model?.activeVerb ?? 'w');
   let activeStopIndex = $derived<number | null>(chosenStop ?? selectedStopIndex ?? null);
 
-  let trustTier = $derived(seal?.trustTier ?? 'sealed');
+  let trustTier = $derived<TrustTier | undefined>(seal?.trustTier);
   let proposeAllowed = $derived(
     model !== null ? model.proposeAllowed : seal !== null ? seal.canPropose : false
   );
@@ -159,10 +159,7 @@
     if (sealChecks.length > 0) return sealChecks;
     if (!seal) return [];
     const checkStatus: 'green' | 'red' = seal.witnessCheck === 'green' ? 'green' : 'red';
-    return [
-      { id: 'reader-hashes', status: checkStatus, label: 'reader-hashes' },
-      { id: 'publisher-record', status: checkStatus, label: 'publisher-record' }
-    ];
+    return [{ id: 'witness', status: checkStatus, label: 'witness' }];
   });
 
   let visibleVerbs = $derived.by((): readonly StdVerbSpec[] => {
@@ -195,10 +192,6 @@
       if (explicitIdx >= 0) {
         const match = grounds[explicitIdx];
         if (match) return { lineNum: explicitIdx + 1, proofRef: match.cell.proof_ref };
-      }
-      const fallback = grounds[binding.premise_position];
-      if (fallback) {
-        return { lineNum: binding.premise_position + 1, proofRef: fallback.cell.proof_ref };
       }
     }
     return null;
@@ -243,12 +236,12 @@
     return STD_VERBS.filter((spec) => allowed.has(spec.verb) || allowed.has(spec.question));
   }
 
-  function nonKnownReason(entry: RawCellInput): string {
-    if (entry.reason && entry.reason.trim().length > 0) return entry.reason;
-    if (entry.state === 'absent') return 'complete_sweep_absent';
-    if (entry.state === 'not_applicable') return 'not_applicable';
-    if (entry.state === 'invalid') return 'check_failed';
-    return 'unspecified';
+  function resolveSignSpec(signName: string): SignSpec {
+    const spec = SIGNS[signName];
+    if (!spec) {
+      throw new Error(`Unknown std-view sign: "${signName}".`);
+    }
+    return spec;
   }
 
   function canFoldStop(stop: SweepStop | null): boolean {
@@ -263,6 +256,7 @@
     const ordered: string[] = [];
     const addSign = (signName: string | undefined | null) => {
       if (!signName || seen.has(signName)) return;
+      resolveSignSpec(signName);
       seen.add(signName);
       ordered.push(signName);
     };
@@ -327,7 +321,7 @@
   }
 
   function glyphForSign(signName: string): string {
-    return (SIGNS[signName] ?? SIGNS.derived)?.glyph ?? '○';
+    return resolveSignSpec(signName).glyph;
   }
 
   function selectStop(index: number): void {
@@ -358,9 +352,9 @@
       <div
         class="slip-horizon"
         data-part="horizon"
-        data-reason={horizon.reason ?? 'not_read_in_full'}
+        data-reason={horizon.reason ?? undefined}
       >
-        Horizon incomplete: {horizon.reason ?? 'not_read_in_full'}
+        Horizon incomplete{#if horizon.reason}: {horizon.reason}{/if}
       </div>
     {/if}
 
@@ -388,10 +382,7 @@
                     <span class="slip-prism-fill" style="width: {spectrum.bar_units}%"></span>
                   </span>
                 </td>
-                <td
-                  data-reason={spectrum.state !== 'valid' && spectrum.state !== 'known' ? spectrum.state : undefined}
-                  data-proof-ref={model.proofRef}
-                >{spectrum.ratio_display}</td>
+                <td data-proof-ref={model.proofRef}>{spectrum.ratio_display}</td>
               </tr>
             {/each}
           </tbody>
@@ -416,8 +407,8 @@
           >
             <kbd>{spec.key.toUpperCase()}</kbd>
             <span>{spec.verb}</span>
-            {#if locked}
-              <span data-reason={proposeBlockedReason ?? 'propose_locked'}>locked</span>
+            {#if locked && proposeBlockedReason}
+              <span data-reason={proposeBlockedReason}>locked</span>
             {/if}
           </button>
         {/each}
@@ -684,12 +675,12 @@
         </thead>
         <tbody>
           {#each drawnSigns as signName (signName)}
-            {@const spec = SIGNS[signName] ?? SIGNS.derived}
+            {@const spec = resolveSignSpec(signName)}
             <tr data-sign={signName}>
-              <td><span aria-hidden="true">{spec?.glyph ?? '○'}</span></td>
+              <td><span aria-hidden="true">{spec.glyph}</span></td>
               <td>{signName}</td>
-              <td>{spec?.kind ?? 'origin'}</td>
-              <td>{spec?.pattern ?? 'solid-circle'}</td>
+              <td>{spec.kind}</td>
+              <td>{spec.pattern}</td>
             </tr>
           {/each}
         </tbody>

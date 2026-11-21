@@ -202,6 +202,9 @@ function buildFilesHashMap(compiledSlipCode: string): Readonly<Record<string, st
   const assetEntries: readonly [string, string][] = [
     ['packages/slip/src/SignMark.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SignMark.svelte'), 'utf8')],
     ['packages/slip/src/Slip.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'Slip.svelte'), 'utf8')],
+    ['packages/slip/src/SlipSeal.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SlipSeal.svelte'), 'utf8')],
+    ['packages/slip/src/SlipUnserved.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SlipUnserved.svelte'), 'utf8')],
+    ['packages/slip/src/SlipValueCell.svelte', fs.readFileSync(path.join(SLIP_SRC_DIR, 'SlipValueCell.svelte'), 'utf8')],
     ['packages/slip/src/slip-controller.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-controller.ts'), 'utf8')],
     ['packages/slip/src/slip-element.ts', fs.readFileSync(path.join(SLIP_SRC_DIR, 'slip-element.ts'), 'utf8')],
     ['packages/slip/dist/Slip.ssr.mjs', compiledSlipCode]
@@ -305,6 +308,7 @@ function synthesizeAnswerTable(
       }))
     };
   }
+  const fallbackProofRef = row?.grounds_distance_1?.[0]?.cell.proof_ref ?? row?.result_cell?.proof_ref;
   return {
     question,
     verb,
@@ -312,7 +316,7 @@ function synthesizeAnswerTable(
     rows: [
       {
         cells: [question, row?.rule_id ?? 'slip', 'answered'],
-        proof_ref: row?.grounds_distance_1?.[0]?.cell.proof_ref ?? row?.result_cell?.proof_ref ?? 'proof:answer'
+        ...(fallbackProofRef ? { proof_ref: fallbackProofRef } : {})
       }
     ]
   };

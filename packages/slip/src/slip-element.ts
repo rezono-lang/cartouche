@@ -2,7 +2,7 @@
  * Embeddable <rezono-slip> Custom Element wrapper (Decisions 0003, 0004, 0006).
  * Emits canonical data-* marks from contracts/data-marks.json, handles W/D/M/S/C/P
  * keyboard shortcuts, locks [P] Propose on unsealed streams, and renders HTTP 410 unserved states.
- * Zero client compute: all displayed values are server-projected opaque strings.
+ * Zero client compute: all displayed values are server-projected opaque strings validated via asOpaqueCell.
  */
 
 import {
@@ -10,10 +10,19 @@ import {
   PALETTES,
   SIGNS,
   STD_VERBS,
+  asOpaqueCell,
   canonicalJson,
-  paletteCss
+  paletteCss,
+  renderOpaqueText
 } from '../../reader-core/src/index.ts';
-import type { CartoucheSeal, PaletteName, StdVerbSpec } from '../../reader-core/src/index.ts';
+import type {
+  CartoucheSeal,
+  OpaqueDisplayCell,
+  PaletteName,
+  RawCellInput,
+  SignSpec,
+  StdVerbSpec
+} from '../../reader-core/src/index.ts';
 import { selectSlipVerb } from './slip-controller.ts';
 import type { SlipModel, VerbKey } from './slip-controller.ts';
 
@@ -32,6 +41,44 @@ export interface SealCheckItem {
   readonly label?: string | undefined;
 }
 
+export interface ElementSentenceBinding {
+  readonly name: string;
+  readonly display: string;
+  readonly premise_position?: number | undefined;
+  readonly aggregate?: boolean | undefined;
+}
+
+export interface ElementGroundLine {
+  readonly part?: 'total' | undefined;
+  readonly relation: string;
+  readonly key: readonly string[];
+  readonly polarity: 'positive' | 'negative';
+  readonly depth: number;
+  readonly premise_position?: number | undefined;
+  readonly sign: string;
+  readonly cell: RawCellInput;
+  readonly answered_verbs?: readonly string[] | undefined;
+  readonly sweep_name?: string | undefined;
+}
+
+export interface ElementCalcStep {
+  readonly path: string;
+  readonly depth: number;
+  readonly sign: string;
+  readonly cell: RawCellInput;
+  readonly kind?: 'step' | 'constant' | undefined;
+}
+
+export interface ElementConformanceRow {
+  readonly kind: 'rule' | 'calc';
+  readonly rule_id: string;
+  readonly sentence_template?: string | undefined;
+  readonly bindings?: readonly ElementSentenceBinding[] | undefined;
+  readonly grounds_distance_1?: readonly ElementGroundLine[] | undefined;
+  readonly result_cell?: RawCellInput | undefined;
+  readonly steps?: readonly ElementCalcStep[] | undefined;
+}
+
 export interface SlipElementState {
   readonly theme?: PaletteName | undefined;
   readonly model?: SlipModel | null | undefined;
@@ -41,6 +88,7 @@ export interface SlipElementState {
   readonly httpStatus?: number | null | undefined;
   readonly activeVerb?: VerbKey | undefined;
   readonly availableVerbs?: readonly string[] | null | undefined;
+  readonly conformanceRow?: ElementConformanceRow | null | undefined;
 }
 
 export interface SlipMountHandle {
@@ -92,13 +140,46 @@ function escapeHtml(text: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function renderSignSpan(signName: string, proofRef: string): string {
-  const spec = SIGNS[signName] ?? SIGNS.derived;
-  const glyph = spec?.glyph ?? '○';
+function resolveSignSpec(signName: string): SignSpec {
+  const spec = SIGNS[signName];
+  if (!spec) {
+    throw new Error(`Unknown std-view sign: "${signName}".`);
+  }
+  return spec;
+}
+
+function renderSignSpan(signName: string, proofRef: string, reason?: string | null): string {
+  const spec = resolveSignSpec(signName);
+  const reasonAttr = reason ? ` ${DATA_MARKS.reason}="${escapeHtml(reason)}"` : '';
   return (
     `<span class="cartouche-sign" role="img" ${DATA_MARKS.sign}="${escapeHtml(signName)}" ` +
-    `${DATA_MARKS.proof_ref}="${escapeHtml(proofRef)}" aria-label="${escapeHtml(signName)}">` +
-    `<span aria-hidden="true">${escapeHtml(glyph)}</span></span>`
+    `${DATA_MARKS.proof_ref}="${escapeHtml(proofRef)}"${reasonAttr} aria-label="${escapeHtml(signName)}">` +
+    `<span aria-hidden="true">${escapeHtml(spec.glyph)}</span></span>`
+  );
+}
+
+const DIGIT_RE = /[0-9]/;
+
+function renderOpaqueCellTd(opaque: OpaqueDisplayCell): string {
+  if (opaque.state === 'known') {
+    return (
+      `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="known" ` +
+      `${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}">${escapeHtml(renderOpaqueText(opaque))}</td>`
+    );
+  }
+  if (opaque.state === 'unknown' && opaque.reason && DIGIT_RE.test(opaque.reason)) {
+    throw new Error(`unknown cell reason must not contain digits: ${opaque.proofRef}`);
+  }
+  const reasonAttr = opaque.reason ? ` ${DATA_MARKS.reason}="${escapeHtml(opaque.reason)}"` : '';
+  const completenessAttr =
+    opaque.state === 'absent' && opaque.completenessWitnessRef
+      ? ` ${DATA_MARKS.completeness_ref}="${escapeHtml(opaque.completenessWitnessRef)}"`
+      : '';
+  return (
+    `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="${escapeHtml(opaque.state)}"` +
+    `${reasonAttr} ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}"${completenessAttr}>` +
+    `${renderSignSpan(opaque.state, opaque.proofRef, opaque.reason)}` +
+    `${opaque.reason ? `<span>${escapeHtml(opaque.reason)}</span>` : ''}</td>`
   );
 }
 
@@ -112,8 +193,10 @@ export function renderSlipElementHtml(state: SlipElementState): string {
   const seal = state.seal ?? null;
   const model = state.model ?? null;
   const unserved = state.unserved ?? null;
+  const conformanceRow = state.conformanceRow ?? null;
   const isUnserved = unserved !== null || state.httpStatus === 410;
-  const trustTier = seal?.trustTier ?? 'sealed';
+  const trustTier = seal?.trustTier ?? null;
+  const trustTierAttr = trustTier ? ` ${DATA_MARKS.trust_tier}="${escapeHtml(trustTier)}"` : '';
   const currentVerb: VerbKey = state.activeVerb ?? model?.activeVerb ?? 'w';
   const proposeAllowed = model !== null ? model.proposeAllowed : seal !== null ? seal.canPropose : false;
   const proposeBlockedReason =
@@ -126,19 +209,22 @@ export function renderSlipElementHtml(state: SlipElementState): string {
           : 'propose_locked_witness_failed';
 
   const parts: string[] = [
-    `<div class="cartouche-slip-root" ${DATA_MARKS.theme}="${escapeHtml(theme)}" ` +
-      `${DATA_MARKS.trust_tier}="${escapeHtml(trustTier)}" role="region" aria-label="Proof slip" tabindex="-1">`,
+    `<div class="cartouche-slip-root" ${DATA_MARKS.theme}="${escapeHtml(theme)}"` +
+      `${trustTierAttr} role="region" aria-label="Proof slip" tabindex="-1">`,
     `<style>${paletteCss(theme)}</style>`
   ];
 
   if (isUnserved) {
-    const code = unserved?.code ?? 'publication_withdrawn';
+    const code = unserved ? unserved.code : state.httpStatus !== null && state.httpStatus !== undefined ? `http_status_${state.httpStatus}` : null;
+    const reasonAttr = code ? ` ${DATA_MARKS.reason}="${escapeHtml(code)}"` : '';
     parts.push(
-      `<div class="slip-unserved" ${DATA_MARKS.part}="unserved" ${DATA_MARKS.state}="invalid" ` +
-        `${DATA_MARKS.reason}="${escapeHtml(code)}" role="alert">`,
-      `<h2>Publication Unserved</h2>`,
-      `<p>${escapeHtml(code)}</p>`
+      `<div class="slip-unserved" ${DATA_MARKS.part}="unserved" ${DATA_MARKS.state}="invalid"` +
+        `${reasonAttr} role="alert">`,
+      `<h2>Publication Unserved</h2>`
     );
+    if (code) {
+      parts.push(`<p>${escapeHtml(code)}</p>`);
+    }
     if (unserved?.reason_message_id) {
       parts.push(`<p>${escapeHtml(unserved.reason_message_id)}</p>`);
     }
@@ -156,6 +242,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
   const drawnSigns: string[] = [];
   const seenSigns = new Set<string>();
   const trackSign = (signName: string) => {
+    resolveSignSpec(signName);
     if (!seenSigns.has(signName)) {
       seenSigns.add(signName);
       drawnSigns.push(signName);
@@ -166,10 +253,7 @@ export function renderSlipElementHtml(state: SlipElementState): string {
     const checks: readonly SealCheckItem[] =
       state.sealChecks && state.sealChecks.length > 0
         ? state.sealChecks
-        : [
-            { id: 'reader-hashes', status: seal.witnessCheck === 'green' ? 'green' : 'red' },
-            { id: 'publisher-record', status: seal.witnessCheck === 'green' ? 'green' : 'red' }
-          ];
+        : [{ id: 'witness', status: seal.witnessCheck === 'green' ? 'green' : 'red', label: 'witness' }];
     parts.push(
       `<section class="slip-seal" ${DATA_MARKS.part}="seal" ${DATA_MARKS.trust_tier}="${escapeHtml(seal.trustTier)}" aria-label="Verification seal">`,
       `<div><span ${DATA_MARKS.part}="manifest-hash">${escapeHtml(seal.manifestId)}</span> `,
@@ -192,16 +276,12 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       `<table><thead><tr><th scope="col">Spectrum</th><th scope="col">Meter</th><th scope="col">Ratio</th></tr></thead><tbody>`
     );
     for (const spectrum of model.prism5) {
-      const reasonAttr =
-        spectrum.state !== 'valid' && spectrum.state !== 'known'
-          ? ` ${DATA_MARKS.reason}="${escapeHtml(spectrum.state)}"`
-          : '';
       parts.push(
         `<tr ${DATA_MARKS.key}="${escapeHtml(spectrum.key)}" ${DATA_MARKS.state}="${escapeHtml(spectrum.state)}" ` +
           `${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">` +
           `<td>${escapeHtml(spectrum.label)}</td>` +
           `<td><span aria-hidden="true" style="width: ${spectrum.bar_units}%"></span></td>` +
-          `<td${reasonAttr} ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">${escapeHtml(spectrum.ratio_display)}</td>` +
+          `<td ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">${escapeHtml(spectrum.ratio_display)}</td>` +
           `</tr>`
       );
     }
@@ -223,9 +303,10 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       const locked = spec.verb === 'propose' && !proposeAllowed;
       const pressed = currentVerb === spec.key ? 'true' : 'false';
       const disabledAttrs = locked ? ' disabled aria-disabled="true"' : '';
-      const lockedBadge = locked
-        ? `<span ${DATA_MARKS.reason}="${escapeHtml(proposeBlockedReason ?? 'propose_locked')}">locked</span>`
-        : '';
+      const lockedBadge =
+        locked && proposeBlockedReason
+          ? `<span ${DATA_MARKS.reason}="${escapeHtml(proposeBlockedReason)}">locked</span>`
+          : '';
       parts.push(
         `<button type="button" ${DATA_MARKS.verb}="${escapeHtml(spec.verb)}" ` +
           `${DATA_MARKS.key}="${escapeHtml(spec.key)}" ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}" ` +
@@ -234,7 +315,108 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       );
     }
     parts.push('</nav>');
+  }
 
+  if (conformanceRow && conformanceRow.kind === 'rule') {
+    const validatedGrounds = (conformanceRow.grounds_distance_1 ?? []).map((line) => ({
+      line,
+      opaque: asOpaqueCell(line.cell)
+    }));
+
+    const template = conformanceRow.sentence_template ?? conformanceRow.rule_id;
+    const bindings = conformanceRow.bindings ?? [];
+    const tokens = template.split(/(\{\$[a-zA-Z0-9_]+\})/g);
+    parts.push(`<div class="slip-sentence" ${DATA_MARKS.part}="sentence">`);
+    for (const tok of tokens) {
+      if (!tok) continue;
+      const m = /^\{\$([a-zA-Z0-9_]+)\}$/.exec(tok);
+      const binding = m ? bindings.find((b) => b.name === m[1]) : undefined;
+      if (binding) {
+        let targetIdx = -1;
+        if (binding.aggregate === true) {
+          targetIdx = validatedGrounds.findIndex((g) => g.line.part === 'total');
+        } else if (binding.premise_position !== undefined) {
+          targetIdx = validatedGrounds.findIndex(
+            (g) => g.line.premise_position === binding.premise_position
+          );
+        }
+        const matched = targetIdx >= 0 ? validatedGrounds[targetIdx] : undefined;
+        if (matched) {
+          const lineNum = targetIdx + 1;
+          parts.push(
+            `<a href="#slip-line-${lineNum}" ${DATA_MARKS.line}="${lineNum}" ` +
+              `${DATA_MARKS.proof_ref}="${escapeHtml(matched.opaque.proofRef)}">${escapeHtml(binding.display)}</a>`
+          );
+          continue;
+        }
+        parts.push(`<span>${escapeHtml(binding.display)}</span>`);
+        continue;
+      }
+      parts.push(`<span>${escapeHtml(tok)}</span>`);
+    }
+    parts.push('</div>');
+
+    parts.push(
+      `<table class="slip-table" ${DATA_MARKS.sheet}="slip" aria-label="Rule proof slip">`,
+      `<thead><tr><th scope="col">Line</th><th scope="col">Sign</th><th scope="col">Relation</th><th scope="col">Value</th><th scope="col">Actions</th></tr></thead><tbody>`
+    );
+    for (let idx = 0; idx < validatedGrounds.length; idx++) {
+      const entry = validatedGrounds[idx]!;
+      const line = entry.line;
+      const opaque = entry.opaque;
+      const lineNum = idx + 1;
+      trackSign(line.sign);
+      if (opaque.state !== 'known') trackSign(opaque.state);
+      const partAttr = line.part ? ` ${DATA_MARKS.part}="${escapeHtml(line.part)}"` : '';
+      const allowedLine = new Set(line.answered_verbs ?? []);
+      const lineVerbs = STD_VERBS.filter((v) => allowedLine.has(v.verb) || allowedLine.has(v.question));
+      const buttonsHtml = lineVerbs
+        .map(
+          (spec) =>
+            `<button type="button" ${DATA_MARKS.verb}="${escapeHtml(spec.verb)}" ${DATA_MARKS.key}="${escapeHtml(spec.key)}" ${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}">` +
+            `<kbd>${escapeHtml(spec.key.toUpperCase())}</kbd><span>${escapeHtml(spec.verb)}</span></button>`
+        )
+        .join('');
+      parts.push(
+        `<tr id="slip-line-${lineNum}" ${DATA_MARKS.line}="${lineNum}"${partAttr} ` +
+          `${DATA_MARKS.relation}="${escapeHtml(line.relation)}" ${DATA_MARKS.key}="${escapeHtml(canonicalJson(line.key))}" ` +
+          `${DATA_MARKS.polarity}="${escapeHtml(line.polarity)}" ${DATA_MARKS.depth}="${line.depth}" ` +
+          `${DATA_MARKS.proof_ref}="${escapeHtml(opaque.proofRef)}">` +
+          `<td>${lineNum}</td><td>${renderSignSpan(line.sign, opaque.proofRef)}</td>` +
+          `<td>${escapeHtml(line.relation)}</td>${renderOpaqueCellTd(opaque)}<td>${buttonsHtml}</td></tr>`
+      );
+    }
+    parts.push('</tbody></table>');
+  } else if (conformanceRow && conformanceRow.kind === 'calc') {
+    const resultOpaque = conformanceRow.result_cell ? asOpaqueCell(conformanceRow.result_cell) : null;
+    const steps = (conformanceRow.steps ?? [])
+      .filter((s) => s.kind !== 'constant')
+      .map((step) => ({ step, opaque: asOpaqueCell(step.cell) }));
+
+    parts.push(
+      `<table class="slip-table" ${DATA_MARKS.sheet}="slip" aria-label="Calculation proof slip">`,
+      `<thead><tr><th scope="col">Step</th><th scope="col">Sign</th><th scope="col">Value</th></tr></thead><tbody>`
+    );
+    if (resultOpaque) {
+      if (resultOpaque.state !== 'known') trackSign(resultOpaque.state);
+      parts.push(
+        `<tr ${DATA_MARKS.proof_ref}="${escapeHtml(resultOpaque.proofRef)}">` +
+          `<td>${escapeHtml(conformanceRow.sentence_template ?? conformanceRow.rule_id)}</td><td></td>` +
+          `${renderOpaqueCellTd(resultOpaque)}</tr>`
+      );
+    }
+    for (const entry of steps) {
+      trackSign(entry.step.sign);
+      if (entry.opaque.state !== 'known') trackSign(entry.opaque.state);
+      parts.push(
+        `<tr ${DATA_MARKS.path}="${escapeHtml(entry.step.path)}" ${DATA_MARKS.depth}="${entry.step.depth}" ` +
+          `${DATA_MARKS.proof_ref}="${escapeHtml(entry.opaque.proofRef)}">` +
+          `<td>${escapeHtml(entry.step.path)}</td><td>${renderSignSpan(entry.step.sign, entry.opaque.proofRef)}</td>` +
+          `${renderOpaqueCellTd(entry.opaque)}</tr>`
+      );
+    }
+    parts.push('</tbody></table>');
+  } else if (model) {
     trackSign('derived');
     parts.push(
       `<table class="slip-table" ${DATA_MARKS.sheet}="slip" aria-label="Subject proof slip">`,
@@ -247,43 +429,43 @@ export function renderSlipElementHtml(state: SlipElementState): string {
         `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="known" ${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">${escapeHtml(model.proofRef)}</td>` +
         `</tr></tbody></table>`
     );
+  }
 
-    if (currentVerb === 'm' && model.missingLevers.length > 0) {
+  if (model && currentVerb === 'm' && model.missingLevers.length > 0) {
+    parts.push(
+      `<section class="slip-levers" ${DATA_MARKS.part}="levers" aria-label="Certainty levers">`,
+      `<h2>Certainty Levers</h2>`,
+      `<table><thead><tr><th scope="col">Lever</th><th scope="col">Unblocks</th><th scope="col">Load Bearing</th></tr></thead><tbody>`
+    );
+    for (const lever of model.missingLevers) {
       parts.push(
-        `<section class="slip-levers" ${DATA_MARKS.part}="levers" aria-label="Certainty levers">`,
-        `<h2>Certainty Levers</h2>`,
-        `<table><thead><tr><th scope="col">Lever</th><th scope="col">Unblocks</th><th scope="col">Load Bearing</th></tr></thead><tbody>`
+        `<tr ${DATA_MARKS.key}="${escapeHtml(lever.id)}" ${DATA_MARKS.load_bearing}="${lever.redundant ? 'false' : 'true'}" ` +
+          `${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">` +
+          `<td>${escapeHtml(lever.label)}</td>` +
+          `<td>${escapeHtml(lever.unblocks.join(', '))}</td>` +
+          `<td>${lever.redundant ? 'redundant' : 'load-bearing'}</td></tr>`
       );
-      for (const lever of model.missingLevers) {
-        parts.push(
-          `<tr ${DATA_MARKS.key}="${escapeHtml(lever.id)}" ${DATA_MARKS.load_bearing}="${lever.redundant ? 'false' : 'true'}" ` +
-            `${DATA_MARKS.proof_ref}="${escapeHtml(model.proofRef)}">` +
-            `<td>${escapeHtml(lever.label)}</td>` +
-            `<td>${escapeHtml(lever.unblocks.join(', '))}</td>` +
-            `<td>${lever.redundant ? 'redundant' : 'load-bearing'}</td></tr>`
-        );
-      }
-      parts.push('</tbody></table></section>');
     }
+    parts.push('</tbody></table></section>');
+  }
 
-    if (currentVerb === 's' && model.adjacentWorlds.length > 0) {
-      trackSign('supposed');
+  if (model && currentVerb === 's' && model.adjacentWorlds.length > 0) {
+    trackSign('supposed');
+    parts.push(
+      `<section class="slip-adjacent-worlds" ${DATA_MARKS.part}="adjacent-worlds" aria-label="Adjacent worlds">`,
+      `<h2>Adjacent Worlds (Δ = 1)</h2>`,
+      `<table><thead><tr><th scope="col">Sign</th><th scope="col">Sector</th><th scope="col">Change</th><th scope="col">Outcome</th></tr></thead><tbody>`
+    );
+    for (const hop of model.adjacentWorlds) {
       parts.push(
-        `<section class="slip-adjacent-worlds" ${DATA_MARKS.part}="adjacent-worlds" aria-label="Adjacent worlds">`,
-        `<h2>Adjacent Worlds (Δ = 1)</h2>`,
-        `<table><thead><tr><th scope="col">Sign</th><th scope="col">Sector</th><th scope="col">Change</th><th scope="col">Outcome</th></tr></thead><tbody>`
+        `<tr ${DATA_MARKS.key}="${escapeHtml(hop.id)}" ${DATA_MARKS.proof_ref}="${escapeHtml(hop.proof_ref)}">` +
+          `<td>${renderSignSpan('supposed', hop.proof_ref)}</td>` +
+          `<td>${escapeHtml(hop.sector)}</td>` +
+          `<td>${escapeHtml(hop.label)}</td>` +
+          `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="known" ${DATA_MARKS.proof_ref}="${escapeHtml(hop.proof_ref)}">${escapeHtml(hop.outcome_display)}</td></tr>`
       );
-      for (const hop of model.adjacentWorlds) {
-        parts.push(
-          `<tr ${DATA_MARKS.key}="${escapeHtml(hop.id)}" ${DATA_MARKS.proof_ref}="${escapeHtml(hop.proof_ref)}">` +
-            `<td>${renderSignSpan('supposed', hop.proof_ref)}</td>` +
-            `<td>${escapeHtml(hop.sector)}</td>` +
-            `<td>${escapeHtml(hop.label)}</td>` +
-            `<td ${DATA_MARKS.part}="value" ${DATA_MARKS.state}="known" ${DATA_MARKS.proof_ref}="${escapeHtml(hop.proof_ref)}">${escapeHtml(hop.outcome_display)}</td></tr>`
-        );
-      }
-      parts.push('</tbody></table></section>');
     }
+    parts.push('</tbody></table></section>');
   }
 
   if (drawnSigns.length > 0) {
@@ -292,13 +474,13 @@ export function renderSlipElementHtml(state: SlipElementState): string {
       `<thead><tr><th scope="col">Glyph</th><th scope="col">Sign</th><th scope="col">Kind</th><th scope="col">Pattern</th></tr></thead><tbody>`
     );
     for (const signName of drawnSigns) {
-      const spec = SIGNS[signName] ?? SIGNS.derived;
+      const spec = resolveSignSpec(signName);
       parts.push(
         `<tr ${DATA_MARKS.sign}="${escapeHtml(signName)}">` +
-          `<td><span aria-hidden="true">${escapeHtml(spec?.glyph ?? '○')}</span></td>` +
+          `<td><span aria-hidden="true">${escapeHtml(spec.glyph)}</span></td>` +
           `<td>${escapeHtml(signName)}</td>` +
-          `<td>${escapeHtml(spec?.kind ?? 'origin')}</td>` +
-          `<td>${escapeHtml(spec?.pattern ?? 'solid-circle')}</td></tr>`
+          `<td>${escapeHtml(spec.kind)}</td>` +
+          `<td>${escapeHtml(spec.pattern)}</td></tr>`
       );
     }
     parts.push('</tbody></table>');

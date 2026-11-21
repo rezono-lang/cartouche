@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DATA_MARKS, DeltaStore, STD_VERBS } from '../../packages/reader-core/src/index.ts';
 import { createSlipModel } from '../../packages/slip/src/slip-controller.ts';
-import { SLIP_ELEMENT_TAG, defineSlipElement } from '../../packages/slip/src/slip-element.ts';
+import { SLIP_ELEMENT_TAG, defineSlipElement, renderSlipElementHtml } from '../../packages/slip/src/slip-element.ts';
 import { render as renderSlipHarness } from '../../packages/slip/bin/render.ts';
 import { auditA11y, parseHtml, renderSvelte } from '../../scripts/svelte-test-harness.mjs';
 
@@ -39,7 +39,33 @@ function assertAllTablesHaveHeaders(doc) {
   }
 }
 
-test('M1: Slip.svelte emits canonical data-* marks, 5-bar micro-prism, [M] levers, [S] Δ=1 worlds, seal, legend & 0 WCAG 2.1 AA violations', async () => {
+function extractCanonicalMarks(html) {
+  const { window: win, document: doc } = parseHtml(html);
+  const trackedAttrs = Object.values(DATA_MARKS);
+  try {
+    const main = doc.querySelector('main');
+    const records = [];
+    for (const el of main.querySelectorAll('*')) {
+      const entry = {};
+      for (const attr of trackedAttrs) {
+        const v = el.getAttribute(attr);
+        if (v !== null) entry[attr] = v;
+      }
+      if (Object.keys(entry).length > 0) {
+        records.push({
+          tag: el.tagName.toLowerCase(),
+          disabled: el.tagName.toLowerCase() === 'button' ? Boolean(el.disabled) : undefined,
+          marks: entry
+        });
+      }
+    }
+    return records;
+  } finally {
+    win.happyDOM.close();
+  }
+}
+
+test('M1: Slip.svelte emits canonical data-* marks, 5-bar micro-prism, [M] levers, [S] Δ=1 worlds, honest seal, legend & 0 WCAG 2.1 AA violations', async () => {
   const fx = loadFixture('01-platform-drift.json');
   const store = new DeltaStore(fx.manifest, []);
   const seal = store.seal();
@@ -53,7 +79,7 @@ test('M1: Slip.svelte emits canonical data-* marks, 5-bar micro-prism, [M] lever
     adjacentWorlds: fx.slip_enrichment.adjacent_worlds_delta1
   });
 
-  // Render on [M] Missing to verify 5-bar prism, verbs, seal, and certainty levers
+  // Render on [M] Missing without explicit sealChecks -> only honest witness check is rendered
   const { html: htmlMissing } = await renderSvelte(SLIP_SVELTE, {
     theme: 'swisstopo',
     model: baseModel,
@@ -67,20 +93,18 @@ test('M1: Slip.svelte emits canonical data-* marks, 5-bar micro-prism, [M] lever
     assert.ok(root, 'expected slip root with data-cartouche-theme="swisstopo"');
     assert.equal(root.getAttribute(DATA_MARKS.trust_tier), 'sealed');
 
-    // Seal checks & manifest hash
+    // Seal checks & manifest hash (must NOT invent unrun reader-hashes/publisher-record)
     const sealEl = docM.querySelector(`[${DATA_MARKS.part}="seal"]`);
     assert.ok(sealEl, 'expected [data-part="seal"]');
     assert.equal(
       sealEl.querySelector(`[${DATA_MARKS.part}="manifest-hash"]`)?.textContent,
       fx.manifest.id
     );
-    assert.equal(
-      sealEl.querySelector(`[${DATA_MARKS.check}="reader-hashes"]`)?.getAttribute(DATA_MARKS.status),
-      'green'
-    );
-    assert.equal(
-      sealEl.querySelector(`[${DATA_MARKS.check}="publisher-record"]`)?.getAttribute(DATA_MARKS.status),
-      'green'
+    const defaultChecks = [...sealEl.querySelectorAll(`[${DATA_MARKS.check}]`)];
+    assert.deepEqual(
+      defaultChecks.map((el) => ({ id: el.getAttribute(DATA_MARKS.check), status: el.getAttribute(DATA_MARKS.status) })),
+      [{ id: 'witness', status: 'green' }],
+      'without server-provided sealChecks, Slip must render only the honest witness check'
     );
 
     // 5-bar micro-prism
@@ -123,17 +147,29 @@ test('M1: Slip.svelte emits canonical data-* marks, 5-bar micro-prism, [M] lever
 
   assert.deepEqual(await auditA11y(htmlMissing), [], 'Slip [M] view must have 0 WCAG 2.1 AA violations');
 
-  // Render on [S] Suppose to verify Δ=1 adjacent worlds
+  // Render with explicit server-provided sealChecks + [S] Suppose Δ=1 adjacent worlds
   const { html: htmlSuppose } = await renderSvelte(SLIP_SVELTE, {
     theme: 'obsidian',
     model: baseModel,
     seal,
+    sealChecks: [
+      { id: 'reader-hashes', status: 'green' },
+      { id: 'publisher-record', status: 'green' }
+    ],
     activeVerb: 's'
   });
 
   const { window: winS, document: docS } = parseHtml(htmlSuppose, { theme: 'obsidian' });
   try {
-    assert.ok(docS.querySelector(`[${DATA_MARKS.theme}="obsidian"]`));
+    assert.ok(docS.querySelector(`main [${DATA_MARKS.theme}="obsidian"]`));
+    const explicitChecks = [...docS.querySelectorAll(`[${DATA_MARKS.part}="seal"] [${DATA_MARKS.check}]`)];
+    assert.deepEqual(
+      explicitChecks.map((el) => ({ id: el.getAttribute(DATA_MARKS.check), status: el.getAttribute(DATA_MARKS.status) })),
+      [
+        { id: 'reader-hashes', status: 'green' },
+        { id: 'publisher-record', status: 'green' }
+      ]
+    );
     const worldRows = [...docS.querySelectorAll(`[${DATA_MARKS.part}="adjacent-worlds"] tr[${DATA_MARKS.key}]`)];
     assert.equal(worldRows.length, 3);
     assert.deepEqual(
@@ -153,7 +189,7 @@ test('M1: Slip.svelte emits canonical data-* marks, 5-bar micro-prism, [M] lever
   assert.deepEqual(await auditA11y(htmlSuppose, { theme: 'obsidian' }), [], 'Slip [S] view must have 0 WCAG 2.1 AA violations');
 });
 
-test('M1: Slip.svelte physically disables [P] Propose when trust tier is provisional_engine', async () => {
+test('M1: Slip.svelte physically disables [P] Propose on provisional_engine and omits data-trust-tier when unsealed/no seal', async () => {
   const fxFlow = loadFixture('01-platform-drift.json');
   const fxKring = loadFixture('03-kring-m1-to-m5-live.json');
   const store = new DeltaStore(fxKring.manifest, fxKring.sealed_rows);
@@ -188,9 +224,26 @@ test('M1: Slip.svelte physically disables [P] Propose when trust tier is provisi
   }
 
   assert.deepEqual(await auditA11y(html), [], 'Provisional Slip view must have 0 WCAG 2.1 AA violations');
+
+  // With no seal provided, neither Slip.svelte nor slip-element may default data-trust-tier to "sealed"
+  const { html: noSealHtml } = await renderSvelte(SLIP_SVELTE, { theme: 'swisstopo', seal: null });
+  const noSealElHtml = renderSlipElementHtml({ theme: 'swisstopo', seal: null });
+  for (const fragment of [noSealHtml, noSealElHtml]) {
+    const { window: winN, document: docN } = parseHtml(fragment);
+    try {
+      const root = docN.querySelector(`main [${DATA_MARKS.theme}="swisstopo"]`);
+      assert.equal(
+        root?.getAttribute(DATA_MARKS.trust_tier),
+        null,
+        'missing seal must omit data-trust-tier rather than claiming "sealed"'
+      );
+    } finally {
+      await winN.happyDOM.close();
+    }
+  }
 });
 
-test('M1: Slip.svelte and bin/render.ts render HTTP 410 unserved state with [data-part="unserved"] and zero tr[data-line]', async () => {
+test('M1: Slip.svelte and bin/render.ts render HTTP 410 unserved state with [data-part="unserved"], no invented code, and zero tr[data-line]', async () => {
   const fx410 = loadFixture('07-unserved-410.json');
 
   const { html: directHtml } = await renderSvelte(SLIP_SVELTE, {
@@ -208,6 +261,9 @@ test('M1: Slip.svelte and bin/render.ts render HTTP 410 unserved state with [dat
   for (const html of [directHtml, harnessRes.html]) {
     const { window: win, document: doc } = parseHtml(html);
     try {
+      const root = doc.querySelector(`main [${DATA_MARKS.theme}="swisstopo"]`);
+      assert.equal(root?.getAttribute(DATA_MARKS.trust_tier), null, 'unserved 410 must not claim sealed trust tier');
+
       const unservedEl = doc.querySelector(`[${DATA_MARKS.part}="unserved"]`);
       assert.ok(unservedEl, 'expected [data-part="unserved"]');
       assert.equal(unservedEl.getAttribute(DATA_MARKS.reason), fx410.unserved.code);
@@ -225,18 +281,29 @@ test('M1: Slip.svelte and bin/render.ts render HTTP 410 unserved state with [dat
     }
     assert.deepEqual(await auditA11y(html), [], 'Unserved 410 view must have 0 WCAG 2.1 AA violations');
   }
+
+  // HTTP 410 without an unserved payload must NOT fabricate "publication_withdrawn" (honest http_status_410 only)
+  const { html: bare410 } = await renderSvelte(SLIP_SVELTE, { theme: 'swisstopo', unserved: null, httpStatus: 410 });
+  const { window: winB, document: docB } = parseHtml(bare410);
+  try {
+    const el = docB.querySelector(`[${DATA_MARKS.part}="unserved"]`);
+    assert.ok(el);
+    assert.equal(el.getAttribute(DATA_MARKS.reason), 'http_status_410', 'bare 410 must report http_status_410, not fabricate publication_withdrawn');
+  } finally {
+    await winB.happyDOM.close();
+  }
 });
 
-test('M1: <rezono-slip> Web Component handles W/D/M/S/C/P shortcuts, locks [P] on provisional_engine, and renders 410 unserved', async () => {
+test('M1: <rezono-slip> Web Component handles W/D/M/S/C/P shortcuts, locks [P] on provisional_engine, and matches Slip.svelte data-* marks on fixtures 01/03/07/09', async () => {
   const fxFlow = loadFixture('01-platform-drift.json');
   const fxKring = loadFixture('03-kring-m1-to-m5-live.json');
   const fx410 = loadFixture('07-unserved-410.json');
+  const fxConf = loadFixture('09-slip-conformance.json');
 
   const { window: win, document: doc } = parseHtml('');
   try {
     const Ctor = defineSlipElement(win);
     assert.ok(Ctor, 'defineSlipElement must register <rezono-slip>');
-    // Idempotent second registration returns same constructor
     assert.equal(defineSlipElement(win), Ctor);
 
     const el = doc.createElement(SLIP_ELEMENT_TAG);
@@ -271,8 +338,7 @@ test('M1: <rezono-slip> Web Component handles W/D/M/S/C/P shortcuts, locks [P] o
     assert.equal(el.querySelectorAll(`[${DATA_MARKS.part}="adjacent-worlds"] tr[${DATA_MARKS.key}]`).length, 3);
     assertLegendCoversAllDrawnSigns(el);
     assertAllTablesHaveHeaders(el);
-    const customElHtml = el.innerHTML;
-    assert.deepEqual(await auditA11y(customElHtml), [], '<rezono-slip> [S] markup must have 0 WCAG 2.1 AA violations');
+    assert.deepEqual(await auditA11y(el.innerHTML), [], '<rezono-slip> [S] markup must have 0 WCAG 2.1 AA violations');
 
     // Keyboard shortcuts 'w', 'd', 'c', 'p' on sealed store
     for (const [k, expectedVerb] of [['w', 'why'], ['d', 'depends'], ['c', 'compare'], ['p', 'propose']]) {
@@ -310,9 +376,45 @@ test('M1: <rezono-slip> Web Component handles W/D/M/S/C/P shortcuts, locks [P] o
   } finally {
     await win.happyDOM.close();
   }
+
+  // Exact data-* mark parity between Slip.svelte and renderSlipElementHtml on fixtures 01, 03, 07, and 09
+  const sealedSeal01 = new DeltaStore(fxFlow.manifest, []).seal();
+  const sealedModel01 = createSlipModel({
+    subjectId: 'e-drift-vault',
+    proofRef: 'policy:netpol-04#L42',
+    seal: sealedSeal01,
+    activeVerb: 's',
+    prism5: fxFlow.slip_enrichment.prism_5,
+    missingLevers: fxFlow.slip_enrichment.missing_levers,
+    adjacentWorlds: fxFlow.slip_enrichment.adjacent_worlds_delta1
+  });
+  const svelte01 = await renderSvelte(SLIP_SVELTE, { theme: 'swisstopo', model: sealedModel01, seal: sealedSeal01, activeVerb: 's' });
+  const elem01 = renderSlipElementHtml({ theme: 'swisstopo', model: sealedModel01, seal: sealedSeal01, activeVerb: 's' });
+  assert.deepEqual(extractCanonicalMarks(elem01), extractCanonicalMarks(svelte01.html), 'fixture 01 [S] data-* parity');
+
+  const svelte410 = await renderSvelte(SLIP_SVELTE, { theme: 'swisstopo', unserved: fx410.unserved, httpStatus: 410 });
+  const elem410 = renderSlipElementHtml({ theme: 'swisstopo', unserved: fx410.unserved, httpStatus: 410 });
+  assert.deepEqual(extractCanonicalMarks(elem410), extractCanonicalMarks(svelte410.html), 'fixture 07 410 data-* parity');
+
+  const seal09 = new DeltaStore(fxConf.manifest, []).seal();
+  const ruleRow09 = {
+    ...fxConf.slip_conformance.rows['flagged::item-a::12'],
+    sentence_template: fxConf.slip_conformance.messages.en['rule.flagged']
+  };
+  const svelte09Rule = await renderSvelte(SLIP_SVELTE, { theme: 'swisstopo', seal: seal09, conformanceRow: ruleRow09 });
+  const elem09Rule = renderSlipElementHtml({ theme: 'swisstopo', seal: seal09, conformanceRow: ruleRow09 });
+  assert.deepEqual(extractCanonicalMarks(elem09Rule), extractCanonicalMarks(svelte09Rule.html), 'fixture 09 rule row data-* parity');
+
+  const calcRow09 = {
+    ...fxConf.slip_conformance.rows['calc__capped_amount::item-c'],
+    sentence_template: fxConf.slip_conformance.messages.en['calc.capped_amount']
+  };
+  const svelte09Calc = await renderSvelte(SLIP_SVELTE, { theme: 'swisstopo', seal: seal09, conformanceRow: calcRow09 });
+  const elem09Calc = renderSlipElementHtml({ theme: 'swisstopo', seal: seal09, conformanceRow: calcRow09 });
+  assert.deepEqual(extractCanonicalMarks(elem09Calc), extractCanonicalMarks(svelte09Calc.html), 'fixture 09 unknown calc row data-* parity');
 });
 
-test('M1: packages/slip/bin/render.ts is deterministic on fixtures/09-slip-conformance.json and passes opaque-token mutation', async () => {
+test('M1: packages/slip/bin/render.ts enforces asOpaqueCell guards (no invented reasons/witnesses), rejects unknown signs, avoids index-guessing links, and passes opaque mutation', async () => {
   const req = {
     fixture: 'fixtures/09-slip-conformance.json',
     role: 'reader',
@@ -328,7 +430,7 @@ test('M1: packages/slip/bin/render.ts is deterministic on fixtures/09-slip-confo
   const { window: win, document: doc } = parseHtml(first.html);
   try {
     const sentenceLinks = [...doc.querySelectorAll(`[${DATA_MARKS.part}="sentence"] a[${DATA_MARKS.line}]`)];
-    assert.equal(sentenceLinks.length, 2, 'home claim sentence must bind {$i} and {$a} to a[data-line]');
+    assert.equal(sentenceLinks.length, 2, 'home claim sentence must bind {$i} and {$a} via explicit premise_position');
     assert.deepEqual(sentenceLinks.map((a) => a.getAttribute(DATA_MARKS.line)), ['2', '2']);
 
     const lines = [...doc.querySelectorAll(`table[${DATA_MARKS.sheet}="slip"] tr[${DATA_MARKS.line}]`)];
@@ -349,6 +451,26 @@ test('M1: packages/slip/bin/render.ts is deterministic on fixtures/09-slip-confo
   }
   assert.deepEqual(await auditA11y(first.html), [], '09-slip-conformance home claim must have 0 WCAG 2.1 AA violations');
 
+  // Row whose grounds omit premise_position must NOT guess links by array index, while aggregate links to part=total
+  const groupRes = await renderSlipHarness({
+    fixture: 'fixtures/09-slip-conformance.json',
+    role: 'reader',
+    pack: 'slip',
+    lang: 'en',
+    row: 'group_size::group-a::2'
+  });
+  const { window: winG, document: docG } = parseHtml(groupRes.html);
+  try {
+    const links = [...docG.querySelectorAll(`[${DATA_MARKS.part}="sentence"] a[${DATA_MARKS.line}]`)];
+    assert.deepEqual(
+      links.map((a) => ({ line: a.getAttribute(DATA_MARKS.line), text: a.textContent })),
+      [{ line: '2', text: '2' }],
+      'only aggregate/explicit premise_position bindings should emit a[data-line] links'
+    );
+  } finally {
+    await winG.happyDOM.close();
+  }
+
   // Verify unknown calc row contains zero ASCII digits in td[data-part="value"][data-state="unknown"]
   const calcUnknown = await renderSlipHarness({
     fixture: 'fixtures/09-slip-conformance.json',
@@ -362,7 +484,7 @@ test('M1: packages/slip/bin/render.ts is deterministic on fixtures/09-slip-confo
     const unknownCells = [...docU.querySelectorAll(`td[${DATA_MARKS.part}="value"][${DATA_MARKS.state}="unknown"]`)];
     assert.ok(unknownCells.length >= 2, 'expected unknown value cells in calc__capped_amount::item-c');
     for (const cell of unknownCells) {
-      assert.ok(cell.getAttribute(DATA_MARKS.reason), 'unknown cell requires data-reason');
+      assert.equal(cell.getAttribute(DATA_MARKS.reason), 'fact recorded_amount.amount is missing');
       assert.ok(cell.querySelector(`[${DATA_MARKS.sign}="unknown"]`), 'unknown cell requires [data-sign="unknown"]');
       assert.equal(/[0-9]/.test(cell.textContent), false, `unknown cell must contain 0 ASCII digits, got "${cell.textContent}"`);
     }
@@ -370,6 +492,74 @@ test('M1: packages/slip/bin/render.ts is deterministic on fixtures/09-slip-confo
   } finally {
     await winU.happyDOM.close();
   }
+
+  // Counterexample 1 (P1): unknown cell with reason deleted MUST throw (never fabricate "unspecified")
+  const fxMissingReason = loadFixture('09-slip-conformance.json');
+  delete fxMissingReason.slip_conformance.rows['calc__capped_amount::item-c'].result_cell.reason;
+  await assert.rejects(
+    () =>
+      renderSlipHarness({
+        store: fxMissingReason,
+        role: 'reader',
+        pack: 'slip',
+        lang: 'en',
+        row: 'calc__capped_amount::item-c'
+      }),
+    /explicit reason/
+  );
+
+  // Counterexample 2 (P1): absent cell without completeness_witness_ref MUST throw
+  const fxMissingWitness = loadFixture('09-slip-conformance.json');
+  delete fxMissingWitness.slip_conformance.rows['flagged::item-a::12'].grounds_distance_1[0].cell.completeness_witness_ref;
+  await assert.rejects(
+    () =>
+      renderSlipHarness({
+        store: fxMissingWitness,
+        role: 'reader',
+        pack: 'slip',
+        lang: 'en',
+        row: 'flagged::item-a::12'
+      }),
+    /completeness_witness_ref/
+  );
+
+  // Counterexample 3 (P1): known cell without display MUST throw
+  const fxMissingDisplay = loadFixture('09-slip-conformance.json');
+  delete fxMissingDisplay.slip_conformance.rows['flagged::item-a::12'].grounds_distance_1[1].cell.display;
+  await assert.rejects(
+    () =>
+      renderSlipHarness({
+        store: fxMissingDisplay,
+        role: 'reader',
+        pack: 'slip',
+        lang: 'en',
+        row: 'flagged::item-a::12'
+      }),
+    /display/
+  );
+
+  // Counterexample 4 (P2): unknown sign name MUST throw instead of falling back to derived
+  const fxBadSign = loadFixture('09-slip-conformance.json');
+  fxBadSign.slip_conformance.rows['flagged::item-a::12'].grounds_distance_1[1].sign = 'nonexistent_sign';
+  await assert.rejects(
+    () =>
+      renderSlipHarness({
+        store: fxBadSign,
+        role: 'reader',
+        pack: 'slip',
+        lang: 'en',
+        row: 'flagged::item-a::12'
+      }),
+    /Unknown std-view sign/
+  );
+  assert.throws(
+    () =>
+      renderSlipElementHtml({
+        theme: 'swisstopo',
+        conformanceRow: fxBadSign.slip_conformance.rows['flagged::item-a::12']
+      }),
+    /Unknown std-view sign/
+  );
 
   // Opaque-token mutation test on Slip.svelte: mutated strings pass through verbatim with zero NaN
   const fx = loadFixture('01-platform-drift.json');
