@@ -151,7 +151,11 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'kits.turning_point': 'Turning point',
     'kits.col_conclusion': 'Conclusion',
     'kits.col_value': 'Value',
-    'kits.col_slip': 'Slip'
+    'kits.col_slip': 'Slip',
+    'proof_map.title': 'Proof Map',
+    'proof_map.sentence_source': '{$label} is a {$sign} fact in {$lane}, status {$state}.',
+    'proof_map.sentence_derived': '{$label} means {$sign} in {$lane}, status {$state}.',
+    'proof_map.open_slip': 'Open slip'
   }),
   nl: Object.freeze({
     'sheet.relief.title': 'Orthografisch Reliëf',
@@ -296,7 +300,11 @@ export const ATLAS_MF2_MESSAGES: Mf2MessageCatalog = Object.freeze({
     'kits.turning_point': 'Omslagpunt',
     'kits.col_conclusion': 'Conclusie',
     'kits.col_value': 'Waarde',
-    'kits.col_slip': 'Strook'
+    'kits.col_slip': 'Strook',
+    'proof_map.title': 'Bewijskaart',
+    'proof_map.sentence_source': '{$label} is een {$sign}-feit in {$lane}, status {$state}.',
+    'proof_map.sentence_derived': '{$label} betekent {$sign} in {$lane}, status {$state}.',
+    'proof_map.open_slip': 'Open strook'
   })
 });
 

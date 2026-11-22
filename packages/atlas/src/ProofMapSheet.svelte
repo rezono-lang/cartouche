@@ -78,6 +78,7 @@
     isGateRecording
       ? compileProofMapLayout(fixture, {
           role: shareState?.effectiveRole ?? role,
+          lang,
           manifest,
           focusKey: shareState?.parsed.at ?? focusKey,
           selection: shareState?.parsed.selection,

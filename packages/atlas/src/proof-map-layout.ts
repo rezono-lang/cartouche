@@ -20,6 +20,7 @@ import {
   extractPublishedHiddenPremises,
   renderProofMapRoleHtml
 } from './proof-map-role.ts';
+import { renderProofMapAccessibleTablesHtml } from './proof-map-a11y.ts';
 import {
   collectProofMapLegendEntries,
   normalizeProofMapStateSamples,
@@ -184,6 +185,8 @@ interface BundleLike {
   readonly arrows?: readonly BundleSlotLike[];
   readonly relations?: readonly BundleRelationLike[];
   readonly rules?: readonly BundleRuleLike[];
+  readonly labels?: unknown;
+  readonly messages?: unknown;
 }
 
 interface GateFixtureLike {
@@ -956,7 +959,7 @@ export function compileProofMapLayout(
   const nodeSvg = nodeSvgParts.join('');
 
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" data-projection="2d" role="img" aria-label="${escapeXml(packId)}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" data-projection="2d" role="group" aria-label="${escapeXml(packId)}">` +
     renderProofMapHatchDefs() +
     laneSvg +
     nodeSvg +
@@ -1018,6 +1021,7 @@ export function compileProofMapLayout(
     })
   });
 
+  const lang: AtlasLocale = options.lang === 'nl' ? 'nl' : 'en';
   const supposeView = buildProofMapSupposeView({
     sweepRecording: options.sweepRecording,
     sweepStore: options.sweepStore,
@@ -1030,16 +1034,23 @@ export function compileProofMapLayout(
         svg,
         horizon,
         hiddenPremises,
-        lang: options.lang ?? 'en',
+        lang,
         availableRoles,
         activeRole: role
       });
+  const accessibleTablesHtml = renderProofMapAccessibleTablesHtml({
+    lang,
+    nodes,
+    edges,
+    legend,
+    bundleLabels: bundle.labels,
+    bundleMessages: bundle.messages
+  });
   const parityTwinHtml = parityRecord ? renderProofMapParityTwinTableHtml({ nodes, parityRecord }) : '';
-  const html = parityTwinHtml
-    ? baseHtml.includes('</section>')
-      ? baseHtml.replace('</section>', `${parityTwinHtml}</section>`)
-      : `${baseHtml}${parityTwinHtml}`
-    : baseHtml;
+  const extraTablesHtml = `${accessibleTablesHtml}${parityTwinHtml}`;
+  const html = baseHtml.includes('</section>')
+    ? baseHtml.replace('</section>', `${extraTablesHtml}</section>`)
+    : `${baseHtml}${extraTablesHtml}`;
 
   return Object.freeze({
     role,
