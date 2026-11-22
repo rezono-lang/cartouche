@@ -14,6 +14,12 @@ import type { CartoucheSeal, EpistemicState, TrustTier } from '../../reader-core
 import { CARTOUCHE_SCENE_SCHEMA_VERSION } from '../../scene-ir/src/types.ts';
 import type { CartoucheScene, SceneNodeMark } from '../../scene-ir/src/types.ts';
 import { escapeXml } from './flow-split-svg.ts';
+import type { AtlasLocale } from './i18n-mf2.ts';
+import {
+  extractAvailableRoles,
+  extractPublishedHiddenPremises,
+  renderProofMapRoleHtml
+} from './proof-map-role.ts';
 import {
   collectProofMapLegendEntries,
   normalizeProofMapStateSamples,
@@ -95,6 +101,7 @@ export interface ProofMapSemanticEdge {
 
 export interface ProofMapSemanticLayout {
   readonly role: string;
+  readonly availableRoles: readonly string[];
   readonly manifestId: string;
   readonly validAt: string | null;
   readonly knownAt: string | null;
@@ -106,7 +113,7 @@ export interface ProofMapSemanticLayout {
   readonly svgWidth: number;
   readonly svgHeight: number;
   readonly svg: string;
-  readonly html?: string | undefined;
+  readonly html: string;
   readonly suppose?: ProofMapSupposeView | null | undefined;
   readonly slipHtml?: string | undefined;
   readonly activeWitnessIri?: string | null | undefined;
@@ -115,6 +122,7 @@ export interface ProofMapSemanticLayout {
 
 export interface ProofMapLayoutOptions {
   readonly role?: string | undefined;
+  readonly lang?: AtlasLocale | undefined;
   readonly manifest?: string | undefined;
   readonly focusKey?: string | undefined;
   readonly selection?: string | undefined;
@@ -949,6 +957,8 @@ export function compileProofMapLayout(
   );
 
   const horizon = findRoleHorizon(fixture, role, options.store);
+  const availableRoles = extractAvailableRoles(fixture);
+  const hiddenPremises = extractPublishedHiddenPremises(fixture, role);
 
   const scene: CartoucheScene = Object.freeze({
     schemaVersion: CARTOUCHE_SCENE_SCHEMA_VERSION,
@@ -985,10 +995,20 @@ export function compileProofMapLayout(
     sweepRole: options.sweepRole,
     supposeVariant: options.supposeVariant
   });
-  const html = supposeView ? renderProofMapSupposeHtml(svg, supposeView) : undefined;
+  const html = supposeView
+    ? renderProofMapSupposeHtml(svg, supposeView)
+    : renderProofMapRoleHtml({
+        svg,
+        horizon,
+        hiddenPremises,
+        lang: options.lang ?? 'en',
+        availableRoles,
+        activeRole: role
+      });
 
   return Object.freeze({
     role,
+    availableRoles,
     manifestId,
     validAt: epochSel.validAt,
     knownAt: epochSel.knownAt,
@@ -1000,7 +1020,7 @@ export function compileProofMapLayout(
     svgWidth,
     svgHeight,
     svg,
-    ...(html !== undefined ? { html } : {}),
+    html,
     ...(supposeView ? { suppose: supposeView } : {}),
     ...(witnessProjection
       ? { slipHtml: witnessProjection.slipHtml, activeWitnessIri: witnessProjection.activeWitnessIri }
