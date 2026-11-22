@@ -10,16 +10,16 @@
       "fixturePath": "fixtures/11-zorgtoeslag-bitemporal-gate-answers.json",
       "source": {
         "repository": "rezono-lang/rezono",
-        "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
+        "commit": "bec2d460470bfe7ee98702bda3f82b213558a837",
         "pack": "examples/zorgtoeslag-slice"
       },
       "baseDisplay": "13500",
       "supposeDisplay": "13600",
       "turnStatus": null,
-      "baseProofRef": "m-2/calc__allowance/ann",
-      "supposeProofRef": "m-4/calc__allowance/ann",
-      "baseSlipHref": "#slip/calc__allowance/ann?pin=m-2",
-      "supposeSlipHref": "#slip/calc__allowance/ann?pin=m-4",
+      "baseProofRef": "m-2/calc__allowance/p-ann",
+      "supposeProofRef": "m-4/calc__allowance/p-ann",
+      "baseSlipHref": "#slip/calc__allowance/p-ann?pin=m-2",
+      "supposeSlipHref": "#slip/calc__allowance/p-ann?pin=m-4",
       "hasPublishedTurningPoint": false
     },
     {
@@ -31,7 +31,7 @@
       "fixturePath": "fixtures/10-slip-reader-answers.json",
       "source": {
         "repository": "rezono-lang/rezono",
-        "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
+        "commit": "bec2d460470bfe7ee98702bda3f82b213558a837",
         "pack": "tests/fixtures/slip"
       },
       "baseDisplay": "12",
@@ -52,7 +52,7 @@
       "fixturePath": "fixtures/10-slip-reader-answers.json",
       "source": {
         "repository": "rezono-lang/rezono",
-        "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
+        "commit": "bec2d460470bfe7ee98702bda3f82b213558a837",
         "pack": "tests/fixtures/slip"
       },
       "baseDisplay": "12",

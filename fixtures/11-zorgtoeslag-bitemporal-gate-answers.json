@@ -1,7 +1,7 @@
 {
   "fixture_id": "11-zorgtoeslag-bitemporal-gate-answers",
   "manifest": {
-    "id": "sha256:7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
+    "id": "sha256:c76dc998ae2174c269588823b5f26435c44a04a8735ba02249b58f9663678ee8",
     "epoch": 4,
     "knowledge_time": "2026-05-01T00:00:00Z",
     "role": "checker",
@@ -11,7 +11,7 @@
   "source": {
     "decision": "decisions/0012-proof-first-plan.md",
     "repository": "rezono-lang/rezono",
-    "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
+    "commit": "bec2d460470bfe7ee98702bda3f82b213558a837",
     "pack": "examples/zorgtoeslag-slice",
     "store": "examples/zorgtoeslag_history_support.py publish_history",
     "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the pinned commit by .github/workflows/rezono-reader-parity.yml for both complete (`checker`) and restricted (`limited`) roles, with each HTTP status and JSON body as served.",
@@ -51,36 +51,102 @@
           "pack": {
             "id": "zorgtoeslag-slice"
           },
+          "imports": [
+            {
+              "name": "zorgtoeslag-civil",
+              "version": "0.1.0",
+              "sha256": "2f77cb26ff522a690c51e0977fa41626962ee876d8ad8168dec2b908e1cc9b6b"
+            },
+            {
+              "name": "zorgtoeslag-insurer",
+              "version": "0.1.0",
+              "sha256": "44e670d81b5007de35bb18701f8114a3b996e5f770c1b83da5c89f493ce27cf7"
+            },
+            {
+              "name": "zorgtoeslag-person",
+              "version": "0.1.0",
+              "sha256": "bd628d062c0d146c3cbdb2e84a50eb720527e5388870e487591fa44c3d5ce4fd"
+            },
+            {
+              "name": "zorgtoeslag-tax",
+              "version": "0.1.0",
+              "sha256": "7e323057729be641523f1d2be0ff86e79f566063cfb718da6b553725dc03313b"
+            }
+          ],
           "kinds": [
             {
-              "id": "household",
-              "class": "Household",
-              "world": "closed"
+              "id": "adres",
+              "class": "Adres",
+              "world": "closed",
+              "module": "zorgtoeslag-civil:civil",
+              "pack": "zorgtoeslag-civil"
+            },
+            {
+              "id": "inkomen",
+              "class": "Inkomen",
+              "world": "closed",
+              "module": "zorgtoeslag-tax:tax",
+              "pack": "zorgtoeslag-tax"
+            },
+            {
+              "id": "ouder",
+              "class": "Ouder",
+              "world": "closed",
+              "module": "zorgtoeslag-civil:civil",
+              "pack": "zorgtoeslag-civil"
+            },
+            {
+              "id": "persoon",
+              "class": "Persoon",
+              "world": "closed",
+              "module": "zorgtoeslag-person:person",
+              "pack": "zorgtoeslag-person"
+            },
+            {
+              "id": "polis",
+              "class": "Polis",
+              "world": "closed",
+              "module": "zorgtoeslag-insurer:insurer",
+              "pack": "zorgtoeslag-insurer"
+            },
+            {
+              "id": "zorgtoeslag_civil_civil_partner",
+              "class": "Partner",
+              "world": "closed",
+              "module": "zorgtoeslag-civil:civil",
+              "pack": "zorgtoeslag-civil"
+            },
+            {
+              "id": "zorgtoeslag_tax_tax_partner",
+              "class": "Partner",
+              "world": "closed",
+              "module": "zorgtoeslag-tax:tax",
+              "pack": "zorgtoeslag-tax"
             }
           ],
           "attributes": [
             {
-              "id": "household.insured",
-              "kind": "household",
-              "name": "insured",
-              "table": "household__insured",
-              "type": "boolean",
-              "schema_type": "boolean",
+              "id": "adres.woonadres",
+              "kind": "adres",
+              "name": "woonadres",
+              "table": "adres__woonadres",
+              "type": "text",
+              "schema_type": "string",
               "patterns": [],
               "required": true,
               "multivalued": false,
               "semantic": {
                 "case": "scalar",
-                "base": "boolean",
-                "range": "boolean"
+                "base": "string",
+                "range": "string"
               },
               "world": "closed"
             },
             {
-              "id": "household.joint_income",
-              "kind": "household",
-              "name": "joint_income",
-              "table": "household__joint_income",
+              "id": "inkomen.bedrag",
+              "kind": "inkomen",
+              "name": "bedrag",
+              "table": "inkomen__bedrag",
               "type": "integer",
               "schema_type": "Cents",
               "patterns": [],
@@ -96,10 +162,29 @@
               "world": "closed"
             },
             {
-              "id": "household.partner",
-              "kind": "household",
-              "name": "partner",
-              "table": "household__partner",
+              "id": "polis.soort",
+              "kind": "polis",
+              "name": "soort",
+              "table": "polis__soort",
+              "type": "enum",
+              "schema_type": "polis_soort",
+              "enum": "polis_soort",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "enum",
+                "base": "string",
+                "range": "polis_soort",
+                "enum": "polis_soort"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "zorgtoeslag_civil_civil_partner.echtscheidingsverzoek",
+              "kind": "zorgtoeslag_civil_civil_partner",
+              "name": "echtscheidingsverzoek",
+              "table": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
               "type": "boolean",
               "schema_type": "boolean",
               "patterns": [],
@@ -111,14 +196,201 @@
                 "range": "boolean"
               },
               "world": "closed"
+            },
+            {
+              "id": "zorgtoeslag_civil_civil_partner.soort",
+              "kind": "zorgtoeslag_civil_civil_partner",
+              "name": "soort",
+              "table": "zorgtoeslag_civil_civil_partner__soort",
+              "type": "enum",
+              "schema_type": "verbintenis_soort",
+              "enum": "verbintenis_soort",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "enum",
+                "base": "string",
+                "range": "verbintenis_soort",
+                "enum": "verbintenis_soort"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "zorgtoeslag_tax_tax_partner.grond",
+              "kind": "zorgtoeslag_tax_tax_partner",
+              "name": "grond",
+              "table": "zorgtoeslag_tax_tax_partner__grond",
+              "type": "text",
+              "schema_type": "string",
+              "patterns": [],
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "scalar",
+                "base": "string",
+                "range": "string"
+              },
+              "world": "closed"
             }
           ],
-          "arrows": [],
+          "arrows": [
+            {
+              "id": "adres.persoon",
+              "kind": "adres",
+              "name": "persoon",
+              "table": "adres__persoon",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "inkomen.persoon",
+              "kind": "inkomen",
+              "name": "persoon",
+              "table": "inkomen__persoon",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "ouder.kind",
+              "kind": "ouder",
+              "name": "kind",
+              "table": "ouder__kind",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "ouder.ouder",
+              "kind": "ouder",
+              "name": "ouder",
+              "table": "ouder__ouder",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "polis.persoon",
+              "kind": "polis",
+              "name": "persoon",
+              "table": "polis__persoon",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "zorgtoeslag_civil_civil_partner.persoon_a",
+              "kind": "zorgtoeslag_civil_civil_partner",
+              "name": "persoon_a",
+              "table": "zorgtoeslag_civil_civil_partner__persoon_a",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "zorgtoeslag_civil_civil_partner.persoon_b",
+              "kind": "zorgtoeslag_civil_civil_partner",
+              "name": "persoon_b",
+              "table": "zorgtoeslag_civil_civil_partner__persoon_b",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "zorgtoeslag_tax_tax_partner.persoon_a",
+              "kind": "zorgtoeslag_tax_tax_partner",
+              "name": "persoon_a",
+              "table": "zorgtoeslag_tax_tax_partner__persoon_a",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            },
+            {
+              "id": "zorgtoeslag_tax_tax_partner.persoon_b",
+              "kind": "zorgtoeslag_tax_tax_partner",
+              "name": "persoon_b",
+              "table": "zorgtoeslag_tax_tax_partner__persoon_b",
+              "target": "persoon",
+              "required": true,
+              "multivalued": false,
+              "semantic": {
+                "case": "ref",
+                "base": "string",
+                "range": "persoon",
+                "target": "persoon"
+              },
+              "world": "closed"
+            }
+          ],
           "relations": [
             {
               "id": "calc__allowance",
               "world": "closed",
               "calc": "allowance",
+              "premises": [
+                "calc__income_limit",
+                "calc__insured",
+                "calc__joint_income",
+                "calc__yearly_amount"
+              ],
               "semantic": {
                 "case": "derived",
                 "base": "number",
@@ -144,6 +416,10 @@
               "id": "calc__household_premium",
               "world": "closed",
               "calc": "household_premium",
+              "premises": [
+                "calc__partner",
+                "calc__standard_premium"
+              ],
               "semantic": {
                 "case": "derived",
                 "base": "number",
@@ -169,6 +445,11 @@
               "id": "calc__income_limit",
               "world": "closed",
               "calc": "income_limit",
+              "premises": [
+                "calc__income_limit_partner",
+                "calc__income_limit_single",
+                "calc__partner"
+              ],
               "semantic": {
                 "case": "derived",
                 "base": "number",
@@ -241,14 +522,163 @@
               ]
             },
             {
+              "id": "calc__insured",
+              "world": "closed",
+              "calc": "insured",
+              "premises": [
+                "has_any_policy",
+                "has_basic_policy"
+              ],
+              "semantic": {
+                "case": "derived",
+                "base": "boolean",
+                "derived": "insured"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__joint_income",
+              "world": "closed",
+              "calc": "joint_income",
+              "premises": [
+                "calc__own_income_cents",
+                "calc__partner",
+                "calc__partner_income_cents"
+              ],
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "joint_income"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
               "id": "calc__norm_premium",
               "world": "closed",
               "calc": "norm_premium",
+              "premises": [
+                "calc__joint_income",
+                "calc__rate_above",
+                "calc__threshold_income",
+                "calc__threshold_rate"
+              ],
               "semantic": {
                 "case": "derived",
                 "base": "number",
                 "unit": "Cents",
                 "derived": "norm_premium"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__own_income_cents",
+              "world": "closed",
+              "calc": "own_income_cents",
+              "premises": [
+                "has_own_income",
+                "own_income"
+              ],
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "own_income_cents"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__partner",
+              "world": "closed",
+              "calc": "partner",
+              "premises": [
+                "has_toeslagpartner"
+              ],
+              "semantic": {
+                "case": "derived",
+                "base": "boolean",
+                "derived": "partner"
+              },
+              "columns": [
+                {
+                  "name": "subject"
+                },
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "state"
+                },
+                {
+                  "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "calc__partner_income_cents",
+              "world": "closed",
+              "calc": "partner_income_cents",
+              "premises": [
+                "has_partner_income",
+                "partner_income"
+              ],
+              "semantic": {
+                "case": "derived",
+                "base": "number",
+                "unit": "Cents",
+                "derived": "partner_income_cents"
               },
               "columns": [
                 {
@@ -344,6 +774,9 @@
               "id": "calc__threshold_rate",
               "world": "closed",
               "calc": "threshold_rate",
+              "premises": [
+                "calc__partner"
+              ],
               "semantic": {
                 "case": "derived",
                 "base": "number",
@@ -369,6 +802,10 @@
               "id": "calc__yearly_amount",
               "world": "closed",
               "calc": "yearly_amount",
+              "premises": [
+                "calc__household_premium",
+                "calc__norm_premium"
+              ],
               "semantic": {
                 "case": "derived",
                 "base": "number",
@@ -387,6 +824,138 @@
                 },
                 {
                   "name": "reason"
+                }
+              ]
+            },
+            {
+              "id": "civil_pair",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "a",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                },
+                {
+                  "name": "b",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                },
+                {
+                  "name": "cp",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "zorgtoeslag_civil_civil_partner",
+                    "target": "zorgtoeslag_civil_civil_partner"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "has_any_policy",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "p",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "has_basic_policy",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "p",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "has_own_income",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "p",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "has_partner_income",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "p",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "has_toeslagpartner",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "p",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "living_apart",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "a",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                },
+                {
+                  "name": "b",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
                 }
               ]
             },
@@ -416,13 +985,788 @@
                   "name": "kind"
                 }
               ]
+            },
+            {
+              "id": "own_income",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "p",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                },
+                {
+                  "name": "bedrag",
+                  "currency": "EUR"
+                }
+              ]
+            },
+            {
+              "id": "partner_income",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "p",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                },
+                {
+                  "name": "bedrag",
+                  "currency": "EUR"
+                }
+              ]
+            },
+            {
+              "id": "same_address",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "a",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                },
+                {
+                  "name": "b",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "separated_union",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "cp",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "zorgtoeslag_civil_civil_partner",
+                    "target": "zorgtoeslag_civil_civil_partner"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "toeslagpartner",
+              "world": "closed",
+              "columns": [
+                {
+                  "name": "a",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                },
+                {
+                  "name": "b",
+                  "semantic": {
+                    "case": "ref",
+                    "base": "string",
+                    "range": "persoon",
+                    "target": "persoon"
+                  }
+                }
+              ]
             }
           ],
-          "enums": [],
+          "enums": [
+            {
+              "id": "polis_soort",
+              "values": [
+                "polis_soort.basis",
+                "polis_soort.aanvullend"
+              ]
+            },
+            {
+              "id": "verbintenis_soort",
+              "values": [
+                "verbintenis_soort.huwelijk",
+                "verbintenis_soort.geregistreerd_partnerschap"
+              ]
+            }
+          ],
           "rules": [
             {
+              "id": "civil_pair_1",
+              "stable_id": "civil_pair~c4087c900951",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "14",
+                "column": "6"
+              },
+              "relation": "civil_pair",
+              "module": "toeslagpartner",
+              "message": "rule.civil_pair_1",
+              "variables": [
+                {
+                  "name": "?a",
+                  "type": "string"
+                },
+                {
+                  "name": "?b",
+                  "type": "string"
+                },
+                {
+                  "name": "?cp",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "civil_pair",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?a",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?b",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?cp",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "comparison",
+                  "position": 3,
+                  "polarity": "positive",
+                  "op": "ne",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "14"
+              }
+            },
+            {
+              "id": "civil_pair_2",
+              "stable_id": "civil_pair~ab0e84095084",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "16",
+                "column": "6"
+              },
+              "relation": "civil_pair",
+              "module": "toeslagpartner",
+              "message": "rule.civil_pair_2",
+              "variables": [
+                {
+                  "name": "?a",
+                  "type": "string"
+                },
+                {
+                  "name": "?b",
+                  "type": "string"
+                },
+                {
+                  "name": "?cp",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "civil_pair",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?a",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?b",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?cp",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "comparison",
+                  "position": 3,
+                  "polarity": "positive",
+                  "op": "ne",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "16"
+              }
+            },
+            {
+              "id": "has_any_policy",
+              "stable_id": "has_any_policy~10d7e33165f8",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "34",
+                "column": "6"
+              },
+              "relation": "has_any_policy",
+              "module": "toeslagpartner",
+              "message": "rule.has_any_policy",
+              "variables": [
+                {
+                  "name": "?p",
+                  "type": "string"
+                },
+                {
+                  "name": "?pol",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "has_any_policy",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?p",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "polis__persoon",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?pol",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?p",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "34"
+              }
+            },
+            {
+              "id": "has_basic_policy",
+              "stable_id": "has_basic_policy~fa256192946b",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "32",
+                "column": "6"
+              },
+              "relation": "has_basic_policy",
+              "module": "toeslagpartner",
+              "message": "rule.has_basic_policy",
+              "variables": [
+                {
+                  "name": "?p",
+                  "type": "string"
+                },
+                {
+                  "name": "?pol",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "has_basic_policy",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?p",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "polis__persoon",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?pol",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?p",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "polis__soort",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?pol",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "constant",
+                      "value": "basis",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "32"
+              }
+            },
+            {
+              "id": "has_own_income",
+              "stable_id": "has_own_income~be97fd76d96c",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "38",
+                "column": "6"
+              },
+              "relation": "has_own_income",
+              "module": "toeslagpartner",
+              "message": "rule.has_own_income",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "integer"
+                },
+                {
+                  "name": "?p",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "has_own_income",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?p",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "own_income",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?p",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "integer"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "38"
+              }
+            },
+            {
+              "id": "has_partner_income",
+              "stable_id": "has_partner_income~6e25c5ff7818",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "42",
+                "column": "6"
+              },
+              "relation": "has_partner_income",
+              "module": "toeslagpartner",
+              "message": "rule.has_partner_income",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "integer"
+                },
+                {
+                  "name": "?p",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "has_partner_income",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?p",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "partner_income",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?p",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "integer"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "42"
+              }
+            },
+            {
+              "id": "has_toeslagpartner",
+              "stable_id": "has_toeslagpartner~a1e064faa0a3",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "30",
+                "column": "6"
+              },
+              "relation": "has_toeslagpartner",
+              "module": "toeslagpartner",
+              "message": "rule.has_toeslagpartner",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                },
+                {
+                  "name": "?p",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "has_toeslagpartner",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?p",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "toeslagpartner",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?p",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "30"
+              }
+            },
+            {
+              "id": "living_apart",
+              "stable_id": "living_apart~77bbd2fc239e",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "18",
+                "column": "6"
+              },
+              "relation": "living_apart",
+              "module": "toeslagpartner",
+              "message": "rule.living_apart",
+              "variables": [
+                {
+                  "name": "?a",
+                  "type": "string"
+                },
+                {
+                  "name": "?aa",
+                  "type": "string"
+                },
+                {
+                  "name": "?ab",
+                  "type": "string"
+                },
+                {
+                  "name": "?b",
+                  "type": "string"
+                },
+                {
+                  "name": "?wa",
+                  "type": "string"
+                },
+                {
+                  "name": "?wb",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "living_apart",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?a",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?b",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "adres__persoon",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?aa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "adres__woonadres",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?aa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?wa",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 3,
+                  "polarity": "positive",
+                  "relation": "adres__persoon",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?ab",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 4,
+                  "polarity": "positive",
+                  "relation": "adres__woonadres",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?ab",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?wb",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "comparison",
+                  "position": 5,
+                  "polarity": "positive",
+                  "op": "ne",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?wa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?wb",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "18"
+              }
+            },
+            {
               "id": "may_read_1",
-              "stable_id": "may_read~4e4f6814e7dd",
+              "stable_id": "may_read~6efbe2e84fbf",
               "span": {
                 "file": "rezono/access.rezono",
                 "line": "7",
@@ -447,7 +1791,7 @@
                   },
                   {
                     "kind": "constant",
-                    "value": "household",
+                    "value": "persoon",
                     "type": "string"
                   },
                   {
@@ -462,7 +1806,7 @@
                   "kind": "atom",
                   "position": 1,
                   "polarity": "positive",
-                  "relation": "household",
+                  "relation": "persoon",
                   "terms": [
                     {
                       "kind": "variable",
@@ -479,7 +1823,7 @@
             },
             {
               "id": "may_read_2",
-              "stable_id": "may_read~c5364c21c8cf",
+              "stable_id": "may_read~1cc705793142",
               "span": {
                 "file": "rezono/access.rezono",
                 "line": "9",
@@ -488,23 +1832,28 @@
               "relation": "may_read",
               "module": "access",
               "message": "rule.may_read_2",
-              "variables": [],
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
               "head": {
                 "relation": "may_read",
                 "terms": [
                   {
                     "kind": "constant",
-                    "value": "limited",
+                    "value": "reader",
                     "type": "string"
                   },
                   {
                     "kind": "constant",
-                    "value": "household",
+                    "value": "adres",
                     "type": "string"
                   },
                   {
-                    "kind": "constant",
-                    "value": "ann",
+                    "kind": "variable",
+                    "value": "?x",
                     "type": "string"
                   }
                 ]
@@ -514,11 +1863,11 @@
                   "kind": "atom",
                   "position": 1,
                   "polarity": "positive",
-                  "relation": "household",
+                  "relation": "adres",
                   "terms": [
                     {
-                      "kind": "constant",
-                      "value": "ann",
+                      "kind": "variable",
+                      "value": "?x",
                       "type": "string"
                     }
                   ]
@@ -530,8 +1879,345 @@
               }
             },
             {
-              "id": "may_read_full",
-              "stable_id": "may_read_full~e8dba2cfe565",
+              "id": "may_read_3",
+              "stable_id": "may_read~0351b03a892f",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "11",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_3",
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "ouder",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?x",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "ouder",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?x",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "11"
+              }
+            },
+            {
+              "id": "may_read_4",
+              "stable_id": "may_read~0e773316a628",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "13",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_4",
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "inkomen",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?x",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "inkomen",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?x",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "13"
+              }
+            },
+            {
+              "id": "may_read_5",
+              "stable_id": "may_read~eacf1e39e5a8",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "15",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_5",
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "polis",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?x",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "polis",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?x",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "15"
+              }
+            },
+            {
+              "id": "may_read_6",
+              "stable_id": "may_read~c4ff0a7161f5",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "17",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_6",
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "zorgtoeslag_civil_civil_partner",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?x",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_civil_civil_partner",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?x",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "17"
+              }
+            },
+            {
+              "id": "may_read_7",
+              "stable_id": "may_read~b073adb8d550",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "19",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_7",
+              "variables": [
+                {
+                  "name": "?x",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "zorgtoeslag_tax_tax_partner",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?x",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_tax_tax_partner",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?x",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "19"
+              }
+            },
+            {
+              "id": "may_read_8",
+              "stable_id": "may_read~b8bbc416e528",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "21",
+                "column": "5"
+              },
+              "relation": "may_read",
+              "module": "access",
+              "message": "rule.may_read_8",
+              "variables": [],
+              "head": {
+                "relation": "may_read",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "limited",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "persoon",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "p-ann",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "persoon",
+                  "terms": [
+                    {
+                      "kind": "constant",
+                      "value": "p-ann",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "21"
+              }
+            },
+            {
+              "id": "may_read_full_1",
+              "stable_id": "may_read_full~231e2a3f03ec",
               "span": {
                 "file": "rezono/access.rezono",
                 "line": "8",
@@ -539,7 +2225,7 @@
               },
               "relation": "may_read_full",
               "module": "access",
-              "message": "rule.may_read_full",
+              "message": "rule.may_read_full_1",
               "variables": [
                 {
                   "name": "?anon_1",
@@ -556,7 +2242,7 @@
                   },
                   {
                     "kind": "constant",
-                    "value": "household",
+                    "value": "persoon",
                     "type": "string"
                   }
                 ]
@@ -566,7 +2252,7 @@
                   "kind": "atom",
                   "position": 1,
                   "polarity": "positive",
-                  "relation": "household",
+                  "relation": "persoon",
                   "terms": [
                     {
                       "kind": "variable",
@@ -580,38 +2266,1221 @@
                 "file": "rezono/access.rezono",
                 "line": "8"
               }
+            },
+            {
+              "id": "may_read_full_2",
+              "stable_id": "may_read_full~72a9809b8b71",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "10",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full_2",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "adres",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "adres",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "10"
+              }
+            },
+            {
+              "id": "may_read_full_3",
+              "stable_id": "may_read_full~822942813e13",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "12",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full_3",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "ouder",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "ouder",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "12"
+              }
+            },
+            {
+              "id": "may_read_full_4",
+              "stable_id": "may_read_full~b625eefbcefc",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "14",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full_4",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "inkomen",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "inkomen",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "14"
+              }
+            },
+            {
+              "id": "may_read_full_5",
+              "stable_id": "may_read_full~f9de33f3fde3",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "16",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full_5",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "polis",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "polis",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "16"
+              }
+            },
+            {
+              "id": "may_read_full_6",
+              "stable_id": "may_read_full~99ba5d4401e2",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "18",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full_6",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "zorgtoeslag_civil_civil_partner",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_civil_civil_partner",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "18"
+              }
+            },
+            {
+              "id": "may_read_full_7",
+              "stable_id": "may_read_full~1589f8bce449",
+              "span": {
+                "file": "rezono/access.rezono",
+                "line": "20",
+                "column": "5"
+              },
+              "relation": "may_read_full",
+              "module": "access",
+              "message": "rule.may_read_full_7",
+              "variables": [
+                {
+                  "name": "?anon_1",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "may_read_full",
+                "terms": [
+                  {
+                    "kind": "constant",
+                    "value": "reader",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "constant",
+                    "value": "zorgtoeslag_tax_tax_partner",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_tax_tax_partner",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?anon_1",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/access.rezono",
+                "line": "20"
+              }
+            },
+            {
+              "id": "own_income",
+              "stable_id": "own_income~5b2c74699be4",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "36",
+                "column": "6"
+              },
+              "relation": "own_income",
+              "module": "toeslagpartner",
+              "message": "rule.own_income",
+              "variables": [
+                {
+                  "name": "?bedrag",
+                  "type": "integer"
+                },
+                {
+                  "name": "?inc",
+                  "type": "string"
+                },
+                {
+                  "name": "?p",
+                  "type": "string"
+                },
+                {
+                  "name": "?raw",
+                  "type": "integer"
+                }
+              ],
+              "head": {
+                "relation": "own_income",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?p",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?bedrag",
+                    "type": "integer"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "inkomen__persoon",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?inc",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?p",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "inkomen__bedrag",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?inc",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?raw",
+                      "type": "integer"
+                    }
+                  ]
+                },
+                {
+                  "kind": "assignment",
+                  "position": 3,
+                  "polarity": "positive",
+                  "op": "add",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?raw",
+                      "type": "integer"
+                    },
+                    {
+                      "kind": "constant",
+                      "value": "0",
+                      "type": "integer"
+                    }
+                  ],
+                  "result": {
+                    "kind": "variable",
+                    "value": "?bedrag",
+                    "type": "integer"
+                  }
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "36"
+              }
+            },
+            {
+              "id": "partner_income",
+              "stable_id": "partner_income~e488b8e34b46",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "40",
+                "column": "6"
+              },
+              "relation": "partner_income",
+              "module": "toeslagpartner",
+              "message": "rule.partner_income",
+              "variables": [
+                {
+                  "name": "?bedrag",
+                  "type": "integer"
+                },
+                {
+                  "name": "?p",
+                  "type": "string"
+                },
+                {
+                  "name": "?q",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "partner_income",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?p",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?bedrag",
+                    "type": "integer"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "toeslagpartner",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?p",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?q",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "own_income",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?q",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?bedrag",
+                      "type": "integer"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "40"
+              }
+            },
+            {
+              "id": "same_address",
+              "stable_id": "same_address~029af08edc15",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "20",
+                "column": "6"
+              },
+              "relation": "same_address",
+              "module": "toeslagpartner",
+              "message": "rule.same_address",
+              "variables": [
+                {
+                  "name": "?a",
+                  "type": "string"
+                },
+                {
+                  "name": "?aa",
+                  "type": "string"
+                },
+                {
+                  "name": "?ab",
+                  "type": "string"
+                },
+                {
+                  "name": "?b",
+                  "type": "string"
+                },
+                {
+                  "name": "?wa",
+                  "type": "string"
+                },
+                {
+                  "name": "?wb",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "same_address",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?a",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?b",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "adres__persoon",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?aa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "adres__woonadres",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?aa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?wa",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 3,
+                  "polarity": "positive",
+                  "relation": "adres__persoon",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?ab",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 4,
+                  "polarity": "positive",
+                  "relation": "adres__woonadres",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?ab",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?wb",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "comparison",
+                  "position": 5,
+                  "polarity": "positive",
+                  "op": "eq",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?wa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?wb",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "comparison",
+                  "position": 6,
+                  "polarity": "positive",
+                  "op": "ne",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "20"
+              }
+            },
+            {
+              "id": "separated_union",
+              "stable_id": "separated_union~64c918261c14",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "22",
+                "column": "6"
+              },
+              "relation": "separated_union",
+              "module": "toeslagpartner",
+              "message": "rule.separated_union",
+              "variables": [
+                {
+                  "name": "?a",
+                  "type": "string"
+                },
+                {
+                  "name": "?b",
+                  "type": "string"
+                },
+                {
+                  "name": "?cp",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "separated_union",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?cp",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "constant",
+                      "value": "true",
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "civil_pair",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 3,
+                  "polarity": "positive",
+                  "relation": "living_apart",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "22"
+              }
+            },
+            {
+              "id": "toeslagpartner_1",
+              "stable_id": "toeslagpartner~cf4449d1d8f1",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "24",
+                "column": "6"
+              },
+              "relation": "toeslagpartner",
+              "module": "toeslagpartner",
+              "message": "rule.toeslagpartner_1",
+              "source": "awr#art-5a",
+              "variables": [
+                {
+                  "name": "?a",
+                  "type": "string"
+                },
+                {
+                  "name": "?b",
+                  "type": "string"
+                },
+                {
+                  "name": "?cp",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "toeslagpartner",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?a",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?b",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "civil_pair",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "negative",
+                  "relation": "separated_union",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?cp",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "24"
+              }
+            },
+            {
+              "id": "toeslagpartner_2",
+              "stable_id": "toeslagpartner~b4c6072a0060",
+              "span": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "27",
+                "column": "6"
+              },
+              "relation": "toeslagpartner",
+              "module": "toeslagpartner",
+              "message": "rule.toeslagpartner_2",
+              "source": "awir#art-3",
+              "variables": [
+                {
+                  "name": "?a",
+                  "type": "string"
+                },
+                {
+                  "name": "?b",
+                  "type": "string"
+                },
+                {
+                  "name": "?k",
+                  "type": "string"
+                },
+                {
+                  "name": "?oa",
+                  "type": "string"
+                },
+                {
+                  "name": "?ob",
+                  "type": "string"
+                }
+              ],
+              "head": {
+                "relation": "toeslagpartner",
+                "terms": [
+                  {
+                    "kind": "variable",
+                    "value": "?a",
+                    "type": "string"
+                  },
+                  {
+                    "kind": "variable",
+                    "value": "?b",
+                    "type": "string"
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "kind": "atom",
+                  "position": 1,
+                  "polarity": "positive",
+                  "relation": "same_address",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 2,
+                  "polarity": "positive",
+                  "relation": "ouder__ouder",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?oa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?a",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 3,
+                  "polarity": "positive",
+                  "relation": "ouder__kind",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?oa",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?k",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 4,
+                  "polarity": "positive",
+                  "relation": "ouder__ouder",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?ob",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?b",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "kind": "atom",
+                  "position": 5,
+                  "polarity": "positive",
+                  "relation": "ouder__kind",
+                  "terms": [
+                    {
+                      "kind": "variable",
+                      "value": "?ob",
+                      "type": "string"
+                    },
+                    {
+                      "kind": "variable",
+                      "value": "?k",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "origin": {
+                "file": "rezono/toeslagpartner.rezono",
+                "line": "27"
+              }
             }
           ],
           "labels": [
             {
-              "element": "household",
+              "element": "adres",
               "lang": "en",
-              "text": "household"
+              "text": "residential address"
             },
             {
-              "element": "household.insured",
+              "element": "adres.persoon",
               "lang": "en",
-              "text": "health insurance cover"
+              "text": "person"
             },
             {
-              "element": "household.joint_income",
+              "element": "adres.woonadres",
               "lang": "en",
-              "text": "joint income"
+              "text": "residential address"
             },
             {
-              "element": "household.partner",
+              "element": "civil_pair",
               "lang": "en",
-              "text": "has toeslagpartner"
+              "text": "civil partner pair"
+            },
+            {
+              "element": "has_any_policy",
+              "lang": "en",
+              "text": "has reported insurance policy"
+            },
+            {
+              "element": "has_basic_policy",
+              "lang": "en",
+              "text": "has basic health insurance policy"
+            },
+            {
+              "element": "has_own_income",
+              "lang": "en",
+              "text": "has reported own income"
+            },
+            {
+              "element": "has_partner_income",
+              "lang": "en",
+              "text": "has reported partner income"
+            },
+            {
+              "element": "has_toeslagpartner",
+              "lang": "en",
+              "text": "has benefit partner"
+            },
+            {
+              "element": "inkomen",
+              "lang": "en",
+              "text": "taxable income"
+            },
+            {
+              "element": "inkomen.bedrag",
+              "lang": "en",
+              "text": "taxable income amount"
+            },
+            {
+              "element": "inkomen.persoon",
+              "lang": "en",
+              "text": "person"
+            },
+            {
+              "element": "living_apart",
+              "lang": "en",
+              "text": "living at different addresses"
+            },
+            {
+              "element": "ouder",
+              "lang": "en",
+              "text": "legal parent"
+            },
+            {
+              "element": "ouder.kind",
+              "lang": "en",
+              "text": "child"
+            },
+            {
+              "element": "ouder.ouder",
+              "lang": "en",
+              "text": "parent"
+            },
+            {
+              "element": "own_income",
+              "lang": "en",
+              "text": "own taxable income"
+            },
+            {
+              "element": "partner_income",
+              "lang": "en",
+              "text": "partner taxable income"
+            },
+            {
+              "element": "persoon",
+              "lang": "en",
+              "text": "person"
+            },
+            {
+              "element": "polis",
+              "lang": "en",
+              "text": "health insurance policy"
+            },
+            {
+              "element": "polis.persoon",
+              "lang": "en",
+              "text": "insured person"
+            },
+            {
+              "element": "polis.soort",
+              "lang": "en",
+              "text": "policy kind"
+            },
+            {
+              "element": "polis_soort",
+              "lang": "en",
+              "text": "policy kind"
+            },
+            {
+              "element": "polis_soort.aanvullend",
+              "lang": "en",
+              "text": "supplementary health insurance"
+            },
+            {
+              "element": "polis_soort.basis",
+              "lang": "en",
+              "text": "basic health insurance"
+            },
+            {
+              "element": "same_address",
+              "lang": "en",
+              "text": "registered at the same address"
+            },
+            {
+              "element": "separated_union",
+              "lang": "en",
+              "text": "separated civil union with divorce petition"
+            },
+            {
+              "element": "toeslagpartner",
+              "lang": "en",
+              "text": "benefit partner"
+            },
+            {
+              "element": "verbintenis_soort",
+              "lang": "en",
+              "text": "union type"
+            },
+            {
+              "element": "verbintenis_soort.geregistreerd_partnerschap",
+              "lang": "en",
+              "text": "registered partnership"
+            },
+            {
+              "element": "verbintenis_soort.huwelijk",
+              "lang": "en",
+              "text": "marriage"
+            },
+            {
+              "element": "zorgtoeslag_civil_civil_partner",
+              "lang": "en",
+              "text": "civil partner"
+            },
+            {
+              "element": "zorgtoeslag_civil_civil_partner.echtscheidingsverzoek",
+              "lang": "en",
+              "text": "divorce petition filed"
+            },
+            {
+              "element": "zorgtoeslag_civil_civil_partner.persoon_a",
+              "lang": "en",
+              "text": "first partner"
+            },
+            {
+              "element": "zorgtoeslag_civil_civil_partner.persoon_b",
+              "lang": "en",
+              "text": "second partner"
+            },
+            {
+              "element": "zorgtoeslag_civil_civil_partner.soort",
+              "lang": "en",
+              "text": "union kind"
+            },
+            {
+              "element": "zorgtoeslag_tax_tax_partner",
+              "lang": "en",
+              "text": "fiscal partner"
+            },
+            {
+              "element": "zorgtoeslag_tax_tax_partner.grond",
+              "lang": "en",
+              "text": "fiscal partnership ground"
+            },
+            {
+              "element": "zorgtoeslag_tax_tax_partner.persoon_a",
+              "lang": "en",
+              "text": "first fiscal partner"
+            },
+            {
+              "element": "zorgtoeslag_tax_tax_partner.persoon_b",
+              "lang": "en",
+              "text": "second fiscal partner"
             }
           ],
           "messages": [
             {
               "lang": "en",
-              "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\narrow.total = {{Every {$kind} has exactly one {$arrow}.}}\narrow.partial = {{Every {$kind} has at most one {$arrow}.}}\nattribute.total = {{Every {$kind} has exactly one {$attribute}.}}\nattribute.partial = {{Every {$kind} has at most one {$attribute}.}}\nis_a = {{Every {$kind} is a {$parent}.}}\nunique_key = {{{$key} belongs to at most one {$kind}.}}\npath_equation = {{For every {$kind}: {$equation}.}}\n"
+              "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nsign.engine_disagreement = engines disagree\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\narrow.total = {{Every {$kind} has exactly one {$arrow}.}}\narrow.partial = {{Every {$kind} has at most one {$arrow}.}}\nattribute.total = {{Every {$kind} has exactly one {$attribute}.}}\nattribute.partial = {{Every {$kind} has at most one {$attribute}.}}\nis_a = {{Every {$kind} is a {$parent}.}}\nunique_key = {{{$key} belongs to at most one {$kind}.}}\npath_equation = {{For every {$kind}: {$equation}.}}\nrule.toeslagpartner_1 = {{{$a} and {$b} are benefit partners by civil union.}}\nrule.toeslagpartner_2 = {{{$a} and {$b} are benefit partners by shared address and joint child.}}\n"
             },
             {
               "lang": "nl",
-              "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\n"
+              "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nsign.engine_disagreement = engines verschillen\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\n"
             }
           ],
           "home": {
@@ -627,18 +3496,39 @@
           "epoch": 4,
           "knowledge_time": "2026-05-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
-          "manifest_sha256": "7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
+          "definition_sha256": "87e9e975eab55afd2e4a9b4357212a73912cb031bcba98bc30b3c317bc63a459",
+          "manifest_sha256": "c76dc998ae2174c269588823b5f26435c44a04a8735ba02249b58f9663678ee8",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
+              "sha256": "bb01a769b4f59f8a68ea8c1e7b07e74434be8be0af262017ee6a6bbc7594be52"
             }
           ],
           "snapshots": [
+            {
+              "relation": "adres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__woonadres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
             {
               "relation": "calc__allowance",
               "role": "checker",
@@ -682,7 +3572,42 @@
               "format": "json"
             },
             {
+              "relation": "calc__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
               "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__own_income_cents",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner_income_cents",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -724,28 +3649,70 @@
               "format": "json"
             },
             {
-              "relation": "household",
+              "relation": "civil_pair",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__insured",
+              "relation": "has_any_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__joint_income",
+              "relation": "has_basic_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__partner",
+              "relation": "has_own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__bedrag",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "living_apart",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -760,6 +3727,167 @@
             },
             {
               "relation": "may_read_full",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__kind",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "same_address",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "separated_union",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "verbintenis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__grond",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_b",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -775,18 +3903,39 @@
           "epoch": 1,
           "knowledge_time": "2025-11-15T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
-          "manifest_sha256": "7135907bb439a1b0dccac947b26e7535ee3f1d4cde3ed888018ec415c7eb3e41",
+          "definition_sha256": "87e9e975eab55afd2e4a9b4357212a73912cb031bcba98bc30b3c317bc63a459",
+          "manifest_sha256": "da5974f7b81a5f89b7d0759bddd9017f2f6e9fadac47d11639c9676c502d579f",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
+              "sha256": "bb01a769b4f59f8a68ea8c1e7b07e74434be8be0af262017ee6a6bbc7594be52"
             }
           ],
           "snapshots": [
+            {
+              "relation": "adres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__woonadres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
             {
               "relation": "calc__allowance",
               "role": "checker",
@@ -830,7 +3979,42 @@
               "format": "json"
             },
             {
+              "relation": "calc__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
               "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__own_income_cents",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner_income_cents",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -872,28 +4056,70 @@
               "format": "json"
             },
             {
-              "relation": "household",
+              "relation": "civil_pair",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__insured",
+              "relation": "has_any_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__joint_income",
+              "relation": "has_basic_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__partner",
+              "relation": "has_own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__bedrag",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "living_apart",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -908,6 +4134,167 @@
             },
             {
               "relation": "may_read_full",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__kind",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "same_address",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "separated_union",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "verbintenis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__grond",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_b",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -923,18 +4310,39 @@
           "epoch": 2,
           "knowledge_time": "2025-12-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
-          "manifest_sha256": "4ab3e38e7721df6b6127505b989e45b6fe336ed4629b6b5eef1483d38ae34d49",
+          "definition_sha256": "87e9e975eab55afd2e4a9b4357212a73912cb031bcba98bc30b3c317bc63a459",
+          "manifest_sha256": "9f3afd6e8cf2c7ad56e05ba5e5152af4bfdabb949c943dac1c1554bc901f01b6",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
+              "sha256": "bb01a769b4f59f8a68ea8c1e7b07e74434be8be0af262017ee6a6bbc7594be52"
             }
           ],
           "snapshots": [
+            {
+              "relation": "adres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__woonadres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
             {
               "relation": "calc__allowance",
               "role": "checker",
@@ -978,7 +4386,42 @@
               "format": "json"
             },
             {
+              "relation": "calc__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
               "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__own_income_cents",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner_income_cents",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1020,28 +4463,70 @@
               "format": "json"
             },
             {
-              "relation": "household",
+              "relation": "civil_pair",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__insured",
+              "relation": "has_any_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__joint_income",
+              "relation": "has_basic_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__partner",
+              "relation": "has_own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__bedrag",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "living_apart",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1056,6 +4541,167 @@
             },
             {
               "relation": "may_read_full",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__kind",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "same_address",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "separated_union",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "verbintenis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__grond",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_b",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1071,18 +4717,39 @@
           "epoch": 3,
           "knowledge_time": "2026-02-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
-          "manifest_sha256": "7a868055d80f41c90ea717cad306b2a0daaf93dcadf4c3447f9c5736ccf6ea30",
+          "definition_sha256": "87e9e975eab55afd2e4a9b4357212a73912cb031bcba98bc30b3c317bc63a459",
+          "manifest_sha256": "67223bb048eb80fd63e4f4495535da495ddedfb1aa3f6f6ef697d1237fc67366",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
+              "sha256": "bb01a769b4f59f8a68ea8c1e7b07e74434be8be0af262017ee6a6bbc7594be52"
             }
           ],
           "snapshots": [
+            {
+              "relation": "adres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__woonadres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
             {
               "relation": "calc__allowance",
               "role": "checker",
@@ -1126,7 +4793,42 @@
               "format": "json"
             },
             {
+              "relation": "calc__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
               "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__own_income_cents",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner_income_cents",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1168,28 +4870,70 @@
               "format": "json"
             },
             {
-              "relation": "household",
+              "relation": "civil_pair",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__insured",
+              "relation": "has_any_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__joint_income",
+              "relation": "has_basic_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__partner",
+              "relation": "has_own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__bedrag",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "living_apart",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1204,6 +4948,167 @@
             },
             {
               "relation": "may_read_full",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__kind",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "same_address",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "separated_union",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "verbintenis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__grond",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_b",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1219,18 +5124,39 @@
           "epoch": 4,
           "knowledge_time": "2026-05-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
-          "manifest_sha256": "7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
+          "definition_sha256": "87e9e975eab55afd2e4a9b4357212a73912cb031bcba98bc30b3c317bc63a459",
+          "manifest_sha256": "c76dc998ae2174c269588823b5f26435c44a04a8735ba02249b58f9663678ee8",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
+              "sha256": "bb01a769b4f59f8a68ea8c1e7b07e74434be8be0af262017ee6a6bbc7594be52"
             }
           ],
           "snapshots": [
+            {
+              "relation": "adres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "adres__woonadres",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
             {
               "relation": "calc__allowance",
               "role": "checker",
@@ -1274,7 +5200,42 @@
               "format": "json"
             },
             {
+              "relation": "calc__insured",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__joint_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
               "relation": "calc__norm_premium",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__own_income_cents",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner_income_cents",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1316,28 +5277,70 @@
               "format": "json"
             },
             {
-              "relation": "household",
+              "relation": "civil_pair",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__insured",
+              "relation": "has_any_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__joint_income",
+              "relation": "has_basic_policy",
               "role": "checker",
               "complete": true,
               "full": true,
               "format": "json"
             },
             {
-              "relation": "household__partner",
+              "relation": "has_own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "has_toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__bedrag",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "living_apart",
               "role": "checker",
               "complete": true,
               "full": true,
@@ -1356,6 +5359,167 @@
               "complete": true,
               "full": true,
               "format": "json"
+            },
+            {
+              "relation": "ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__kind",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__ouder",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "own_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "partner_income",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__persoon",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "polis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "same_address",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "separated_union",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "toeslagpartner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "verbintenis_soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__soort",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__grond",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_a",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_b",
+              "role": "checker",
+              "complete": true,
+              "full": true,
+              "format": "json"
             }
           ]
         }
@@ -1366,74 +5530,130 @@
           "rows": [
             {
               "key": [
-                "ann",
+                "p-ann",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "bob",
+                "p-bea",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "dex",
+                "p-bob",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "eve",
+                "p-dex",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "fay",
+                "p-eve",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "gus",
+                "p-fay",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "hal",
+                "p-gus",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "ivy",
+                "p-hal",
                 "",
                 "unknown",
-                "fact household.insured is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "kim",
+                "p-ivy",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-kai",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-kim",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-leo",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-mia",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-noa",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-pip",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-sam",
+                "",
+                "unknown",
+                "no_version_applies"
               ]
             }
           ]
@@ -1445,7 +5665,7 @@
           "rows": [
             {
               "key": [
-                "ann",
+                "p-ann",
                 "13500",
                 "known",
                 ""
@@ -1453,7 +5673,15 @@
             },
             {
               "key": [
-                "bob",
+                "p-bea",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-bob",
                 "10500",
                 "known",
                 ""
@@ -1461,7 +5689,7 @@
             },
             {
               "key": [
-                "dex",
+                "p-dex",
                 "0",
                 "known",
                 ""
@@ -1469,7 +5697,7 @@
             },
             {
               "key": [
-                "eve",
+                "p-eve",
                 "0",
                 "known",
                 ""
@@ -1477,7 +5705,7 @@
             },
             {
               "key": [
-                "fay",
+                "p-fay",
                 "0",
                 "known",
                 ""
@@ -1485,34 +5713,82 @@
             },
             {
               "key": [
-                "gus",
+                "p-gus",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "hal",
+                "p-hal",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "ivy",
+                "p-ivy",
                 "",
                 "unknown",
-                "fact household.insured is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "kim",
+                "p-kai",
                 "0",
                 "known",
                 ""
+              ]
+            },
+            {
+              "key": [
+                "p-kim",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-leo",
+                "13500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-mia",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-noa",
+                "11600",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-pip",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-sam",
+                "",
+                "unknown",
+                "no_version_applies"
               ]
             }
           ]
@@ -1524,7 +5800,7 @@
           "rows": [
             {
               "key": [
-                "ann",
+                "p-ann",
                 "13500",
                 "known",
                 ""
@@ -1532,7 +5808,15 @@
             },
             {
               "key": [
-                "bob",
+                "p-bea",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-bob",
                 "10500",
                 "known",
                 ""
@@ -1540,7 +5824,7 @@
             },
             {
               "key": [
-                "dex",
+                "p-dex",
                 "0",
                 "known",
                 ""
@@ -1548,7 +5832,7 @@
             },
             {
               "key": [
-                "eve",
+                "p-eve",
                 "0",
                 "known",
                 ""
@@ -1556,7 +5840,7 @@
             },
             {
               "key": [
-                "fay",
+                "p-fay",
                 "0",
                 "known",
                 ""
@@ -1564,7 +5848,7 @@
             },
             {
               "key": [
-                "gus",
+                "p-gus",
                 "13500",
                 "known",
                 ""
@@ -1572,26 +5856,74 @@
             },
             {
               "key": [
-                "hal",
+                "p-hal",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "ivy",
+                "p-ivy",
                 "",
                 "unknown",
-                "fact household.insured is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "kim",
+                "p-kai",
                 "0",
                 "known",
                 ""
+              ]
+            },
+            {
+              "key": [
+                "p-kim",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-leo",
+                "13500",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-mia",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-noa",
+                "11600",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-pip",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-sam",
+                "",
+                "unknown",
+                "no_version_applies"
               ]
             }
           ]
@@ -1603,7 +5935,7 @@
           "rows": [
             {
               "key": [
-                "ann",
+                "p-ann",
                 "13600",
                 "known",
                 ""
@@ -1611,7 +5943,15 @@
             },
             {
               "key": [
-                "bob",
+                "p-bea",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-bob",
                 "10700",
                 "known",
                 ""
@@ -1619,7 +5959,7 @@
             },
             {
               "key": [
-                "dex",
+                "p-dex",
                 "0",
                 "known",
                 ""
@@ -1627,7 +5967,7 @@
             },
             {
               "key": [
-                "eve",
+                "p-eve",
                 "0",
                 "known",
                 ""
@@ -1635,7 +5975,7 @@
             },
             {
               "key": [
-                "fay",
+                "p-fay",
                 "0",
                 "known",
                 ""
@@ -1643,7 +5983,7 @@
             },
             {
               "key": [
-                "gus",
+                "p-gus",
                 "8500",
                 "known",
                 ""
@@ -1651,24 +5991,207 @@
             },
             {
               "key": [
-                "hal",
+                "p-hal",
                 "",
                 "unknown",
-                "fact household.joint_income is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "ivy",
+                "p-ivy",
                 "",
                 "unknown",
-                "fact household.insured is missing"
+                "no_version_applies"
               ]
             },
             {
               "key": [
-                "kim",
+                "p-kai",
                 "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-kim",
+                "0",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-leo",
+                "13600",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-mia",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-noa",
+                "11800",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-pip",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            },
+            {
+              "key": [
+                "p-sam",
+                "",
+                "unknown",
+                "no_version_applies"
+              ]
+            }
+          ]
+        }
+      },
+      "/zorgtoeslag-slice/m-4/rows/calc__standard_premium": {
+        "status": 200,
+        "body": {
+          "rows": [
+            {
+              "key": [
+                "p-ann",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-bea",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-bob",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-dex",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-eve",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-fay",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-gus",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-hal",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-ivy",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-kai",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-kim",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-leo",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-mia",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-noa",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-pip",
+                "219000",
+                "known",
+                ""
+              ]
+            },
+            {
+              "key": [
+                "p-sam",
+                "219000",
                 "known",
                 ""
               ]
@@ -1676,108 +6199,88 @@
           ]
         }
       },
-      "/zorgtoeslag-slice/m-4/rows/household": {
+      "/zorgtoeslag-slice/m-4/rows/persoon": {
         "status": 200,
         "body": {
           "rows": [
             {
               "key": [
-                "ann"
+                "p-ann"
               ]
             },
             {
               "key": [
-                "bob"
+                "p-bea"
               ]
             },
             {
               "key": [
-                "dex"
+                "p-bob"
               ]
             },
             {
               "key": [
-                "eve"
+                "p-dex"
               ]
             },
             {
               "key": [
-                "fay"
+                "p-eve"
               ]
             },
             {
               "key": [
-                "gus"
+                "p-fay"
               ]
             },
             {
               "key": [
-                "hal"
+                "p-gus"
               ]
             },
             {
               "key": [
-                "ivy"
+                "p-hal"
               ]
             },
             {
               "key": [
-                "kim"
-              ]
-            }
-          ]
-        }
-      },
-      "/zorgtoeslag-slice/m-4/rows/household__joint_income": {
-        "status": 200,
-        "body": {
-          "rows": [
-            {
-              "key": [
-                "ann",
-                "2500000"
+                "p-ivy"
               ]
             },
             {
               "key": [
-                "bob",
-                "4300000"
+                "p-kai"
               ]
             },
             {
               "key": [
-                "dex",
-                "400000"
+                "p-kim"
               ]
             },
             {
               "key": [
-                "eve",
-                "2000000"
+                "p-leo"
               ]
             },
             {
               "key": [
-                "fay",
-                "4500000"
+                "p-mia"
               ]
             },
             {
               "key": [
-                "gus",
-                "3400000"
+                "p-noa"
               ]
             },
             {
               "key": [
-                "ivy",
-                "2000000"
+                "p-pip"
               ]
             },
             {
               "key": [
-                "kim",
-                "5100000"
+                "p-sam"
               ]
             }
           ]
@@ -1791,68 +6294,23 @@
           "pack": {
             "id": "zorgtoeslag-slice"
           },
+          "imports": [
+            {
+              "name": "zorgtoeslag-person",
+              "version": "0.1.0",
+              "sha256": "bd628d062c0d146c3cbdb2e84a50eb720527e5388870e487591fa44c3d5ce4fd"
+            }
+          ],
           "kinds": [
             {
-              "id": "household",
-              "class": "Household",
-              "world": "open"
+              "id": "persoon",
+              "class": "Persoon",
+              "world": "open",
+              "module": "zorgtoeslag-person:person",
+              "pack": "zorgtoeslag-person"
             }
           ],
-          "attributes": [
-            {
-              "id": "household.insured",
-              "kind": "household",
-              "name": "insured",
-              "table": "household__insured",
-              "type": "boolean",
-              "schema_type": "boolean",
-              "patterns": [],
-              "required": true,
-              "multivalued": false,
-              "semantic": {
-                "case": "scalar",
-                "base": "boolean",
-                "range": "boolean"
-              },
-              "world": "open"
-            },
-            {
-              "id": "household.joint_income",
-              "kind": "household",
-              "name": "joint_income",
-              "table": "household__joint_income",
-              "type": "integer",
-              "schema_type": "Cents",
-              "patterns": [],
-              "required": true,
-              "multivalued": false,
-              "currency": "EUR",
-              "semantic": {
-                "case": "money",
-                "base": "integer",
-                "range": "Cents",
-                "currency": "EUR"
-              },
-              "world": "open"
-            },
-            {
-              "id": "household.partner",
-              "kind": "household",
-              "name": "partner",
-              "table": "household__partner",
-              "type": "boolean",
-              "schema_type": "boolean",
-              "patterns": [],
-              "required": true,
-              "multivalued": false,
-              "semantic": {
-                "case": "scalar",
-                "base": "boolean",
-                "range": "boolean"
-              },
-              "world": "open"
-            }
-          ],
+          "attributes": [],
           "arrows": [],
           "relations": [
             {
@@ -2012,7 +6470,7 @@
           "rules": [
             {
               "id": "may_read_1",
-              "stable_id": "may_read~4e4f6814e7dd",
+              "stable_id": "may_read~6efbe2e84fbf",
               "span": {
                 "file": "rezono/access.rezono",
                 "line": "7",
@@ -2037,7 +6495,7 @@
                   },
                   {
                     "kind": "constant",
-                    "value": "household",
+                    "value": "persoon",
                     "type": "string"
                   },
                   {
@@ -2052,7 +6510,7 @@
                   "kind": "atom",
                   "position": 1,
                   "polarity": "positive",
-                  "relation": "household",
+                  "relation": "persoon",
                   "terms": [
                     {
                       "kind": "variable",
@@ -2068,16 +6526,16 @@
               }
             },
             {
-              "id": "may_read_2",
-              "stable_id": "may_read~c5364c21c8cf",
+              "id": "may_read_8",
+              "stable_id": "may_read~b8bbc416e528",
               "span": {
                 "file": "rezono/access.rezono",
-                "line": "9",
+                "line": "21",
                 "column": "5"
               },
               "relation": "may_read",
               "module": "access",
-              "message": "rule.may_read_2",
+              "message": "rule.may_read_8",
               "variables": [],
               "head": {
                 "relation": "may_read",
@@ -2089,12 +6547,12 @@
                   },
                   {
                     "kind": "constant",
-                    "value": "household",
+                    "value": "persoon",
                     "type": "string"
                   },
                   {
                     "kind": "constant",
-                    "value": "ann",
+                    "value": "p-ann",
                     "type": "string"
                   }
                 ]
@@ -2104,11 +6562,11 @@
                   "kind": "atom",
                   "position": 1,
                   "polarity": "positive",
-                  "relation": "household",
+                  "relation": "persoon",
                   "terms": [
                     {
                       "kind": "constant",
-                      "value": "ann",
+                      "value": "p-ann",
                       "type": "string"
                     }
                   ]
@@ -2116,12 +6574,12 @@
               ],
               "origin": {
                 "file": "rezono/access.rezono",
-                "line": "9"
+                "line": "21"
               }
             },
             {
-              "id": "may_read_full",
-              "stable_id": "may_read_full~e8dba2cfe565",
+              "id": "may_read_full_1",
+              "stable_id": "may_read_full~231e2a3f03ec",
               "span": {
                 "file": "rezono/access.rezono",
                 "line": "8",
@@ -2129,7 +6587,7 @@
               },
               "relation": "may_read_full",
               "module": "access",
-              "message": "rule.may_read_full",
+              "message": "rule.may_read_full_1",
               "variables": [
                 {
                   "name": "?anon_1",
@@ -2146,7 +6604,7 @@
                   },
                   {
                     "kind": "constant",
-                    "value": "household",
+                    "value": "persoon",
                     "type": "string"
                   }
                 ]
@@ -2156,7 +6614,7 @@
                   "kind": "atom",
                   "position": 1,
                   "polarity": "positive",
-                  "relation": "household",
+                  "relation": "persoon",
                   "terms": [
                     {
                       "kind": "variable",
@@ -2174,34 +6632,19 @@
           ],
           "labels": [
             {
-              "element": "household",
+              "element": "persoon",
               "lang": "en",
-              "text": "household"
-            },
-            {
-              "element": "household.insured",
-              "lang": "en",
-              "text": "health insurance cover"
-            },
-            {
-              "element": "household.joint_income",
-              "lang": "en",
-              "text": "joint income"
-            },
-            {
-              "element": "household.partner",
-              "lang": "en",
-              "text": "has toeslagpartner"
+              "text": "person"
             }
           ],
           "messages": [
             {
               "lang": "en",
-              "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\narrow.total = {{Every {$kind} has exactly one {$arrow}.}}\narrow.partial = {{Every {$kind} has at most one {$arrow}.}}\nattribute.total = {{Every {$kind} has exactly one {$attribute}.}}\nattribute.partial = {{Every {$kind} has at most one {$attribute}.}}\nis_a = {{Every {$kind} is a {$parent}.}}\nunique_key = {{{$key} belongs to at most one {$kind}.}}\npath_equation = {{For every {$kind}: {$equation}.}}\n"
+              "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nsign.engine_disagreement = engines disagree\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\narrow.total = {{Every {$kind} has exactly one {$arrow}.}}\narrow.partial = {{Every {$kind} has at most one {$arrow}.}}\nattribute.total = {{Every {$kind} has exactly one {$attribute}.}}\nattribute.partial = {{Every {$kind} has at most one {$attribute}.}}\nis_a = {{Every {$kind} is a {$parent}.}}\nunique_key = {{{$key} belongs to at most one {$kind}.}}\npath_equation = {{For every {$kind}: {$equation}.}}\n"
             },
             {
               "lang": "nl",
-              "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\n"
+              "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nsign.engine_disagreement = engines verschillen\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\n"
             }
           ],
           "home": {
@@ -2217,18 +6660,39 @@
           "epoch": 4,
           "knowledge_time": "2026-05-01T00:00:00Z",
           "access_semantics": 2,
-          "definition_sha256": "4f131e25f254e96dfa0ce16669bc61a303450d309ee7c4e609342af84f90b7e1",
-          "manifest_sha256": "7066cf6e066e9713e383077d2e43f738a5bf62c2f420e730302962d22e78aa01",
+          "definition_sha256": "87e9e975eab55afd2e4a9b4357212a73912cb031bcba98bc30b3c317bc63a459",
+          "manifest_sha256": "c76dc998ae2174c269588823b5f26435c44a04a8735ba02249b58f9663678ee8",
           "witness_check": "green",
           "trust_tier": "sealed",
           "may_propose": false,
           "compiled": [
             {
               "file": "bundle/schema-bundle.json",
-              "sha256": "fd82edcbeadb90744e1c780f132c4db3096d8395608e76aeb00a3c3c40e16418"
+              "sha256": "bb01a769b4f59f8a68ea8c1e7b07e74434be8be0af262017ee6a6bbc7594be52"
             }
           ],
           "snapshots": [
+            {
+              "relation": "adres",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "adres__persoon",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "adres__woonadres",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
             {
               "relation": "calc__allowance",
               "role": "limited",
@@ -2272,7 +6736,42 @@
               "format": "json"
             },
             {
+              "relation": "calc__insured",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__joint_income",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
               "relation": "calc__norm_premium",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__own_income_cents",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "calc__partner_income_cents",
               "role": "limited",
               "complete": false,
               "full": false,
@@ -2314,28 +6813,70 @@
               "format": "json"
             },
             {
-              "relation": "household",
+              "relation": "civil_pair",
               "role": "limited",
               "complete": false,
               "full": false,
               "format": "json"
             },
             {
-              "relation": "household__insured",
+              "relation": "has_any_policy",
               "role": "limited",
               "complete": false,
               "full": false,
               "format": "json"
             },
             {
-              "relation": "household__joint_income",
+              "relation": "has_basic_policy",
               "role": "limited",
               "complete": false,
               "full": false,
               "format": "json"
             },
             {
-              "relation": "household__partner",
+              "relation": "has_own_income",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "has_partner_income",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "has_toeslagpartner",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__bedrag",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "inkomen__persoon",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "living_apart",
               "role": "limited",
               "complete": false,
               "full": false,
@@ -2354,6 +6895,167 @@
               "complete": false,
               "full": false,
               "format": "json"
+            },
+            {
+              "relation": "ouder",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__kind",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "ouder__ouder",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "own_income",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "partner_income",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "persoon",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "polis",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "polis__persoon",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "polis__soort",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "polis_soort",
+              "role": "limited",
+              "complete": false,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "same_address",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "separated_union",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "toeslagpartner",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "verbintenis_soort",
+              "role": "limited",
+              "complete": false,
+              "full": true,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__echtscheidingsverzoek",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_a",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__persoon_b",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_civil_civil_partner__soort",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__grond",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_a",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
+            },
+            {
+              "relation": "zorgtoeslag_tax_tax_partner__persoon_b",
+              "role": "limited",
+              "complete": false,
+              "full": false,
+              "format": "json"
             }
           ]
         }
@@ -2364,26 +7066,28 @@
           "rows": []
         }
       },
-      "/zorgtoeslag-slice/m-4/rows/household": {
+      "/zorgtoeslag-slice/m-4/rows/calc__standard_premium": {
         "status": 200,
         "body": {
           "rows": [
             {
               "key": [
-                "ann"
+                "p-ann",
+                "219000",
+                "known",
+                ""
               ]
             }
           ]
         }
       },
-      "/zorgtoeslag-slice/m-4/rows/household__joint_income": {
+      "/zorgtoeslag-slice/m-4/rows/persoon": {
         "status": 200,
         "body": {
           "rows": [
             {
               "key": [
-                "ann",
-                "2500000"
+                "p-ann"
               ]
             }
           ]

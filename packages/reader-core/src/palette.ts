@@ -97,6 +97,7 @@ export const SIGNS: Readonly<Record<string, SignSpec>> = Object.freeze({
   proposal: Object.freeze({ kind: 'sign', glyph: '✎', pattern: 'dashed-frame', token: 'proof' }),
   sealed: Object.freeze({ kind: 'sign', glyph: '◉', pattern: 'seal-stamp', token: 'proof' }),
   supposed: Object.freeze({ kind: 'state', glyph: '◇', pattern: 'dashed-diamond', token: 'caution' }),
+  engine_disagreement: Object.freeze({ kind: 'sign', glyph: '≠', pattern: 'not-equal-glyph', token: 'violated' }),
   valid: Object.freeze({ kind: 'state', glyph: '✓', pattern: 'solid-line', token: 'valid' }),
   changed: Object.freeze({ kind: 'state', glyph: '◐', pattern: 'half-fill', token: 'caution' }),
   violated: Object.freeze({ kind: 'state', glyph: '✕', pattern: 'cross-stroke', token: 'violated' }),

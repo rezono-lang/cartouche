@@ -15,7 +15,7 @@ const gateRecording = JSON.parse(
 const fixture = buildBitemporalFixtureFromGateAnswers(gateRecording, {
   pack: 'zorgtoeslag-slice',
   role: 'checker',
-  subjectId: 'ann',
+  subjectId: 'p-ann',
   validTime: '2026-02-01'
 });
 const M = DATA_MARKS;

@@ -78,7 +78,7 @@ test('M1 [sheet-reads-gate-output]: BitemporalStairSheet renders bob (unknown ->
   const fixture = buildBitemporalFixtureFromGateAnswers(RECORDING, {
     pack: 'zorgtoeslag-slice',
     role: 'checker',
-    subjectId: 'bob',
+    subjectId: 'p-bob',
     validTime: '2026-02-01'
   });
 
@@ -128,7 +128,7 @@ test('M1 [sheet-reads-gate-output]: BitemporalStairSheet renders gus across epoc
   const fixture = buildBitemporalFixtureFromGateAnswers(RECORDING, {
     pack: 'zorgtoeslag-slice',
     role: 'checker',
-    subjectId: 'gus',
+    subjectId: 'p-gus',
     validTime: '2026-01-01'
   });
 
