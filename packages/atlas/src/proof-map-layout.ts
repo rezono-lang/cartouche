@@ -26,6 +26,14 @@ import {
 import type { ProofMapLegendEntry, ProofMapSignId } from './proof-map-signs.ts';
 import { extractEpochRowNodes, resolveProofMapEpoch } from './proof-map-time.ts';
 import type { ProofMapRowSlot } from './proof-map-time.ts';
+import {
+  buildCardDataForNode,
+  cardHeightForSlots,
+  extractFocusSubject,
+  renderCardSlotsSvg,
+  resolveProofMapManifest
+} from './proof-map-cards.ts';
+import type { BundleForCardsLike, RoleAnswerEntry } from './proof-map-cards.ts';
 
 export interface ProofMapLane {
   readonly pack: string;
@@ -62,6 +70,12 @@ export interface ProofMapSemanticEdge {
   readonly from: string;
   readonly to: string;
   readonly state: EpistemicState;
+  readonly fromId: string;
+  readonly toId: string;
+  readonly fromRelation: string;
+  readonly fromKey: string;
+  readonly toRelation: string;
+  readonly toKey: string;
 }
 
 export interface ProofMapSemanticLayout {
@@ -138,6 +152,7 @@ interface GateFixtureLike {
     readonly witness_check?: unknown;
     readonly trust_tier?: unknown;
   };
+  readonly epochs?: readonly { readonly manifest?: string }[];
   readonly reader_answers?: Readonly<Record<string, Readonly<Record<string, { readonly status?: unknown; readonly body?: unknown }>>>>;
   readonly proof_map_state_samples?: unknown;
 }
@@ -335,6 +350,11 @@ export function compileProofMapLayout(
   const nodes: ProofMapSemanticNode[] = [];
   let cursorY = DERIVED_COL_TOP_Y;
 
+  const cardRoleMap = (roleMap ?? {}) as Readonly<Record<string, RoleAnswerEntry>>;
+  const activeManifestForCards = resolveProofMapManifest(cardRoleMap, fixture.epochs, activeManifest ?? options.manifest);
+  const focusSubject = extractFocusSubject(options.focusKey);
+  const cardBundle = bundle as unknown as BundleForCardsLike;
+
   for (let i = 0; i < lanePacks.length; i++) {
     const pack = lanePacks[i]!;
     const laneKinds = sourceKindsByLane.get(pack) ?? [];
@@ -345,11 +365,25 @@ export function compileProofMapLayout(
     for (const k of laneKinds) {
       const rowState = resolveManifestRowState(roleMap, packId, activeManifest, k.id);
       if (rowState.served) servedAtManifest.add(k.id);
+      const card = buildCardDataForNode({
+        roleMap: cardRoleMap,
+        packId,
+        manifest: activeManifestForCards,
+        relation: k.id,
+        kind: 'source',
+        qualifiedName: k.qualifiedName,
+        bundle: cardBundle,
+        focusSubject
+      });
+      const h = cardHeightForSlots(card.slots.length);
       const sign: ProofMapSignId = rowState.state === 'unknown' ? 'unknown' : 'origin_observation';
       nodes.push(
         Object.freeze({
           id: k.id,
           kind: 'source',
+          relation: card.relation,
+          key: card.key,
+          slots: card.slots,
           className: k.className,
           lane: pack,
           qualifiedName: k.qualifiedName,
@@ -358,14 +392,14 @@ export function compileProofMapLayout(
           sign,
           state: rowState.state,
           ...(rowState.reason ? { reason: rowState.reason } : {}),
-          proofRef: `${manifestId}/${k.id}`,
+          proofRef: card.proofRef,
           x: cardX,
           y: cardY,
           w: CARD_W,
-          h: CARD_H
+          h
         })
       );
-      cardY += CARD_H + CARD_GAP_Y;
+      cardY += h + CARD_GAP_Y;
     }
 
     const contentHeight = laneKinds.length > 0 ? cardY - CARD_GAP_Y - laneY + LANE_PAD_BOTTOM : LANE_HEADER_H + LANE_PAD_BOTTOM;
@@ -404,27 +438,43 @@ export function compileProofMapLayout(
       const sortedPremises = [...(premiseSets.get(r.id) ?? [])].sort(cmpStr);
       const rowState = resolveManifestRowState(roleMap, packId, activeManifest, r.id);
       if (rowState.served) servedAtManifest.add(r.id);
-      const sign: ProofMapSignId = rowState.state === 'unknown' ? 'unknown' : 'derived';
+      const card = buildCardDataForNode({
+        roleMap: cardRoleMap,
+        packId,
+        manifest: activeManifestForCards,
+        relation: r.id,
+        kind: 'derived',
+        qualifiedName: r.id,
+        bundle: cardBundle,
+        focusSubject
+      });
+      const h = cardHeightForSlots(card.slots.length);
+      const effectiveState = rowState.state !== 'known' ? rowState.state : card.state;
+      const effectiveReason = rowState.reason ?? card.reason ?? undefined;
+      const sign: ProofMapSignId = effectiveState === 'unknown' ? 'unknown' : 'derived';
       nodes.push(
         Object.freeze({
           id: r.id,
           kind: 'derived',
+          relation: card.relation,
+          key: card.key,
+          slots: card.slots,
           className: typeof r.calc === 'string' && r.calc.length > 0 ? r.calc : r.id,
           lane: packId,
           qualifiedName: r.id,
           depth: d,
           premises: Object.freeze(sortedPremises),
           sign,
-          state: rowState.state,
-          ...(rowState.reason ? { reason: rowState.reason } : {}),
-          proofRef: `${manifestId}/${r.id}`,
+          state: effectiveState,
+          ...(effectiveReason ? { reason: effectiveReason } : {}),
+          proofRef: card.proofRef,
           x: colX,
           y: rowY,
           w: CARD_W,
-          h: CARD_H
+          h
         })
       );
-      rowY += CARD_H + CARD_GAP_Y;
+      rowY += h + CARD_GAP_Y;
     }
     if (rowY > maxBottomY) maxBottomY = rowY;
   }
@@ -516,7 +566,19 @@ export function compileProofMapLayout(
       const prem = nodeById.get(premId);
       if (prem) {
         const edgeState = resolveProofMapEdgeState(prem.state, n.state, servedAtManifest.has(premId), hasManifest);
-        edges.push(Object.freeze({ from: premId, to: n.id, state: edgeState }));
+        edges.push(
+          Object.freeze({
+            from: premId,
+            to: n.id,
+            state: edgeState,
+            fromId: prem.id,
+            toId: n.id,
+            fromRelation: prem.relation ?? prem.id,
+            fromKey: prem.key ?? prem.id,
+            toRelation: n.relation ?? n.id,
+            toKey: n.key ?? n.id
+          })
+        );
       }
     }
   }
@@ -542,7 +604,7 @@ export function compileProofMapLayout(
     .map((e) => {
       const from = nodeById.get(e.from)!;
       const to = nodeById.get(e.to)!;
-      return renderProofMapEdgeGroupSvg({
+      const rendered = renderProofMapEdgeGroupSvg({
         toRelation: to.relation ?? e.to,
         proofRef: to.proofRef,
         state: e.state,
@@ -551,12 +613,17 @@ export function compileProofMapLayout(
         x2: to.x,
         y2: to.y + 22
       });
+      if (e.state !== 'unknown') return rendered;
+      const reason = to.reason ?? from.reason ?? 'unknown';
+      return rendered
+        .replace('<g ', `<g data-reason="${escapeXml(reason)}" `)
+        .replace('</g>', `<title>▨</title></g>`);
     })
     .join('');
 
   const nodeSvg = nodes
-    .map((n) =>
-      renderProofMapNodeCardSvg({
+    .map((n) => {
+      const base = renderProofMapNodeCardSvg({
         key: n.key ?? n.id,
         relation: n.relation ?? n.id,
         label: n.qualifiedName,
@@ -570,8 +637,11 @@ export function compileProofMapLayout(
         y: n.y,
         w: n.w,
         h: n.h
-      })
-    )
+      });
+      if (!n.slots || n.slots.length === 0) return base;
+      const slotsMarkup = renderCardSlotsSvg(n.x, n.y, n.slots, n.proofRef);
+      return base.endsWith('</g>') ? `${base.slice(0, -4)}${slotsMarkup}</g>` : base;
+    })
     .join('');
 
   const svg =
