@@ -6,36 +6,6 @@ import * as atlas from '../../packages/atlas/src/index.ts';
 import { DATA_MARKS, SIGNS } from '../../packages/reader-core/src/index.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0012-proof-first-plan.md',
-  priority: 2,
-  summary: 'Proof map requirement 10: every derived edge carries a mark that DuckDB and Feldera agree on it, or a visible disagreement mark, as the Rezono parity record publishes it',
-  waits_on: [
-    'm1-absent-never-valid-colour',
-    'm1-claims-match-build',
-    'm1-contrast-wcag-aa',
-    'm1-forced-colors-reduced-motion',
-    'm1-green-guard-covers-harness',
-    'm1-invalid-drawn-everywhere',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-no-borrowed-proof-refs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-proof-tree',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed',
-    'm2-proof-map-semantic-layout'
-  ]
-};
-
 // Decision 0012 §3a (proof map, requirement 10). Rezono records engine parity (decisions/feldera-calculation-parity.md).
 // The owner sketched ! for disagreement; ! is the invalid sign of the key, so the disagreement sign is agreed in the
 // Rezono key first (planner), and never by colour alone.

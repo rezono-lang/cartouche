@@ -52,6 +52,12 @@ import type {
   ProofMapSelectionTarget,
   ProofMapWitnessHighlightNode
 } from './proof-map-witness.ts';
+import {
+  extractProofMapParityRecord,
+  renderProofMapEdgeParityOverlaySvg,
+  renderProofMapParityTwinTableHtml
+} from './proof-map-parity.ts';
+import type { ProofMapParityRecord } from './proof-map-parity.ts';
 
 export interface ProofMapLane {
   readonly pack: string;
@@ -115,6 +121,7 @@ export interface ProofMapSemanticLayout {
   readonly svg: string;
   readonly html: string;
   readonly suppose?: ProofMapSupposeView | null | undefined;
+  readonly parity?: ProofMapParityRecord | null | undefined;
   readonly slipHtml?: string | undefined;
   readonly activeWitnessIri?: string | null | undefined;
   readonly scene: CartoucheScene;
@@ -827,24 +834,46 @@ export function compileProofMapLayout(
     )
     .join('');
 
+  const parityRecord = extractProofMapParityRecord(roleMap);
+
   const edgeSvg = edges
     .map((e) => {
       const from = nodeById.get(e.from)!;
       const to = nodeById.get(e.to)!;
-      const rendered = renderProofMapEdgeGroupSvg({
-        toRelation: to.relation ?? e.to,
+      const x1 = from.x + from.w;
+      const y1 = from.y + 22;
+      const x2 = to.x;
+      const y2 = to.y + 22;
+      const targetRel = to.relation ?? e.to;
+      let rendered = renderProofMapEdgeGroupSvg({
+        toRelation: targetRel,
         proofRef: to.proofRef,
         state: e.state,
-        x1: from.x + from.w,
-        y1: from.y + 22,
-        x2: to.x,
-        y2: to.y + 22
+        x1,
+        y1,
+        x2,
+        y2
       });
-      if (e.state !== 'unknown') return rendered;
-      const reason = to.reason ?? from.reason ?? 'unknown';
-      return rendered
-        .replace('<g ', `<g data-reason="${escapeXml(reason)}" `)
-        .replace('</g>', `<title>▨</title></g>`);
+      if (e.state === 'unknown') {
+        const reason = to.reason ?? from.reason ?? 'unknown';
+        rendered = rendered
+          .replace('<g ', `<g data-reason="${escapeXml(reason)}" `)
+          .replace('</g>', `<title>▨</title></g>`);
+      }
+      if (!parityRecord) return rendered;
+      const relParity = parityRecord.byRelation.get(targetRel);
+      if (relParity?.agreement === 'disagree') {
+        drawnSignSet.add('engine_disagreement');
+      }
+      const overlay = renderProofMapEdgeParityOverlaySvg({
+        relation: targetRel,
+        proofRef: to.proofRef,
+        parity: relParity,
+        parityPath: parityRecord.path,
+        mx: (x1 + x2) / 2,
+        my: (y1 + y2) / 2 - 4
+      });
+      return `${rendered}${overlay}`;
     })
     .join('');
 
@@ -995,7 +1024,7 @@ export function compileProofMapLayout(
     sweepRole: options.sweepRole,
     supposeVariant: options.supposeVariant
   });
-  const html = supposeView
+  const baseHtml = supposeView
     ? renderProofMapSupposeHtml(svg, supposeView)
     : renderProofMapRoleHtml({
         svg,
@@ -1005,6 +1034,12 @@ export function compileProofMapLayout(
         availableRoles,
         activeRole: role
       });
+  const parityTwinHtml = parityRecord ? renderProofMapParityTwinTableHtml({ nodes, parityRecord }) : '';
+  const html = parityTwinHtml
+    ? baseHtml.includes('</section>')
+      ? baseHtml.replace('</section>', `${parityTwinHtml}</section>`)
+      : `${baseHtml}${parityTwinHtml}`
+    : baseHtml;
 
   return Object.freeze({
     role,
@@ -1022,6 +1057,7 @@ export function compileProofMapLayout(
     svg,
     html,
     ...(supposeView ? { suppose: supposeView } : {}),
+    ...(parityRecord ? { parity: parityRecord } : {}),
     ...(witnessProjection
       ? { slipHtml: witnessProjection.slipHtml, activeWitnessIri: witnessProjection.activeWitnessIri }
       : {}),
