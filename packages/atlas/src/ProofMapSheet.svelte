@@ -7,18 +7,20 @@
   import { buildProofMapModel } from './proof-map-model.ts';
   import type { ProofMapExpansion } from './proof-map-model.ts';
   import { resolveProofMapShareState } from './proof-map-share.ts';
+  import { extractEpochDiffEntries, resolveProofMapEpoch } from './proof-map-time.ts';
 
   let {
     fixture,
     focusKey = undefined,
+    manifest = undefined,
     expansions = undefined,
     groupThreshold = undefined,
     publishedGroupCounts = undefined,
     validAt = undefined,
     knownAt = undefined,
+    previousKnownAt = undefined,
     shareUrl = undefined,
     role = 'checker',
-    manifest = undefined,
     theme = undefined,
     allowedRoleLenses = undefined,
     readerStatus = 200,
@@ -26,14 +28,15 @@
   }: {
     fixture: Record<string, unknown>;
     focusKey?: string | undefined;
+    manifest?: string | undefined;
     expansions?: readonly ProofMapExpansion[] | undefined;
     groupThreshold?: number | undefined;
     publishedGroupCounts?: Readonly<Record<string, string>> | undefined;
     validAt?: string | undefined;
     knownAt?: string | undefined;
+    previousKnownAt?: string | undefined;
     shareUrl?: string | undefined;
     role?: string;
-    manifest?: string | undefined;
     theme?: PaletteName | undefined;
     allowedRoleLenses?: readonly string[] | undefined;
     readerStatus?: number;
@@ -52,6 +55,15 @@
         })
       : null
   );
+
+  let epochSelection = $derived(
+    resolveProofMapEpoch(fixture, {
+      manifest,
+      validAt: shareState?.parsed.validAt ?? validAt,
+      knownAt: shareState?.parsed.knownAt ?? knownAt
+    })
+  );
+  let epochDiffEntries = $derived(extractEpochDiffEntries(fixture));
 
   let isUnserved = $derived(readerStatus === 410 || shareState?.status === 'withdrawn');
   let isGateRecording = $derived(
@@ -72,7 +84,8 @@
           validAt: shareState?.parsed.validAt ?? validAt,
           knownAt: shareState?.parsed.knownAt ?? knownAt,
           epoch: shareState?.parsed.epoch,
-          expansions: shareState?.parsed.expansions
+          expansions: shareState?.parsed.expansions,
+          manifest
         })
       : null
   );
@@ -84,8 +97,8 @@
           expansions,
           groupThreshold,
           publishedGroupCounts,
-          validAt: shareState?.parsed.validAt ?? validAt,
-          knownAt: shareState?.parsed.knownAt ?? knownAt
+          validAt: epochSelection.validAt ?? undefined,
+          knownAt: epochSelection.knownAt ?? undefined
         })
       : null
   );
@@ -112,8 +125,46 @@
       <h2 id="proof-map-title">{shareState?.parsed.at ?? focusKey ?? semanticLayout.manifestId}</h2>
       <div {...{ [M.part]: 'seal', [M.trust_tier]: semanticLayout.scene.seal.trustTier }}>
         <span class="mono" {...{ [M.part]: 'manifest-hash' }}>{semanticLayout.manifestId}</span>
+        {#if epochSelection.validAt}
+          <span class="mono">{epochSelection.validAt}</span>
+        {/if}
+        {#if epochSelection.knownAt}
+          <span class="mono">{epochSelection.knownAt}</span>
+        {/if}
       </div>
     </header>
+
+    {#if epochDiffEntries.length > 0}
+      <table class="proof-map-epoch-diff" aria-label={t('col.proof')}>
+        <thead>
+          <tr>
+            <th scope="col">{t('col.kind')}</th>
+            <th scope="col">{t('col.label')}</th>
+            <th scope="col">{t('col.proof')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each epochDiffEntries as entry (entry.id)}
+            <tr {...{ [M.relation]: entry.relation, [M.key]: entry.key }}>
+              <td>{entry.relation}</td>
+              <td class="mono">{entry.key}</td>
+              <td {...{ [M.part]: 'value' }}>
+                {#if entry.oldDisplay !== null && entry.oldHref}
+                  <a class="proof-map-diff-leaving" href={entry.oldHref} {...{ [M.proof_ref]: entry.oldProofRef ?? '' }}>
+                    <del>{entry.oldDisplay}</del>
+                  </a>
+                {/if}
+                {#if entry.newDisplay !== null && entry.newHref}
+                  <a class="proof-map-diff-entering" href={entry.newHref} {...{ [M.proof_ref]: entry.newProofRef ?? '' }}>
+                    <ins>{entry.newDisplay}</ins>
+                  </a>
+                {/if}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    {/if}
 
     <table aria-label={t('sheet.common.twin')} {...{ [M.part]: 'twin' }}>
       <thead>
@@ -128,8 +179,8 @@
         {#each semanticLayout.nodes as node (node.id)}
           <tr
             {...{
-              [M.key]: node.id,
-              [M.relation]: node.id,
+              [M.key]: node.key ?? node.id,
+              [M.relation]: node.relation ?? node.id,
               [M.depth]: node.depth,
               [M.proof_ref]: node.proofRef
             }}
@@ -174,9 +225,50 @@
     <header>
       <h2 id="proof-map-title">{model.focusKey}</h2>
       <div {...{ [M.part]: 'seal', ...(model.trustTier ? { [M.trust_tier]: model.trustTier } : {}) }}>
-        <span class="mono" {...{ [M.part]: 'manifest-hash' }}>{model.manifestId}</span>
+        <span class="mono" {...{ [M.part]: 'manifest-hash' }}>{epochSelection.manifestId || model.manifestId}</span>
+        {#if epochSelection.validAt}
+          <span class="mono">{epochSelection.validAt}</span>
+        {/if}
+        {#if epochSelection.knownAt}
+          <span class="mono">{epochSelection.knownAt}</span>
+        {/if}
+        {#if previousKnownAt}
+          <span class="mono">{previousKnownAt}</span>
+        {/if}
       </div>
     </header>
+
+    {#if epochDiffEntries.length > 0}
+      <table class="proof-map-epoch-diff" aria-label={t('col.proof')}>
+        <thead>
+          <tr>
+            <th scope="col">{t('col.kind')}</th>
+            <th scope="col">{t('col.label')}</th>
+            <th scope="col">{t('col.proof')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each epochDiffEntries as entry (entry.id)}
+            <tr {...{ [M.relation]: entry.relation, [M.key]: entry.key }}>
+              <td>{entry.relation}</td>
+              <td class="mono">{entry.key}</td>
+              <td {...{ [M.part]: 'value' }}>
+                {#if entry.oldDisplay !== null && entry.oldHref}
+                  <a class="proof-map-diff-leaving" href={entry.oldHref} {...{ [M.proof_ref]: entry.oldProofRef ?? '' }}>
+                    <del>{entry.oldDisplay}</del>
+                  </a>
+                {/if}
+                {#if entry.newDisplay !== null && entry.newHref}
+                  <a class="proof-map-diff-entering" href={entry.newHref} {...{ [M.proof_ref]: entry.newProofRef ?? '' }}>
+                    <ins>{entry.newDisplay}</ins>
+                  </a>
+                {/if}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    {/if}
 
     {#if model.groups.length > 0}
       <ul class="proof-map-groups" aria-label={t('col.kind')}>
@@ -252,5 +344,11 @@
   }
   .mono {
     font-family: var(--font-mono);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .proof-map-diff-leaving,
+    .proof-map-diff-entering {
+      transition: opacity 180ms ease;
+    }
   }
 </style>

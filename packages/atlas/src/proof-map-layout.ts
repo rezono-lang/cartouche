@@ -24,6 +24,8 @@ import {
   resolveProofMapEdgeState
 } from './proof-map-signs.ts';
 import type { ProofMapLegendEntry, ProofMapSignId } from './proof-map-signs.ts';
+import { extractEpochRowNodes, resolveProofMapEpoch } from './proof-map-time.ts';
+import type { ProofMapRowSlot } from './proof-map-time.ts';
 
 export interface ProofMapLane {
   readonly pack: string;
@@ -51,6 +53,9 @@ export interface ProofMapSemanticNode {
   readonly y: number;
   readonly w: number;
   readonly h: number;
+  readonly relation?: string;
+  readonly key?: string;
+  readonly slots?: readonly ProofMapRowSlot[];
 }
 
 export interface ProofMapSemanticEdge {
@@ -62,6 +67,8 @@ export interface ProofMapSemanticEdge {
 export interface ProofMapSemanticLayout {
   readonly role: string;
   readonly manifestId: string;
+  readonly validAt: string | null;
+  readonly knownAt: string | null;
   readonly lanes: readonly ProofMapLane[];
   readonly nodes: readonly ProofMapSemanticNode[];
   readonly edges: readonly ProofMapSemanticEdge[];
@@ -202,10 +209,12 @@ export function compileProofMapLayout(
   const bundle = findRoleBundle(fixture, role);
 
   const packId = typeof bundle.pack?.id === 'string' ? bundle.pack.id : 'publication';
-  const manifestId = typeof fixture.manifest?.id === 'string' ? fixture.manifest.id : 'm-0';
+  const epochSel = resolveProofMapEpoch(fixture, options);
+  const manifestId = epochSel.manifestId;
   const epoch = typeof fixture.manifest?.epoch === 'number' ? fixture.manifest.epoch : 0;
   const knowledgeTime =
-    typeof fixture.manifest?.knowledge_time === 'string' ? fixture.manifest.knowledge_time : '1970-01-01T00:00:00Z';
+    epochSel.knownAt ??
+    (typeof fixture.manifest?.knowledge_time === 'string' ? fixture.manifest.knowledge_time : '1970-01-01T00:00:00Z');
   const rawTier = fixture.manifest?.trust_tier;
   const trustTier: TrustTier =
     rawTier === 'sealed' || rawTier === 'provisional_checked' || rawTier === 'provisional_engine'
@@ -450,6 +459,54 @@ export function compileProofMapLayout(
     maxBottomY = sampleY;
   }
 
+  // 6c. When an explicit epoch / bitemporal control is requested, append served row nodes for that epoch
+  const hasTimeControl = Boolean(options.manifest || options.validAt || options.knownAt);
+  if (hasTimeControl) {
+    const rowColDepth = maxDepth + 1;
+    const rowColX = derivedStartX + (rowColDepth - 1) * (CARD_W + COL_GAP_X);
+    const epochRows = extractEpochRowNodes(
+      fixture,
+      role,
+      manifestId,
+      rowColX,
+      DERIVED_COL_TOP_Y,
+      CARD_W,
+      CARD_H,
+      CARD_GAP_Y
+    );
+    if (epochRows.length > 0) {
+      maxDepth = rowColDepth;
+      for (const er of epochRows) {
+        const erSign: ProofMapSignId = er.state === 'unknown' ? 'unknown' : 'derived';
+        drawnSignSet.add(erSign);
+        nodes.push(
+          Object.freeze({
+            id: er.id,
+            kind: 'derived',
+            className: er.relation,
+            lane: packId,
+            qualifiedName: er.relation,
+            depth: rowColDepth,
+            premises: Object.freeze(derivedIds.has(er.relation) ? [er.relation] : []),
+            sign: erSign,
+            state: er.state,
+            ...(er.reason ? { reason: er.reason } : {}),
+            proofRef: er.proofRef,
+            x: er.x,
+            y: er.y,
+            w: er.w,
+            h: er.h,
+            relation: er.relation,
+            key: er.key,
+            slots: er.slots
+          })
+        );
+        const bottom = er.y + er.h + CARD_GAP_Y;
+        if (bottom > maxBottomY) maxBottomY = bottom;
+      }
+    }
+  }
+
   // 7. Build premise -> conclusion edges with premise epistemic state
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
   const edges: ProofMapSemanticEdge[] = [];
@@ -486,7 +543,7 @@ export function compileProofMapLayout(
       const from = nodeById.get(e.from)!;
       const to = nodeById.get(e.to)!;
       return renderProofMapEdgeGroupSvg({
-        toRelation: e.to,
+        toRelation: to.relation ?? e.to,
         proofRef: to.proofRef,
         state: e.state,
         x1: from.x + from.w,
@@ -500,8 +557,8 @@ export function compileProofMapLayout(
   const nodeSvg = nodes
     .map((n) =>
       renderProofMapNodeCardSvg({
-        key: n.id,
-        relation: n.id,
+        key: n.key ?? n.id,
+        relation: n.relation ?? n.id,
         label: n.qualifiedName,
         sublabel: n.lane,
         sign: n.sign,
@@ -581,6 +638,8 @@ export function compileProofMapLayout(
   return Object.freeze({
     role,
     manifestId,
+    validAt: epochSel.validAt,
+    knownAt: epochSel.knownAt,
     lanes: Object.freeze(lanes),
     nodes: Object.freeze(nodes),
     edges: Object.freeze(edges),
