@@ -7,36 +7,6 @@ import { execFileSync } from 'node:child_process';
 import * as atlas from '../../packages/atlas/src/index.ts';
 import { checkGeometricInvariants } from '../../packages/scene-ir/src/geometry-invariants.ts';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0012-proof-first-plan.md',
-  priority: 1,
-  summary:
-    'Proof map requirement 1, first item of M2: a semantic, deterministic layout, not force-directed: source packs are lanes (the colimit of sources is visible), depth follows derivation, same-name kinds from different sources stay distinct; first case the healthcare allowance recorded from the Rezono gate',
-  waits_on: [
-    'm1-absent-never-valid-colour',
-    'm1-claims-match-build',
-    'm1-contrast-wcag-aa',
-    'm1-forced-colors-reduced-motion',
-    'm1-green-guard-covers-harness',
-    'm1-invalid-drawn-everywhere',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-no-borrowed-proof-refs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-proof-tree',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed'
-  ]
-};
-
 // Decision 0012 §3a (proof map, requirement 1). After RDFox Explore and the Stardog Studio visual, done better: the
 // layout says where a fact comes from and how far it is derived. First case: Rezono examples/zorgtoeslag-slice, whose
 // source packs (person, civil, tax, insurer) form a colimit along Persoon (Rezono decisions/healthcare-allowance-three-sources.md).
