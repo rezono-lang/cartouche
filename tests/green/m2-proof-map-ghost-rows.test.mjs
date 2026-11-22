@@ -6,37 +6,6 @@ import * as atlas from '../../packages/atlas/src/index.ts';
 import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0012-proof-first-plan.md',
-  priority: 2,
-  summary:
-    'Proof map requirement 5: why unknown and why not in the map: a missing premise is a ghost row with its published reason, and the conclusion stays unknown, never no; first case the unknown income of p-bob in the healthcare allowance',
-  waits_on: [
-    'm1-absent-never-valid-colour',
-    'm1-claims-match-build',
-    'm1-contrast-wcag-aa',
-    'm1-forced-colors-reduced-motion',
-    'm1-green-guard-covers-harness',
-    'm1-invalid-drawn-everywhere',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-no-borrowed-proof-refs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-proof-tree',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed',
-    'm2-proof-map-semantic-layout'
-  ]
-};
-
 // Decision 0012 §3a (proof map, requirement 5). The drawer part is m1-slip-why-not-why-unknown; this is the map part.
 // In fixtures/12-zorgtoeslag-proof-map-gate-answers.json:
 // - At m-1 (as_of=2026-02-01, known=2025-11-15), p-bob's calc__allowance is ["p-bob","","unknown","no_version_applies"].

@@ -25,6 +25,7 @@ import {
 } from './proof-map-signs.ts';
 import type { ProofMapLegendEntry, ProofMapSignId } from './proof-map-signs.ts';
 import { extractEpochRowNodes, resolveProofMapEpoch } from './proof-map-time.ts';
+import { buildProofMapGhosts, resolveRoleAnswers } from './proof-map-ghosts.ts';
 import type { ProofMapRowSlot } from './proof-map-time.ts';
 import {
   buildCardDataForNode,
@@ -64,12 +65,15 @@ export interface ProofMapSemanticNode {
   readonly relation?: string;
   readonly key?: string;
   readonly slots?: readonly ProofMapRowSlot[];
+  readonly ghost?: boolean;
+  readonly display?: string | null;
 }
 
 export interface ProofMapSemanticEdge {
   readonly from: string;
   readonly to: string;
   readonly state: EpistemicState;
+  readonly dashed?: boolean;
   readonly fromId: string;
   readonly toId: string;
   readonly fromRelation: string;
@@ -103,6 +107,10 @@ export interface ProofMapLayoutOptions {
   readonly knownAt?: string | undefined;
   readonly epoch?: number | undefined;
   readonly expansions?: readonly string[] | undefined;
+  readonly store?: string | undefined;
+  readonly selected?: { readonly relation: string; readonly key: unknown } | undefined;
+  readonly groundsAnswer?: unknown;
+  readonly focusEntity?: string | undefined;
 }
 
 interface BundleImportLike {
@@ -172,14 +180,14 @@ function cmpStr(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-function findRoleBundle(fixture: GateFixtureLike, role: string): BundleLike {
-  const roleMap = fixture.reader_answers?.[role];
+function findRoleBundle(fixture: GateFixtureLike, role: string, store?: string): BundleLike {
+  const roleMap = resolveRoleAnswers(fixture, role, store);
   if (!roleMap) {
     throw new Error(`No recorded reader answers for role "${role}".`);
   }
   const bundlePath = Object.keys(roleMap)
     .sort(cmpStr)
-    .find((p) => p.endsWith('/bundle') && roleMap[p]?.status === 200);
+    .find((p) => (p.endsWith('/bundle') || p.includes('/bundle?')) && roleMap[p]?.status === 200);
   if (!bundlePath || !roleMap[bundlePath]?.body || typeof roleMap[bundlePath]?.body !== 'object') {
     throw new Error(`No 200 /bundle response found for role "${role}".`);
   }
@@ -188,9 +196,10 @@ function findRoleBundle(fixture: GateFixtureLike, role: string): BundleLike {
 
 function findRoleHorizon(
   fixture: GateFixtureLike,
-  role: string
+  role: string,
+  store?: string
 ): Readonly<{ complete: boolean; reason: string | null }> {
-  const roleMap = fixture.reader_answers?.[role];
+  const roleMap = resolveRoleAnswers(fixture, role, store);
   if (!roleMap) return Object.freeze({ complete: true, reason: null });
   const headPath = Object.keys(roleMap)
     .sort(cmpStr)
@@ -221,7 +230,7 @@ export function compileProofMapLayout(
   options: ProofMapLayoutOptions = {}
 ): ProofMapSemanticLayout {
   const role = options.role ?? (typeof fixture.manifest?.role === 'string' ? fixture.manifest.role : 'checker');
-  const bundle = findRoleBundle(fixture, role);
+  const bundle = findRoleBundle(fixture, role, options.store);
 
   const packId = typeof bundle.pack?.id === 'string' ? bundle.pack.id : 'publication';
   const epochSel = resolveProofMapEpoch(fixture, options);
@@ -557,6 +566,124 @@ export function compileProofMapLayout(
     }
   }
 
+  // 6d. Project ghost rows for missing premises and focus/selected epistemic conclusion rows
+  const extraDashedEdges: ProofMapSemanticEdge[] = [];
+  if (options.selected || options.groundsAnswer || options.focusEntity) {
+    const focusColDepth = maxDepth + 1;
+    const focusColX = derivedStartX + (focusColDepth - 1) * (CARD_W + COL_GAP_X);
+    const sourceKindRefs = nodes
+      .filter((n) => n.kind === 'source')
+      .map((n) => ({ id: n.id, lane: n.lane }));
+    const ghostProj = buildProofMapGhosts({
+      fixture,
+      role,
+      store: options.store,
+      manifestId,
+      packId,
+      selected: options.selected,
+      groundsAnswer: options.groundsAnswer,
+      focusEntity: options.focusEntity,
+      sourceKinds: sourceKindRefs,
+      premiseSets,
+      laneX: LANE_X + LANE_PAD_X,
+      derivedColX: focusColX,
+      startY: maxBottomY + LANE_GAP_Y,
+      cardW: CARD_W,
+      cardH: CARD_H,
+      gapY: CARD_GAP_Y
+    });
+    const focusTargetMap = new Map<string, string>();
+    for (const f of ghostProj.focusRowNodes) {
+      const fSign: ProofMapSignId = f.state === 'unknown' ? 'unknown' : 'derived';
+      drawnSignSet.add(fSign);
+      const existingIdx = nodes.findIndex((n) => n.id === f.relation);
+      if (existingIdx >= 0) {
+        const prev = nodes[existingIdx]!;
+        nodes[existingIdx] = Object.freeze({
+          ...prev,
+          sign: fSign,
+          state: f.state,
+          ...(f.reason ? { reason: f.reason } : {}),
+          proofRef: f.proofRef,
+          relation: f.relation,
+          key: f.key,
+          display: f.display
+        });
+        focusTargetMap.set(f.id, prev.id);
+      } else {
+        maxDepth = focusColDepth;
+        nodes.push(
+          Object.freeze({
+            id: f.id,
+            kind: 'derived',
+            className: f.relation,
+            lane: f.lane,
+            qualifiedName: f.relation,
+            depth: focusColDepth,
+            premises: Object.freeze([]),
+            sign: fSign,
+            state: f.state,
+            ...(f.reason ? { reason: f.reason } : {}),
+            proofRef: f.proofRef,
+            x: f.x,
+            y: f.y,
+            w: f.w,
+            h: f.h,
+            relation: f.relation,
+            key: f.key,
+            display: f.display
+          })
+        );
+        focusTargetMap.set(f.id, f.id);
+        if (f.y + f.h + CARD_GAP_Y > maxBottomY) maxBottomY = f.y + f.h + CARD_GAP_Y;
+      }
+    }
+    for (const g of ghostProj.ghostNodes) {
+      drawnSignSet.add('unknown');
+      nodes.push(
+        Object.freeze({
+          id: g.id,
+          kind: 'source',
+          className: g.relation,
+          lane: g.lane,
+          qualifiedName: `${g.lane}.${g.relation}`,
+          depth: 0,
+          premises: Object.freeze([]),
+          sign: 'unknown',
+          state: 'unknown',
+          reason: g.reason,
+          proofRef: g.proofRef,
+          x: g.x,
+          y: g.y,
+          w: g.w,
+          h: g.h,
+          ghost: true,
+          relation: g.relation,
+          key: g.key,
+          display: null
+        })
+      );
+      if (g.y + g.h + CARD_GAP_Y > maxBottomY) maxBottomY = g.y + g.h + CARD_GAP_Y;
+    }
+    for (const de of ghostProj.dashedEdges) {
+      const targetId = focusTargetMap.get(de.to) ?? de.to;
+      extraDashedEdges.push(
+        Object.freeze({
+          from: de.from,
+          to: targetId,
+          state: 'unknown',
+          dashed: true,
+          fromId: de.from,
+          toId: targetId,
+          fromRelation: de.from,
+          fromKey: de.from,
+          toRelation: targetId,
+          toKey: targetId
+        })
+      );
+    }
+  }
+
   // 7. Build premise -> conclusion edges with premise epistemic state
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
   const edges: ProofMapSemanticEdge[] = [];
@@ -580,6 +707,26 @@ export function compileProofMapLayout(
           })
         );
       }
+    }
+  }
+  for (const de of extraDashedEdges) {
+    const fromNode = nodeById.get(de.from);
+    const toNode = nodeById.get(de.to);
+    if (fromNode && toNode) {
+      edges.push(
+        Object.freeze({
+          from: de.from,
+          to: de.to,
+          state: 'unknown',
+          dashed: true,
+          fromId: fromNode.id,
+          toId: toNode.id,
+          fromRelation: fromNode.relation ?? fromNode.id,
+          fromKey: fromNode.key ?? fromNode.id,
+          toRelation: toNode.relation ?? toNode.id,
+          toKey: toNode.key ?? toNode.id
+        })
+      );
     }
   }
 
@@ -627,7 +774,7 @@ export function compileProofMapLayout(
         key: n.key ?? n.id,
         relation: n.relation ?? n.id,
         label: n.qualifiedName,
-        sublabel: n.lane,
+        sublabel: n.state === 'unknown' ? (n.reason ?? n.lane) : (n.display ?? n.lane),
         sign: n.sign,
         state: n.state,
         proofRef: n.proofRef,
@@ -648,8 +795,8 @@ export function compileProofMapLayout(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" data-projection="2d" role="img" aria-label="${escapeXml(packId)}">` +
     renderProofMapHatchDefs() +
     laneSvg +
-    edgeSvg +
     nodeSvg +
+    edgeSvg +
     sampleSvgParts.join('') +
     `</svg>`;
 
@@ -674,7 +821,7 @@ export function compileProofMapLayout(
     })
   );
 
-  const horizon = findRoleHorizon(fixture, role);
+  const horizon = findRoleHorizon(fixture, role, options.store);
 
   const scene: CartoucheScene = Object.freeze({
     schemaVersion: CARTOUCHE_SCENE_SCHEMA_VERSION,
