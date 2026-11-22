@@ -10,10 +10,20 @@
  */
 
 import { asOpaqueCell } from '../../reader-core/src/index.ts';
-import type { CartoucheSeal, TrustTier } from '../../reader-core/src/index.ts';
+import type { CartoucheSeal, EpistemicState, TrustTier } from '../../reader-core/src/index.ts';
 import { CARTOUCHE_SCENE_SCHEMA_VERSION } from '../../scene-ir/src/types.ts';
 import type { CartoucheScene, SceneNodeMark } from '../../scene-ir/src/types.ts';
 import { escapeXml } from './flow-split-svg.ts';
+import {
+  collectProofMapLegendEntries,
+  normalizeProofMapStateSamples,
+  renderProofMapEdgeGroupSvg,
+  renderProofMapHatchDefs,
+  renderProofMapNodeCardSvg,
+  resolveManifestRowState,
+  resolveProofMapEdgeState
+} from './proof-map-signs.ts';
+import type { ProofMapLegendEntry, ProofMapSignId } from './proof-map-signs.ts';
 
 export interface ProofMapLane {
   readonly pack: string;
@@ -32,6 +42,10 @@ export interface ProofMapSemanticNode {
   readonly qualifiedName: string;
   readonly depth: number;
   readonly premises: readonly string[];
+  readonly sign: ProofMapSignId;
+  readonly state: EpistemicState;
+  readonly reason?: string | undefined;
+  readonly completenessRef?: string | undefined;
   readonly proofRef: string;
   readonly x: number;
   readonly y: number;
@@ -42,6 +56,7 @@ export interface ProofMapSemanticNode {
 export interface ProofMapSemanticEdge {
   readonly from: string;
   readonly to: string;
+  readonly state: EpistemicState;
 }
 
 export interface ProofMapSemanticLayout {
@@ -50,6 +65,8 @@ export interface ProofMapSemanticLayout {
   readonly lanes: readonly ProofMapLane[];
   readonly nodes: readonly ProofMapSemanticNode[];
   readonly edges: readonly ProofMapSemanticEdge[];
+  readonly usedSigns: readonly ProofMapSignId[];
+  readonly legend: readonly ProofMapLegendEntry[];
   readonly svgWidth: number;
   readonly svgHeight: number;
   readonly svg: string;
@@ -57,13 +74,14 @@ export interface ProofMapSemanticLayout {
 }
 
 export interface ProofMapLayoutOptions {
-  readonly role?: string;
-  readonly focusKey?: string;
-  readonly selection?: string;
-  readonly validAt?: string;
-  readonly knownAt?: string;
-  readonly epoch?: number;
-  readonly expansions?: readonly string[];
+  readonly role?: string | undefined;
+  readonly manifest?: string | undefined;
+  readonly focusKey?: string | undefined;
+  readonly selection?: string | undefined;
+  readonly validAt?: string | undefined;
+  readonly knownAt?: string | undefined;
+  readonly epoch?: number | undefined;
+  readonly expansions?: readonly string[] | undefined;
 }
 
 interface BundleImportLike {
@@ -114,6 +132,7 @@ interface GateFixtureLike {
     readonly trust_tier?: unknown;
   };
   readonly reader_answers?: Readonly<Record<string, Readonly<Record<string, { readonly status?: unknown; readonly body?: unknown }>>>>;
+  readonly proof_map_state_samples?: unknown;
 }
 
 const LANE_X = 24;
@@ -299,6 +318,9 @@ export function compileProofMapLayout(
   }
 
   // 5. Place source lanes vertically on the left (depth 0)
+  const roleMap = fixture.reader_answers?.[role];
+  const activeManifest = options.manifest;
+  const servedAtManifest = new Set<string>();
   const laneWidth = CARD_W + LANE_PAD_X * 2;
   const lanes: ProofMapLane[] = [];
   const nodes: ProofMapSemanticNode[] = [];
@@ -312,6 +334,9 @@ export function compileProofMapLayout(
     const cardX = LANE_X + LANE_PAD_X;
 
     for (const k of laneKinds) {
+      const rowState = resolveManifestRowState(roleMap, packId, activeManifest, k.id);
+      if (rowState.served) servedAtManifest.add(k.id);
+      const sign: ProofMapSignId = rowState.state === 'unknown' ? 'unknown' : 'origin_observation';
       nodes.push(
         Object.freeze({
           id: k.id,
@@ -321,6 +346,9 @@ export function compileProofMapLayout(
           qualifiedName: k.qualifiedName,
           depth: 0,
           premises: Object.freeze([]),
+          sign,
+          state: rowState.state,
+          ...(rowState.reason ? { reason: rowState.reason } : {}),
           proofRef: `${manifestId}/${k.id}`,
           x: cardX,
           y: cardY,
@@ -365,6 +393,9 @@ export function compileProofMapLayout(
     let rowY = DERIVED_COL_TOP_Y;
     for (const r of bucket) {
       const sortedPremises = [...(premiseSets.get(r.id) ?? [])].sort(cmpStr);
+      const rowState = resolveManifestRowState(roleMap, packId, activeManifest, r.id);
+      if (rowState.served) servedAtManifest.add(r.id);
+      const sign: ProofMapSignId = rowState.state === 'unknown' ? 'unknown' : 'derived';
       nodes.push(
         Object.freeze({
           id: r.id,
@@ -374,6 +405,9 @@ export function compileProofMapLayout(
           qualifiedName: r.id,
           depth: d,
           premises: Object.freeze(sortedPremises),
+          sign,
+          state: rowState.state,
+          ...(rowState.reason ? { reason: rowState.reason } : {}),
           proofRef: `${manifestId}/${r.id}`,
           x: colX,
           y: rowY,
@@ -386,13 +420,46 @@ export function compileProofMapLayout(
     if (rowY > maxBottomY) maxBottomY = rowY;
   }
 
-  // 7. Build premise -> conclusion edges
+  // 6b. Optional published state samples (absent filtered out unless completeness_ref is published)
+  const stateSamples = normalizeProofMapStateSamples(fixture.proof_map_state_samples);
+  const sampleSvgParts: string[] = [];
+  const drawnSignSet = new Set<ProofMapSignId>(nodes.map((n) => n.sign));
+  if (stateSamples.length > 0) {
+    let sampleY = maxBottomY + CARD_GAP_Y;
+    for (const s of stateSamples) {
+      drawnSignSet.add(s.sign);
+      sampleSvgParts.push(
+        renderProofMapNodeCardSvg({
+          key: s.key,
+          relation: s.relation,
+          label: `${s.relation} (${s.key})`,
+          sublabel: s.state,
+          sign: s.sign,
+          state: s.state,
+          proofRef: s.proofRef,
+          reason: s.reason,
+          completenessRef: s.completenessRef,
+          x: LANE_X + LANE_PAD_X,
+          y: sampleY,
+          w: CARD_W,
+          h: CARD_H
+        })
+      );
+      sampleY += CARD_H + CARD_GAP_Y;
+    }
+    maxBottomY = sampleY;
+  }
+
+  // 7. Build premise -> conclusion edges with premise epistemic state
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
   const edges: ProofMapSemanticEdge[] = [];
+  const hasManifest = Boolean(activeManifest);
   for (const n of nodes) {
     for (const premId of n.premises) {
-      if (nodeById.has(premId)) {
-        edges.push(Object.freeze({ from: premId, to: n.id }));
+      const prem = nodeById.get(premId);
+      if (prem) {
+        const edgeState = resolveProofMapEdgeState(prem.state, n.state, servedAtManifest.has(premId), hasManifest);
+        edges.push(Object.freeze({ from: premId, to: n.id, state: edgeState }));
       }
     }
   }
@@ -418,37 +485,49 @@ export function compileProofMapLayout(
     .map((e) => {
       const from = nodeById.get(e.from)!;
       const to = nodeById.get(e.to)!;
-      const x1 = from.x + from.w;
-      const y1 = from.y + 22;
-      const x2 = to.x;
-      const y2 = to.y + 22;
-      return (
-        `<g data-relation="${escapeXml(e.to)}" data-proof-ref="${escapeXml(to.proofRef)}">` +
-        `<path d="M ${x1} ${y1} L ${x2} ${y2}" fill="none" stroke="var(--c-rule-strong)" stroke-width="1.2" />` +
-        `</g>`
-      );
+      return renderProofMapEdgeGroupSvg({
+        toRelation: e.to,
+        proofRef: to.proofRef,
+        state: e.state,
+        x1: from.x + from.w,
+        y1: from.y + 22,
+        x2: to.x,
+        y2: to.y + 22
+      });
     })
     .join('');
 
   const nodeSvg = nodes
-    .map((n) => {
-      const sign = n.kind === 'source' ? 'origin_observation' : 'derived';
-      return (
-        `<g data-key="${escapeXml(n.id)}" data-relation="${escapeXml(n.id)}" data-state="known" data-sign="${sign}" data-proof-ref="${escapeXml(n.proofRef)}">` +
-        `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="4" fill="var(--c-paper-elev)" stroke="var(--c-rule-strong)" stroke-width="1" />` +
-        `<text x="${n.x + 10}" y="${n.y + 18}" fill="var(--c-ink)" font-size="11">${escapeXml(n.qualifiedName)}</text>` +
-        `<text x="${n.x + 10}" y="${n.y + 34}" fill="var(--c-ink-soft)" font-size="10">${escapeXml(n.lane)}</text>` +
-        `</g>`
-      );
-    })
+    .map((n) =>
+      renderProofMapNodeCardSvg({
+        key: n.id,
+        relation: n.id,
+        label: n.qualifiedName,
+        sublabel: n.lane,
+        sign: n.sign,
+        state: n.state,
+        proofRef: n.proofRef,
+        reason: n.reason,
+        completenessRef: n.completenessRef,
+        x: n.x,
+        y: n.y,
+        w: n.w,
+        h: n.h
+      })
+    )
     .join('');
 
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" data-projection="2d" role="img" aria-label="${escapeXml(packId)}">` +
+    renderProofMapHatchDefs() +
     laneSvg +
     edgeSvg +
     nodeSvg +
+    sampleSvgParts.join('') +
     `</svg>`;
+
+  const legend = collectProofMapLegendEntries([...drawnSignSet]);
+  const usedSigns = Object.freeze(legend.map((entry) => entry.id));
 
   // 9. Emit CartoucheScene IR passing checkGeometricInvariants
   const sceneNodes: SceneNodeMark[] = nodes.map((n) =>
@@ -456,9 +535,14 @@ export function compileProofMapLayout(
       id: n.id,
       label: n.qualifiedName,
       sign: n.kind === 'source' ? 'origin_observation' : 'derived',
-      state: 'known',
+      state: n.state,
       proofRef: n.proofRef,
-      cell: asOpaqueCell({ state: 'known', display: n.qualifiedName, proof_ref: n.proofRef }),
+      cell: asOpaqueCell({
+        state: n.state,
+        display: n.state === 'unknown' || n.state === 'absent' || n.state === 'not_applicable' ? null : n.qualifiedName,
+        ...(n.reason ? { reason: n.reason } : {}),
+        proof_ref: n.proofRef
+      }),
       box: Object.freeze({ id: n.id, x: n.x, y: n.y, w: n.w, h: n.h })
     })
   );
@@ -477,7 +561,7 @@ export function compileProofMapLayout(
     nodes: Object.freeze(sceneNodes),
     driftEdges: Object.freeze([]),
     unknownManifolds: Object.freeze([]),
-    usedSigns: Object.freeze(['origin_observation', 'derived']),
+    usedSigns,
     tableTwin: Object.freeze({
       headers: Object.freeze(['id', 'lane', 'depth', 'qualified_name']),
       rows: Object.freeze(nodes.map((n) => Object.freeze([n.id, n.lane, String(n.depth), n.qualifiedName])))
@@ -500,6 +584,8 @@ export function compileProofMapLayout(
     lanes: Object.freeze(lanes),
     nodes: Object.freeze(nodes),
     edges: Object.freeze(edges),
+    usedSigns,
+    legend,
     svgWidth,
     svgHeight,
     svg,
