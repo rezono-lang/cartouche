@@ -35,6 +35,8 @@ import {
   resolveProofMapManifest
 } from './proof-map-cards.ts';
 import type { BundleForCardsLike, RoleAnswerEntry } from './proof-map-cards.ts';
+import { buildProofMapSupposeView, renderProofMapSupposeHtml } from './proof-map-suppose.ts';
+import type { ProofMapSupposeView } from './proof-map-suppose.ts';
 
 export interface ProofMapLane {
   readonly pack: string;
@@ -95,6 +97,8 @@ export interface ProofMapSemanticLayout {
   readonly svgWidth: number;
   readonly svgHeight: number;
   readonly svg: string;
+  readonly html?: string | undefined;
+  readonly suppose?: ProofMapSupposeView | null | undefined;
   readonly scene: CartoucheScene;
 }
 
@@ -111,6 +115,10 @@ export interface ProofMapLayoutOptions {
   readonly selected?: { readonly relation: string; readonly key: unknown } | undefined;
   readonly groundsAnswer?: unknown;
   readonly focusEntity?: string | undefined;
+  readonly sweepRecording?: unknown;
+  readonly sweepStore?: string | undefined;
+  readonly sweepRole?: string | undefined;
+  readonly supposeVariant?: string | undefined;
 }
 
 interface BundleImportLike {
@@ -852,6 +860,14 @@ export function compileProofMapLayout(
     })
   });
 
+  const supposeView = buildProofMapSupposeView({
+    sweepRecording: options.sweepRecording,
+    sweepStore: options.sweepStore,
+    sweepRole: options.sweepRole,
+    supposeVariant: options.supposeVariant
+  });
+  const html = supposeView ? renderProofMapSupposeHtml(svg, supposeView) : undefined;
+
   return Object.freeze({
     role,
     manifestId,
@@ -865,6 +881,8 @@ export function compileProofMapLayout(
     svgWidth,
     svgHeight,
     svg,
+    ...(html !== undefined ? { html } : {}),
+    ...(supposeView ? { suppose: supposeView } : {}),
     scene
   });
 }
