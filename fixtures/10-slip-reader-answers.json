@@ -1,7 +1,7 @@
 {
   "fixture_id": "10-slip-reader-answers",
   "manifest": {
-    "id": "sha256:e0efb897ef8bebd6dc7736c620cead35c2805c88b8b821e7c742ce70fb9f1fb2",
+    "id": "sha256:54fe3fd504c2649e008053d321877fddeb9721f0ef9907330ef2643bf6de6af0",
     "epoch": 1,
     "knowledge_time": "2026-01-01T00:00:00Z",
     "role": "reader",
@@ -11,14 +11,14 @@
   "source": {
     "decision": "decisions/0009-slip-reads-rezono-reader.md",
     "repository": "rezono-lang/rezono",
-    "commit": "4f02400a5c2678f814f99ea8ff50bc13872f0aee",
+    "commit": "bec2d460470bfe7ee98702bda3f82b213558a837",
     "pack": "tests/fixtures/slip",
     "stores": {
       "main": "tests/slip/slip_support.py publish_main",
       "sweeps": "tests/slip/slip_support.py publish_sweeps, then drop_variant(v-item_amount-03-3)"
     },
     "how": "Recorded from Rezono's local reader (edge/gate/src/local.ts) at the commit by .github/workflows/rezono-reader-parity.yml: every request packages/slip/src/model.ts sends for the slip tests' pages, with the reader's status and body as served. Git dates of the sweeps repository fixed at 2026-01-01T00:00:00Z.",
-    "recorded_by": "https://github.com/rezono-lang/cartouche/actions/runs/44955704968"
+    "recorded_by": null
   },
   "reader_answers": {
     "main": {
@@ -29,31 +29,48 @@
             "pack": {
               "id": "slip"
             },
+            "imports": [
+              {
+                "name": "std-access",
+                "version": "0.2.0",
+                "sha256": "05dcea03dd358b3bf132c61cff868f46ad0ec6c038b50f5404c40cbffdbe4544"
+              }
+            ],
             "kinds": [
               {
                 "id": "group",
                 "class": "Group",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "hold",
                 "class": "Hold",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "item",
                 "class": "Item",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "link",
                 "class": "Link",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "role",
                 "class": "Role",
                 "world": "closed",
+                "module": "std-access:access",
+                "pack": "std-access",
                 "name_attribute": "role.title"
               }
             ],
@@ -193,6 +210,9 @@
                 "id": "calc__capped_amount",
                 "world": "closed",
                 "calc": "capped_amount",
+                "premises": [
+                  "recorded_amount"
+                ],
                 "semantic": {
                   "case": "derived",
                   "base": "number",
@@ -1861,11 +1881,11 @@
             "messages": [
               {
                 "lang": "en",
-                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\nrule.linked = Item {$i} is the tail of link {$l}.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
+                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nsign.engine_disagreement = engines disagree\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\nrule.linked = Item {$i} is the tail of link {$l}.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
               },
               {
                 "lang": "nl",
-                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\nrule.linked = Item {$i} is het begin van verbinding {$l}.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
+                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nsign.engine_disagreement = engines verschillen\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\nrule.linked = Item {$i} is het begin van verbinding {$l}.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
               }
             ],
             "home": {
@@ -2025,15 +2045,15 @@
             "epoch": 1,
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
-            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "e0efb897ef8bebd6dc7736c620cead35c2805c88b8b821e7c742ce70fb9f1fb2",
+            "definition_sha256": "73a53a19020e7401f7283fbb6796b02eb7482a73352f2ab45f603d9658ab2db5",
+            "manifest_sha256": "54fe3fd504c2649e008053d321877fddeb9721f0ef9907330ef2643bf6de6af0",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
             "compiled": [
               {
                 "file": "bundle/schema-bundle.json",
-                "sha256": "c530e1b8d5346f16950d817d5bc2654fd10c16cef1ca8a59fb957420fa28cc92"
+                "sha256": "55379130e7c2d003583c82cddf65690556f1c4a7d27b3bf20af59f5e832d8e77"
               }
             ],
             "snapshots": [
@@ -4309,17 +4329,23 @@
               {
                 "id": "group",
                 "class": "Group",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "hold",
                 "class": "Hold",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "item",
                 "class": "Item",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               }
             ],
             "attributes": [
@@ -4390,6 +4416,9 @@
                 "id": "calc__capped_amount",
                 "world": "closed",
                 "calc": "capped_amount",
+                "premises": [
+                  "recorded_amount"
+                ],
                 "semantic": {
                   "case": "derived",
                   "base": "number",
@@ -5106,11 +5135,11 @@
             "messages": [
               {
                 "lang": "en",
-                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
+                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nsign.engine_disagreement = engines disagree\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
               },
               {
                 "lang": "nl",
-                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
+                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nsign.engine_disagreement = engines verschillen\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
               }
             ],
             "home": {
@@ -5270,15 +5299,15 @@
             "epoch": 1,
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
-            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "e0efb897ef8bebd6dc7736c620cead35c2805c88b8b821e7c742ce70fb9f1fb2",
+            "definition_sha256": "73a53a19020e7401f7283fbb6796b02eb7482a73352f2ab45f603d9658ab2db5",
+            "manifest_sha256": "54fe3fd504c2649e008053d321877fddeb9721f0ef9907330ef2643bf6de6af0",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
             "compiled": [
               {
                 "file": "bundle/schema-bundle.json",
-                "sha256": "c530e1b8d5346f16950d817d5bc2654fd10c16cef1ca8a59fb957420fa28cc92"
+                "sha256": "55379130e7c2d003583c82cddf65690556f1c4a7d27b3bf20af59f5e832d8e77"
               }
             ],
             "snapshots": [
@@ -5968,31 +5997,48 @@
             "pack": {
               "id": "slip"
             },
+            "imports": [
+              {
+                "name": "std-access",
+                "version": "0.2.0",
+                "sha256": "05dcea03dd358b3bf132c61cff868f46ad0ec6c038b50f5404c40cbffdbe4544"
+              }
+            ],
             "kinds": [
               {
                 "id": "group",
                 "class": "Group",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "hold",
                 "class": "Hold",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "item",
                 "class": "Item",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "link",
                 "class": "Link",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "role",
                 "class": "Role",
                 "world": "closed",
+                "module": "std-access:access",
+                "pack": "std-access",
                 "name_attribute": "role.title"
               }
             ],
@@ -6132,6 +6178,9 @@
                 "id": "calc__capped_amount",
                 "world": "closed",
                 "calc": "capped_amount",
+                "premises": [
+                  "recorded_amount"
+                ],
                 "semantic": {
                   "case": "derived",
                   "base": "number",
@@ -7800,11 +7849,11 @@
             "messages": [
               {
                 "lang": "en",
-                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\nrule.linked = Item {$i} is the tail of link {$l}.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
+                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nsign.engine_disagreement = engines disagree\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\nrule.linked = Item {$i} is the tail of link {$l}.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
               },
               {
                 "lang": "nl",
-                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\nrule.linked = Item {$i} is het begin van verbinding {$l}.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
+                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nsign.engine_disagreement = engines verschillen\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\nrule.linked = Item {$i} is het begin van verbinding {$l}.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
               }
             ],
             "home": {
@@ -7964,15 +8013,15 @@
             "epoch": 2,
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
-            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "19809f9e056ec410e9e1bc6f916d2d2cb2cea56a22e4fb4eb2183185e0b7072d",
+            "definition_sha256": "73a53a19020e7401f7283fbb6796b02eb7482a73352f2ab45f603d9658ab2db5",
+            "manifest_sha256": "5dc48c3276aaa7fe8c003970d0451d0ce7c897502b0e506cff3185876cec9c5f",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
             "compiled": [
               {
                 "file": "bundle/schema-bundle.json",
-                "sha256": "c530e1b8d5346f16950d817d5bc2654fd10c16cef1ca8a59fb957420fa28cc92"
+                "sha256": "55379130e7c2d003583c82cddf65690556f1c4a7d27b3bf20af59f5e832d8e77"
               }
             ],
             "snapshots": [
@@ -9898,17 +9947,23 @@
               {
                 "id": "group",
                 "class": "Group",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "hold",
                 "class": "Hold",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               },
               {
                 "id": "item",
                 "class": "Item",
-                "world": "closed"
+                "world": "closed",
+                "module": "slip",
+                "pack": "slip"
               }
             ],
             "attributes": [
@@ -9979,6 +10034,9 @@
                 "id": "calc__capped_amount",
                 "world": "closed",
                 "calc": "capped_amount",
+                "premises": [
+                  "recorded_amount"
+                ],
                 "semantic": {
                   "case": "derived",
                   "base": "number",
@@ -10695,11 +10753,11 @@
             "messages": [
               {
                 "lang": "en",
-                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
+                "resource": "@locale en\n---\nstatus.valid = valid\nstatus.changed = changed\nstatus.violated = violated\nstatus.unknown = unknown\nstatus.not_applicable = not applicable\nstatus.absent = absent, checked\nstatus.invalid = invalid\ntone.positive = positive\ntone.neutral = neutral\ntone.caution = caution\ntone.negative = negative\ntone.unknown = unknown\nsign.origin_decision = origin: decision\nsign.origin_vendor = origin: vendor or law\nsign.origin_design = origin: design\nsign.origin_observation = origin: observation\nsign.derived = derived\nsign.assumption = assumption\nsign.drift = differs from the reference\nsign.screened = not visible to your role\nsign.proposal = proposal\nsign.sealed = sealed\nsign.supposed = supposed\nsign.engine_disagreement = engines disagree\nimpact.added = added\nimpact.removed = removed\nimpact.changed = changed\nexplain.grounds = Grounds\nexplain.grounds.question = {{What does {$element} rest on?}}\nexplain.reach = Reach\nexplain.reach.question = {{What depends on {$element}?}}\nexplain.gap = What is missing\nexplain.gap.question = {{What is missing for {$element}?}}\nexplain.contrast = What is not allowed\nexplain.contrast.question = {{Why does {$element} not hold, and what closes it?}}\nexplain.consequence = Without this\nexplain.consequence.question = {{What breaks without {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{What changes with {$element}?}}\nexplain.impact = Impact\nexplain.impact.question = {{What does {$element} reach?}}\nexplain.sweep = Sweep\nexplain.sweep.question = {{What does {$element} do over the range?}}\nexplain.outside = Outside your view\nexplain.more = More from here\nexplain.empty = {{No answer for {$element}.}}\nexplain.unpublished = {{Not published yet: propose {$element} to get the answer.}}\nexplain.computed = Computed by Rezono\nexplain.not_computed.no_variant = {{Not computed: no published variant withdraws {$element}.}}\nrule.held = Item {$i} is held by {$h}.\nrule.flagged = Item {$i} is flagged with amount {$a}, and nothing holds it.\nrule.group_size = Group {$g} has {$n} items.\nrule.busy = Group {$g} is busy with {$n} items.\narrow.total = Each {$kind} has exactly one {$arrow}.\narrow.partial = Each {$kind} has at most one {$arrow}.\nattribute.total = Each {$kind} has exactly one {$attribute}.\nattribute.partial = Each {$kind} has at most one {$attribute}.\nattribute.many.total = Each {$kind} has at least one {$attribute}.\nattribute.many.partial = Each {$kind} may have more than one {$attribute}.\nis_a = Each {$kind} is a {$parent}.\nunique_key = Each {$key} belongs to at most one {$kind}.\npath_equation = For each {$kind}, {$equation} holds.\nrule.recorded_amount = Item {$i} has the recorded amount {$a}.\n"
               },
               {
                 "lang": "nl",
-                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
+                "resource": "@locale nl\n---\nstatus.valid = geldend\nstatus.changed = gewijzigd\nstatus.violated = geschonden\nstatus.unknown = onbekend\nstatus.not_applicable = niet van toepassing\nstatus.absent = afwezig, gecontroleerd\nstatus.invalid = ongeldig\ntone.positive = positief\ntone.neutral = neutraal\ntone.caution = let op\ntone.negative = negatief\ntone.unknown = onbekend\nsign.origin_decision = herkomst: besluit\nsign.origin_vendor = herkomst: leverancier of wet\nsign.origin_design = herkomst: ontwerp\nsign.origin_observation = herkomst: waarneming\nsign.derived = afgeleid\nsign.assumption = aanname\nsign.drift = wijkt af van de referentie\nsign.screened = niet zichtbaar voor je rol\nsign.proposal = voorstel\nsign.sealed = verzegeld\nsign.supposed = verondersteld\nsign.engine_disagreement = engines verschillen\nimpact.added = erbij\nimpact.removed = eraf\nimpact.changed = anders\nexplain.grounds = Grondslag\nexplain.grounds.question = {{Waar rust {$element} op?}}\nexplain.reach = Bereik\nexplain.reach.question = {{Wat hangt af van {$element}?}}\nexplain.gap = Wat ontbreekt\nexplain.gap.question = {{Wat ontbreekt er voor {$element}?}}\nexplain.contrast = Wat niet mag\nexplain.contrast.question = {{Waarom geldt {$element} niet, en wat sluit het uit?}}\nexplain.consequence = Zonder dit\nexplain.consequence.question = {{Wat valt weg zonder {$element}?}}\nexplain.scenario = Scenario\nexplain.scenario.question = {{Wat verandert er met {$element}?}}\nexplain.impact = Doorwerking\nexplain.impact.question = {{Waar werkt {$element} in door?}}\nexplain.sweep = Reeks\nexplain.sweep.question = {{Wat doet {$element} over de reeks?}}\nexplain.outside = Buiten je zicht\nexplain.more = Verder vanaf hier\nexplain.empty = {{Geen antwoord voor {$element}.}}\nexplain.unpublished = {{Nog niet gepubliceerd: stel {$element} voor om het antwoord te krijgen.}}\nexplain.computed = Berekend door Rezono\nexplain.not_computed.no_variant = {{Niet berekend: geen gepubliceerde variant trekt {$element} in.}}\nrule.held = Item {$i} is geblokkeerd door {$h}.\nrule.flagged = Item {$i} is gemarkeerd met bedrag {$a}, en niets blokkeert het.\nrule.group_size = Groep {$g} heeft {$n} items.\nrule.busy = Groep {$g} is druk met {$n} items.\narrow.total = Elk {$kind} heeft precies één {$arrow}.\narrow.partial = Elk {$kind} heeft hoogstens één {$arrow}.\nattribute.total = Elk {$kind} heeft precies één {$attribute}.\nattribute.partial = Elk {$kind} heeft hoogstens één {$attribute}.\nattribute.many.total = Elk {$kind} heeft minstens één {$attribute}.\nattribute.many.partial = Elk {$kind} kan meer dan één {$attribute} hebben.\nis_a = Elk {$kind} is een {$parent}.\nunique_key = Elk {$key} hoort bij hoogstens één {$kind}.\npath_equation = Voor elk {$kind} geldt {$equation}.\nrule.recorded_amount = Item {$i} heeft het vastgelegde bedrag {$a}.\n"
               }
             ],
             "home": {
@@ -10859,15 +10917,15 @@
             "epoch": 2,
             "knowledge_time": "2026-01-01T00:00:00Z",
             "access_semantics": 2,
-            "definition_sha256": "9b315d646ea80eae2c2c071c78e6af4cd3b3da603a702d105afb7822d05d0e12",
-            "manifest_sha256": "19809f9e056ec410e9e1bc6f916d2d2cb2cea56a22e4fb4eb2183185e0b7072d",
+            "definition_sha256": "73a53a19020e7401f7283fbb6796b02eb7482a73352f2ab45f603d9658ab2db5",
+            "manifest_sha256": "5dc48c3276aaa7fe8c003970d0451d0ce7c897502b0e506cff3185876cec9c5f",
             "witness_check": "green",
             "trust_tier": "sealed",
             "may_propose": false,
             "compiled": [
               {
                 "file": "bundle/schema-bundle.json",
-                "sha256": "c530e1b8d5346f16950d817d5bc2654fd10c16cef1ca8a59fb957420fa28cc92"
+                "sha256": "55379130e7c2d003583c82cddf65690556f1c4a7d27b3bf20af59f5e832d8e77"
               }
             ],
             "snapshots": [

@@ -107,6 +107,7 @@
     "proposal": { "kind": "sign", "glyph": "✎", "pattern": "dashed-frame", "token": "proof" },
     "sealed": { "kind": "sign", "glyph": "◉", "pattern": "seal-stamp", "token": "proof" },
     "supposed": { "kind": "state", "glyph": "◇", "pattern": "dashed-diamond", "token": "caution" },
+    "engine_disagreement": { "kind": "sign", "glyph": "≠", "pattern": "not-equal-glyph", "token": "violated" },
     "valid": { "kind": "state", "glyph": "✓", "pattern": "solid-line", "token": "valid" },
     "changed": { "kind": "state", "glyph": "◐", "pattern": "half-fill", "token": "caution" },
     "violated": { "kind": "state", "glyph": "✕", "pattern": "cross-stroke", "token": "violated" },

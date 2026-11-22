@@ -13,16 +13,16 @@ test('Role-safe zero-leak projection (recorded gate -> restricted role): limited
   const recording = JSON.parse(
     fs.readFileSync(path.join(ROOT, 'fixtures', '11-zorgtoeslag-bitemporal-gate-answers.json'), 'utf8')
   );
-  const checkerSubjects = recording.reader_answers.checker[`/${PACK}/m-4/rows/household`].body.rows.map((r) => String(r.key[0]));
+  const checkerSubjects = recording.reader_answers.checker[`/${PACK}/m-4/rows/persoon`].body.rows.map((r) => String(r.key[0]));
   const limitedSubjects = new Set(
-    recording.reader_answers.limited[`/${PACK}/m-4/rows/household`].body.rows.map((r) => String(r.key[0]))
+    recording.reader_answers.limited[`/${PACK}/m-4/rows/persoon`].body.rows.map((r) => String(r.key[0]))
   );
   const restrictedIds = checkerSubjects.filter((id) => !limitedSubjects.has(id));
   assert.ok(restrictedIds.length > 0, 'complete role must contain subjects hidden from limited role');
 
   const limitedHead = recording.reader_answers.limited[`/${PACK}/head`].body;
-  const limitedHhSnap = limitedHead.snapshots.find((s) => s.relation === 'household');
-  assert.equal(limitedHhSnap?.full, false, 'restricted role must mark household snapshot full=false');
+  const limitedHhSnap = limitedHead.snapshots.find((s) => s.relation === 'persoon');
+  assert.equal(limitedHhSnap?.full, false, 'restricted role must mark persoon snapshot full=false');
 
   const limitedRels = new Set(recording.reader_answers.limited[`/${PACK}/bundle`].body.relations.map((r) => r.id));
   assert.equal(limitedRels.has('calc__allowance'), false, 'withheld calc__allowance must not appear in restricted bundle');

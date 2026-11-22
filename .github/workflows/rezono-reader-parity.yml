@@ -90,6 +90,8 @@ jobs:
             --run "$RUN_URL" --out "$RUNNER_TEMP/out/10-slip-reader-answers.json"
           node scripts/record-rezono-zorgtoeslag-gate.mjs --rezono ../rezono --store "$RUNNER_TEMP/zorgtoeslag-store.json" \
             --run "$RUN_URL" --out "$RUNNER_TEMP/out/11-zorgtoeslag-bitemporal-gate-answers.json"
+          node scripts/record-rezono-proof-map-gate.mjs --rezono ../rezono --store "$RUNNER_TEMP/zorgtoeslag-store.json" \
+            --run "$RUN_URL" --out "$RUNNER_TEMP/out/12-zorgtoeslag-proof-map-gate-answers.json"
       - name: Compare with the committed fixture
         id: compare
         working-directory: cartouche
@@ -105,6 +107,12 @@ jobs:
             differs=true
             printf '\n---\n\n' >> "$RUNNER_TEMP/out/diff.md"
             cat "$RUNNER_TEMP/out/diff-11.md" >> "$RUNNER_TEMP/out/diff.md"
+          fi
+          if ! node scripts/compare-reader-answers.mjs fixtures/12-zorgtoeslag-proof-map-gate-answers.json \
+               "$RUNNER_TEMP/out/12-zorgtoeslag-proof-map-gate-answers.json" > "$RUNNER_TEMP/out/diff-12.md"; then
+            differs=true
+            printf '\n---\n\n' >> "$RUNNER_TEMP/out/diff.md"
+            cat "$RUNNER_TEMP/out/diff-12.md" >> "$RUNNER_TEMP/out/diff.md"
           fi
           echo "differs=$differs" >> "$GITHUB_OUTPUT"
           cat "$RUNNER_TEMP/out/diff.md" | tee -a "$GITHUB_STEP_SUMMARY"

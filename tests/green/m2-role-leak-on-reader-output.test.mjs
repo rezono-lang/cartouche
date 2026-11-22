@@ -47,15 +47,15 @@ test('M2 [role-leak-on-reader-output]: fixture 11 records complete and restricte
   assert.equal(checkerHead?.status, 200);
   assert.equal(limitedHead?.status, 200);
 
-  const checkerHh = checkerHead.body.snapshots.find((s) => s.relation === 'household');
-  const limitedHh = limitedHead.body.snapshots.find((s) => s.relation === 'household');
-  assert.equal(checkerHh?.full, true, 'complete role reads household in full');
-  assert.equal(limitedHh?.full, false, 'restricted role marks household full=false');
+  const checkerHh = checkerHead.body.snapshots.find((s) => s.relation === 'persoon');
+  const limitedHh = limitedHead.body.snapshots.find((s) => s.relation === 'persoon');
+  assert.equal(checkerHh?.full, true, 'complete role reads persoon in full');
+  assert.equal(limitedHh?.full, false, 'restricted role marks persoon full=false');
 });
 
 test('M2 [role-leak-on-reader-output]: restricted page renders only from restricted recording with zero complete-only leaks and honest horizon', async () => {
-  const checkerRowsHh = RECORDING.reader_answers.checker[`/${PACK}/m-4/rows/household`].body.rows;
-  const limitedRowsHh = RECORDING.reader_answers.limited[`/${PACK}/m-4/rows/household`].body.rows;
+  const checkerRowsHh = RECORDING.reader_answers.checker[`/${PACK}/m-4/rows/persoon`].body.rows;
+  const limitedRowsHh = RECORDING.reader_answers.limited[`/${PACK}/m-4/rows/persoon`].body.rows;
   const visibleSubjects = new Set(limitedRowsHh.map((r) => String(r.key[0])));
   const hiddenSubjects = checkerRowsHh
     .map((r) => String(r.key[0]))
@@ -84,9 +84,9 @@ test('M2 [role-leak-on-reader-output]: restricted page renders only from restric
     limitedFx = buildBitemporalFixtureFromGateAnswers(onlyLimited, {
       pack: PACK,
       role: 'limited',
-      subjectId: 'ann',
+      subjectId: 'p-ann',
       validTime: '2026-01-01',
-      relation: 'household__joint_income'
+      relation: 'calc__standard_premium'
     });
   } catch (err) {
     assert.fail(`buildBitemporalFixtureFromGateAnswers must support restricted role projection: ${err.message}`);
@@ -108,9 +108,9 @@ test('M2 [role-leak-on-reader-output]: restricted page renders only from restric
   const limitedFxFromAlt = buildBitemporalFixtureFromGateAnswers(restrictedOnlyRecording(altComplete), {
     pack: PACK,
     role: 'limited',
-    subjectId: 'ann',
+    subjectId: 'p-ann',
     validTime: '2026-01-01',
-    relation: 'household__joint_income'
+    relation: 'calc__standard_premium'
   });
   assert.equal(
     sha256(canonicalJson(compileBitemporalScene(limitedFxFromAlt))),
@@ -148,7 +148,7 @@ test('M2 [role-leak-on-reader-output]: restricted page renders only from restric
   const withheldFx = buildBitemporalFixtureFromGateAnswers(onlyLimited, {
     pack: PACK,
     role: 'limited',
-    subjectId: 'ann',
+    subjectId: 'p-ann',
     validTime: '2026-01-01',
     relation: 'calc__allowance'
   });

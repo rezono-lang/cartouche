@@ -50,7 +50,7 @@ const fx08 = loadJson('fixtures/08-monge-4d-audit.json');
 
 const GATE_PACK = 'zorgtoeslag-slice';
 const GATE_ROLE = 'checker';
-const GATE_SUBJECT = 'ann';
+const GATE_SUBJECT = 'p-ann';
 const fx11Default = buildBitemporalFixtureFromGateAnswers(fx11, {
   pack: GATE_PACK,
   role: GATE_ROLE,

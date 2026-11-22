@@ -89,7 +89,7 @@ for (const ep of published.epochs) {
 }
 
 const latestManifest = published.epochs[published.epochs.length - 1].manifest;
-for (const rel of ['household', 'household__joint_income']) {
+for (const rel of ['persoon', 'calc__standard_premium']) {
   const resp = await checker.query(`/zorgtoeslag-slice/${latestManifest}/rows/${rel}`);
   if (resp.status !== 200) {
     throw new Error(`record: unexpected checker /${latestManifest}/rows/${rel} status ${resp.status}`);
@@ -106,7 +106,7 @@ if (limitedBundle.status !== 200 || !limitedBundle.body) {
   throw new Error(`record: unexpected limited /zorgtoeslag-slice/bundle status ${limitedBundle.status}`);
 }
 await limited.query(`/zorgtoeslag-slice/${latestManifest}/rows/${allowanceRel}`);
-for (const rel of ['household', 'household__joint_income']) {
+for (const rel of ['persoon', 'calc__standard_premium']) {
   const resp = await limited.query(`/zorgtoeslag-slice/${latestManifest}/rows/${rel}`);
   if (resp.status !== 200) {
     throw new Error(`record: unexpected limited /${latestManifest}/rows/${rel} status ${resp.status}`);

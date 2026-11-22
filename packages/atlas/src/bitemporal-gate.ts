@@ -275,6 +275,11 @@ export function buildBitemporalFixtureFromGateAnswers(
 
   for (const ep of selected) {
     const relName = options.relation ?? ep.relation;
+    if (!horizon.complete) {
+      const rowPath = `/${options.pack}/${ep.manifest}/rows/${relName}`;
+      const answer = roleAnswers[rowPath];
+      if (!answer || answer.status !== 200 || !answer.body || typeof answer.body !== 'object') continue;
+    }
     let cols = colsCache.get(relName);
     if (!cols) {
       cols = resolveRelationColumns(roleAnswers, options.pack, relName);

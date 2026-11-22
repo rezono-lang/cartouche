@@ -37,6 +37,7 @@ export const SPECIMEN_ENTRIES: readonly SpecimenEntry[] = Object.freeze([
   { dataEntry: 'sign:screened', glyph: '▬', kind: 'sign' },
   { dataEntry: 'sign:proposal', glyph: '✎', kind: 'sign' },
   { dataEntry: 'sign:sealed', glyph: '◉', kind: 'sign' },
+  { dataEntry: 'sign:engine_disagreement', glyph: '≠', kind: 'sign' },
   { dataEntry: 'state:supposed', glyph: '◇', kind: 'state' },
   { dataEntry: 'state:valid', glyph: '✓', kind: 'state' },
   { dataEntry: 'state:changed', glyph: '◐', kind: 'state' },
