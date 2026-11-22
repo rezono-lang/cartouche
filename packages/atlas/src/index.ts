@@ -18,6 +18,7 @@ export * from './monge-model.ts';
 export * from './key-page-model.ts';
 export * from './proof-map-model.ts';
 export * from './proof-map-layout.ts';
+export * from './proof-map-share.ts';
 export * from './i18n-mf2.ts';
 export { escapeXml } from './flow-split-svg.ts';
 

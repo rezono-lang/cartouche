@@ -58,6 +58,12 @@ export interface ProofMapSemanticLayout {
 
 export interface ProofMapLayoutOptions {
   readonly role?: string;
+  readonly focusKey?: string;
+  readonly selection?: string;
+  readonly validAt?: string;
+  readonly knownAt?: string;
+  readonly epoch?: number;
+  readonly expansions?: readonly string[];
 }
 
 interface BundleImportLike {
