@@ -28,6 +28,7 @@ export * from './proof-map-ghosts.ts';
 export * from './proof-map-suppose.ts';
 export * from './proof-map-role.ts';
 export * from './proof-map-parity.ts';
+export * from './proof-map-scale.ts';
 export * from './i18n-mf2.ts';
 export { escapeXml } from './flow-split-svg.ts';
 

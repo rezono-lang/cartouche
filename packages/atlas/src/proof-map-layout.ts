@@ -59,6 +59,13 @@ import {
   renderProofMapParityTwinTableHtml
 } from './proof-map-parity.ts';
 import type { ProofMapParityRecord } from './proof-map-parity.ts';
+import {
+  buildEgoExpandedNodes,
+  buildKindChipsAndTable,
+  compileSyntheticScaleLayout,
+  resolveProofMapLod
+} from './proof-map-scale.ts';
+import type { ProofMapLod, ProofMapRenderer, SyntheticScaleFixture } from './proof-map-scale.ts';
 
 export interface ProofMapLane {
   readonly pack: string;
@@ -112,6 +119,8 @@ export interface ProofMapSemanticLayout {
   readonly manifestId: string;
   readonly validAt: string | null;
   readonly knownAt: string | null;
+  readonly renderer: ProofMapRenderer;
+  readonly lod: ProofMapLod;
   readonly lanes: readonly ProofMapLane[];
   readonly nodes: readonly ProofMapSemanticNode[];
   readonly edges: readonly ProofMapSemanticEdge[];
@@ -121,6 +130,9 @@ export interface ProofMapSemanticLayout {
   readonly svgHeight: number;
   readonly svg: string;
   readonly html: string;
+  readonly chipTableHtml?: string | undefined;
+  readonly twinHtml?: string | undefined;
+  readonly browserHarnessHtml?: string | undefined;
   readonly suppose?: ProofMapSupposeView | null | undefined;
   readonly parity?: ProofMapParityRecord | null | undefined;
   readonly slipHtml?: string | undefined;
@@ -133,11 +145,16 @@ export interface ProofMapLayoutOptions {
   readonly lang?: AtlasLocale | undefined;
   readonly manifest?: string | undefined;
   readonly focusKey?: string | undefined;
+  readonly focus?: { readonly relation: string; readonly key: unknown } | undefined;
   readonly selection?: string | undefined;
   readonly validAt?: string | undefined;
   readonly knownAt?: string | undefined;
   readonly epoch?: number | undefined;
-  readonly expansions?: readonly string[] | undefined;
+  readonly expansions?: readonly unknown[] | undefined;
+  readonly groupThreshold?: number | undefined;
+  readonly expandedKinds?: readonly string[] | undefined;
+  readonly zoom?: number | undefined;
+  readonly webglThreshold?: number | undefined;
   readonly store?: string | undefined;
   readonly selected?: { readonly relation: string; readonly key: unknown } | undefined;
   readonly groundsAnswer?: unknown;
@@ -267,6 +284,27 @@ export function compileProofMapLayout(
   fixture: GateFixtureLike,
   options: ProofMapLayoutOptions = {}
 ): ProofMapSemanticLayout {
+  if ('rows' in fixture && Array.isArray((fixture as { rows?: unknown }).rows)) {
+    const scaleRes = compileSyntheticScaleLayout(fixture as unknown as SyntheticScaleFixture, options);
+    const scaleLegend = collectProofMapLegendEntries(['origin_observation', 'derived']);
+    return Object.freeze({
+      ...scaleRes,
+      availableRoles: Object.freeze([]),
+      validAt: null,
+      knownAt: null,
+      html: scaleRes.twinHtml,
+      nodes: scaleRes.nodes.map((n) =>
+        Object.freeze({
+          ...n,
+          sign: (n.kind === 'source' ? 'origin_observation' : 'derived') as ProofMapSignId
+        })
+      ),
+      edges: Object.freeze([]),
+      usedSigns: Object.freeze(scaleLegend.map((e) => e.id)),
+      legend: scaleLegend
+    });
+  }
+
   const role = options.role ?? (typeof fixture.manifest?.role === 'string' ? fixture.manifest.role : 'checker');
   const bundle = findRoleBundle(fixture, role, options.store);
 
@@ -722,11 +760,55 @@ export function compileProofMapLayout(
     }
   }
 
+  // 6e. Ego-graph projection (focus + declared question expansions) and kind chips / LOD / renderer
+  let activeNodes: ProofMapSemanticNode[] = nodes;
+  if (options.focus) {
+    const egoRows = buildEgoExpandedNodes(options.focus, options.expansions, manifestId, packId);
+    activeNodes = egoRows.map((er) =>
+      Object.freeze({
+        id: er.id,
+        kind: (er.depth === 0 ? 'source' : 'derived') as 'source' | 'derived',
+        className: er.relation,
+        lane: er.lane,
+        qualifiedName: er.relation,
+        depth: er.depth,
+        premises: Object.freeze([]),
+        sign: (er.depth === 0 ? 'origin_observation' : 'derived') as ProofMapSignId,
+        state: 'known' as EpistemicState,
+        proofRef: er.proofRef,
+        x: er.x,
+        y: er.y,
+        w: er.w,
+        h: er.h,
+        relation: er.relation,
+        key: er.key
+      })
+    );
+  }
+
+  const chips =
+    typeof options.groupThreshold === 'number'
+      ? buildKindChipsAndTable({
+          fixture,
+          role,
+          store: options.store,
+          manifestId,
+          groupThreshold: options.groupThreshold,
+          expandedKinds: options.expandedKinds,
+          startY: maxBottomY + CARD_GAP_Y
+        })
+      : { chipSvg: '', chipTableHtml: '', nextY: maxBottomY };
+  if (chips.nextY > maxBottomY) maxBottomY = chips.nextY;
+
+  const lod = resolveProofMapLod(options.zoom);
+  const drawnCardCount = options.focus ? activeNodes.length : sourceKindIds.size + derivedRelations.length;
+  const renderer: ProofMapRenderer = drawnCardCount > (options.webglThreshold ?? 400) ? 'webgl' : 'svg';
+
   // 7. Build premise -> conclusion edges with premise epistemic state
-  const nodeById = new Map(nodes.map((n) => [n.id, n]));
+  const nodeById = new Map(activeNodes.map((n) => [n.id, n]));
   const edges: ProofMapSemanticEdge[] = [];
   const hasManifest = Boolean(activeManifest);
-  for (const n of nodes) {
+  for (const n of activeNodes) {
     for (const premId of n.premises) {
       const prem = nodeById.get(premId);
       if (prem) {
@@ -882,7 +964,16 @@ export function compileProofMapLayout(
 
   const emittedWitnessIds = new Set<string>();
   const nodeSvgParts: string[] = [];
-  for (const n of nodes) {
+  for (const n of activeNodes) {
+    if (lod === 'compact') {
+      nodeSvgParts.push(
+        `<g data-key="${escapeXml(n.key ?? n.id)}" data-relation="${escapeXml(n.relation ?? n.id)}" data-state="${n.state}" data-sign="${n.sign}" data-proof-ref="${escapeXml(n.proofRef)}">` +
+          `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="24" rx="4" fill="var(--c-paper-elev)" stroke="var(--c-rule-strong)" stroke-width="1" />` +
+          `<text x="${n.x + 8}" y="${n.y + 16}" fill="var(--c-ink)" font-size="10">${escapeXml(n.className)}</text>` +
+          `</g>`
+      );
+      continue;
+    }
     if (witnessProjection && !n.ghost) {
       const matches = witnessByRel.get(n.relation ?? n.id);
       if (matches && matches.length > 0) {
@@ -964,6 +1055,7 @@ export function compileProofMapLayout(
     laneSvg +
     nodeSvg +
     edgeSvg +
+    chips.chipSvg +
     sampleSvgParts.join('') +
     `</svg>`;
 
@@ -971,7 +1063,7 @@ export function compileProofMapLayout(
   const usedSigns = Object.freeze(legend.map((entry) => entry.id));
 
   // 9. Emit CartoucheScene IR passing checkGeometricInvariants
-  const sceneNodes: SceneNodeMark[] = nodes.map((n) =>
+  const sceneNodes: SceneNodeMark[] = activeNodes.map((n) =>
     Object.freeze({
       id: n.id,
       label: n.qualifiedName,
@@ -1058,8 +1150,10 @@ export function compileProofMapLayout(
     manifestId,
     validAt: epochSel.validAt,
     knownAt: epochSel.knownAt,
+    renderer,
+    lod,
     lanes: Object.freeze(lanes),
-    nodes: Object.freeze(nodes),
+    nodes: Object.freeze(activeNodes),
     edges: Object.freeze(edges),
     usedSigns,
     legend,
@@ -1067,6 +1161,7 @@ export function compileProofMapLayout(
     svgHeight,
     svg,
     html,
+    ...(chips.chipTableHtml ? { chipTableHtml: chips.chipTableHtml } : {}),
     ...(supposeView ? { suppose: supposeView } : {}),
     ...(parityRecord ? { parity: parityRecord } : {}),
     ...(witnessProjection
