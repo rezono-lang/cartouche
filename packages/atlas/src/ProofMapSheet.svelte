@@ -1,5 +1,6 @@
 <script lang="ts">
   import { DATA_MARKS } from '../../reader-core/src/index.ts';
+  import type { PaletteName } from '../../reader-core/src/index.ts';
   import { formatAtlasMessage } from './i18n-mf2.ts';
   import type { AtlasLocale } from './i18n-mf2.ts';
   import { compileProofMapLayout } from './proof-map-layout.ts';
@@ -17,6 +18,8 @@
     knownAt = undefined,
     shareUrl = undefined,
     role = 'checker',
+    manifest = undefined,
+    theme = undefined,
     allowedRoleLenses = undefined,
     readerStatus = 200,
     lang = 'en'
@@ -30,6 +33,8 @@
     knownAt?: string | undefined;
     shareUrl?: string | undefined;
     role?: string;
+    manifest?: string | undefined;
+    theme?: PaletteName | undefined;
     allowedRoleLenses?: readonly string[] | undefined;
     readerStatus?: number;
     lang?: AtlasLocale;
@@ -50,13 +55,18 @@
 
   let isUnserved = $derived(readerStatus === 410 || shareState?.status === 'withdrawn');
   let isGateRecording = $derived(
-    !isUnserved && Boolean(shareUrl) && typeof fixture === 'object' && fixture !== null && 'reader_answers' in fixture
+    !isUnserved &&
+      (Boolean(shareUrl) || manifest !== undefined || theme !== undefined) &&
+      typeof fixture === 'object' &&
+      fixture !== null &&
+      'reader_answers' in fixture
   );
 
   let semanticLayout = $derived(
     isGateRecording
       ? compileProofMapLayout(fixture, {
           role: shareState?.effectiveRole ?? role,
+          manifest,
           focusKey: shareState?.parsed.at ?? focusKey,
           selection: shareState?.parsed.selection,
           validAt: shareState?.parsed.validAt ?? validAt,
@@ -92,7 +102,10 @@
   <section
     class="proof-map-sheet"
     aria-labelledby="proof-map-title"
-    {...{ [M.trust_tier]: semanticLayout.scene.seal.trustTier }}
+    {...{
+      [M.trust_tier]: semanticLayout.scene.seal.trustTier,
+      ...(theme ? { [M.theme]: theme } : {})
+    }}
     {lang}
   >
     <header>
@@ -130,7 +143,26 @@
       </tbody>
     </table>
 
-    {@html semanticLayout.svg}
+    <div class="proof-map-canvas">
+      {@html semanticLayout.svg}
+    </div>
+
+    <table aria-label={t('sheet.common.legend')} {...{ [M.part]: 'legend' }}>
+      <thead>
+        <tr>
+          <th scope="col">{t('col.glyph')}</th>
+          <th scope="col">{t('col.sign')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each semanticLayout.legend as entry (entry.id)}
+          <tr {...{ [M.sign]: entry.id }}>
+            <td class="mono">{entry.glyph}</td>
+            <td>{entry.name}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
   </section>
 {:else if model}
   <section
@@ -198,7 +230,6 @@
           {...{
             [M.key]: node.key,
             [M.relation]: node.relation,
-            [M.depth]: node.distance,
             [M.proof_ref]: node.proofRef
           }}
         >
