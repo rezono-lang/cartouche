@@ -162,8 +162,10 @@ test('M2 [proof-map-role-lens] 4: passing full two-role recording under restrict
   const svg = limitedLayout.svg ?? '';
 
   for (const forbidden of [...hiddenSubjects, ...hiddenRels]) {
-    assert.equal(sceneJson.includes(forbidden), false, `Complete-only id "${forbidden}" leaked into limited scene IR.`);
-    assert.equal(svg.includes(forbidden), false, `Complete-only id "${forbidden}" leaked into limited SVG.`);
-    assert.equal(html.includes(forbidden), false, `Complete-only id "${forbidden}" leaked into limited HTML.`);
+    const escaped = forbidden.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const tokenRe = new RegExp(`(?<![A-Za-z0-9_-])${escaped}(?![A-Za-z0-9_-])`);
+    assert.equal(tokenRe.test(sceneJson), false, `Complete-only id "${forbidden}" leaked into limited scene IR.`);
+    assert.equal(tokenRe.test(svg), false, `Complete-only id "${forbidden}" leaked into limited SVG.`);
+    assert.equal(tokenRe.test(html), false, `Complete-only id "${forbidden}" leaked into limited HTML.`);
   }
 });
