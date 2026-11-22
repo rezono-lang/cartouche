@@ -6,37 +6,6 @@ import * as atlas from '../../packages/atlas/src/index.ts';
 import { DATA_MARKS } from '../../packages/reader-core/src/index.ts';
 import { parseHtml } from '../../scripts/svelte-test-harness.mjs';
 
-export const RED_META = {
-  milestone: 'M2',
-  decision: 'decisions/0012-proof-first-plan.md',
-  priority: 2,
-  summary:
-    'Proof map requirement 4: selecting a conclusion highlights its whole witness in the same map as a shared DAG of all ancestors, equal to the witness premises the Rezono gate serves, with the slip as side panel (means sentence, bindings, @ sources)',
-  waits_on: [
-    'm1-absent-never-valid-colour',
-    'm1-claims-match-build',
-    'm1-contrast-wcag-aa',
-    'm1-forced-colors-reduced-motion',
-    'm1-green-guard-covers-harness',
-    'm1-invalid-drawn-everywhere',
-    'm1-mark-opens-slip',
-    'm1-monge-unknown-and-state-colours',
-    'm1-motion-between-epochs',
-    'm1-no-borrowed-proof-refs',
-    'm1-proof-refs-only-as-served',
-    'm1-propose-locked-until-served',
-    'm1-reads-only-served-head-fields',
-    'm1-sheet-reads-gate-output',
-    'm1-slip-all-witnesses',
-    'm1-slip-proof-tree',
-    'm1-slip-why-not-why-unknown',
-    'm1-time-valid-at-known-at',
-    'm1-viewer-prerendered-and-guarded',
-    'm1-zero-compute-lint-fails-closed',
-    'm2-proof-map-semantic-layout'
-  ]
-};
-
 // Decision 0012 §3a (proof map, requirement 4). The drawer part (sentence, bindings, sources, shared DAG) is
 // m1-slip-proof-tree; this test is the map part. RDFox Explain repeats the tree endlessly; here every ancestor is
 // highlighted once, in place, driven strictly by the Rezono gate's served witness premises.

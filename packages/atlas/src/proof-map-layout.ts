@@ -37,6 +37,15 @@ import {
 import type { BundleForCardsLike, RoleAnswerEntry } from './proof-map-cards.ts';
 import { buildProofMapSupposeView, renderProofMapSupposeHtml } from './proof-map-suppose.ts';
 import type { ProofMapSupposeView } from './proof-map-suppose.ts';
+import {
+  buildProofMapWitnessProjection,
+  lookupRecordedGroundsAnswer
+} from './proof-map-witness.ts';
+import type {
+  ProofMapGroundsAnswerLike,
+  ProofMapSelectionTarget,
+  ProofMapWitnessHighlightNode
+} from './proof-map-witness.ts';
 
 export interface ProofMapLane {
   readonly pack: string;
@@ -99,6 +108,8 @@ export interface ProofMapSemanticLayout {
   readonly svg: string;
   readonly html?: string | undefined;
   readonly suppose?: ProofMapSupposeView | null | undefined;
+  readonly slipHtml?: string | undefined;
+  readonly activeWitnessIri?: string | null | undefined;
   readonly scene: CartoucheScene;
 }
 
@@ -114,6 +125,7 @@ export interface ProofMapLayoutOptions {
   readonly store?: string | undefined;
   readonly selected?: { readonly relation: string; readonly key: unknown } | undefined;
   readonly groundsAnswer?: unknown;
+  readonly witnessIndex?: number | undefined;
   readonly focusEntity?: string | undefined;
   readonly sweepRecording?: unknown;
   readonly sweepStore?: string | undefined;
@@ -738,11 +750,63 @@ export function compileProofMapLayout(
     }
   }
 
+  const witnessSelection = options.selected
+    ? ({
+        relation: options.selected.relation,
+        key:
+          typeof options.selected.key === 'string' || Array.isArray(options.selected.key)
+            ? (options.selected.key as string | readonly unknown[])
+            : [options.selected.key]
+      } satisfies ProofMapSelectionTarget)
+    : undefined;
+  const activeManifestForWitness = activeManifest ?? manifestId;
+  const resolvedWitnessGrounds = witnessSelection
+    ? ((options.groundsAnswer as ProofMapGroundsAnswerLike | undefined) ??
+        lookupRecordedGroundsAnswer(
+          (roleMap ?? {}) as Readonly<Record<string, { readonly status?: unknown; readonly body?: unknown }>>,
+          packId,
+          activeManifestForWitness,
+          witnessSelection
+        ))
+    : undefined;
+  const fallbackWitnessPremises = witnessSelection
+    ? (nodeById.get(witnessSelection.relation)?.premises ?? []).map((premId) => {
+        const premNode = nodeById.get(premId);
+        return {
+          relation: premId,
+          keyJson: JSON.stringify([premId]),
+          proofRef: premNode?.proofRef ?? `${activeManifestForWitness}/${premId}`
+        };
+      })
+    : [];
+  const witnessProjection = witnessSelection
+    ? buildProofMapWitnessProjection({
+        manifestId: activeManifestForWitness,
+        selected: witnessSelection,
+        groundsAnswer: resolvedWitnessGrounds,
+        witnessIndex: options.witnessIndex,
+        fallbackPremises: fallbackWitnessPremises
+      })
+    : null;
+
+  const witnessByRel = new Map<string, ProofMapWitnessHighlightNode[]>();
+  const extraWitnessNodes: ProofMapWitnessHighlightNode[] = [];
+  if (witnessProjection) {
+    for (const wn of witnessProjection.highlightedNodes) {
+      const bucket = witnessByRel.get(wn.relation);
+      if (bucket) bucket.push(wn);
+      else witnessByRel.set(wn.relation, [wn]);
+      if (!nodeById.has(wn.relation)) {
+        extraWitnessNodes.push(wn);
+      }
+    }
+  }
+
   const svgWidth =
     maxDepth > 0
       ? derivedStartX + maxDepth * (CARD_W + COL_GAP_X) + 24
       : LANE_X + laneWidth + 24;
-  const svgHeight = maxBottomY + 24;
+  const svgHeight = maxBottomY + 24 + extraWitnessNodes.length * (CARD_H + CARD_GAP_Y);
 
   // 8. Emit deterministic SVG using exclusively frozen contracts/data-marks.json + standard ARIA
   const laneSvg = lanes
@@ -776,28 +840,83 @@ export function compileProofMapLayout(
     })
     .join('');
 
-  const nodeSvg = nodes
-    .map((n) => {
-      const base = renderProofMapNodeCardSvg({
-        key: n.key ?? n.id,
-        relation: n.relation ?? n.id,
-        label: n.qualifiedName,
-        sublabel: n.state === 'unknown' ? (n.reason ?? n.lane) : (n.display ?? n.lane),
-        sign: n.sign,
-        state: n.state,
-        proofRef: n.proofRef,
-        reason: n.reason,
-        completenessRef: n.completenessRef,
-        x: n.x,
-        y: n.y,
-        w: n.w,
-        h: n.h
-      });
-      if (!n.slots || n.slots.length === 0) return base;
+  const emittedWitnessIds = new Set<string>();
+  const nodeSvgParts: string[] = [];
+  for (const n of nodes) {
+    if (witnessProjection && !n.ghost) {
+      const matches = witnessByRel.get(n.relation ?? n.id);
+      if (matches && matches.length > 0) {
+        matches.forEach((wn, idx) => {
+          if (emittedWitnessIds.has(wn.id)) return;
+          emittedWitnessIds.add(wn.id);
+          const wy = idx === 0 ? n.y : maxBottomY + 12 + emittedWitnessIds.size * (CARD_H + CARD_GAP_Y);
+          const base = renderProofMapNodeCardSvg({
+            key: wn.keyJson,
+            relation: wn.relation,
+            label: n.qualifiedName,
+            sublabel: n.state === 'unknown' ? (n.reason ?? n.lane) : (n.display ?? wn.keyJson),
+            sign: n.sign,
+            state: n.state,
+            proofRef: wn.proofRef,
+            reason: n.reason,
+            completenessRef: n.completenessRef,
+            x: n.x,
+            y: wy,
+            w: n.w,
+            h: n.h
+          }).replace('<g ', '<g aria-selected="true" ');
+          const slotsMarkup = n.slots && n.slots.length > 0 ? renderCardSlotsSvg(n.x, wy, n.slots, wn.proofRef) : '';
+          nodeSvgParts.push(slotsMarkup && base.endsWith('</g>') ? `${base.slice(0, -4)}${slotsMarkup}</g>` : base);
+        });
+        continue;
+      }
+    }
+    const base = renderProofMapNodeCardSvg({
+      key: n.key ?? n.id,
+      relation: n.relation ?? n.id,
+      label: n.qualifiedName,
+      sublabel: n.state === 'unknown' ? (n.reason ?? n.lane) : (n.display ?? n.lane),
+      sign: n.sign,
+      state: n.state,
+      proofRef: n.proofRef,
+      reason: n.reason,
+      completenessRef: n.completenessRef,
+      x: n.x,
+      y: n.y,
+      w: n.w,
+      h: n.h
+    });
+    const annotated = witnessProjection
+      ? base.replace('<g ', '<g aria-selected="false" opacity="0.45" ')
+      : base;
+    if (!n.slots || n.slots.length === 0) {
+      nodeSvgParts.push(annotated);
+    } else {
       const slotsMarkup = renderCardSlotsSvg(n.x, n.y, n.slots, n.proofRef);
-      return base.endsWith('</g>') ? `${base.slice(0, -4)}${slotsMarkup}</g>` : base;
-    })
-    .join('');
+      nodeSvgParts.push(annotated.endsWith('</g>') ? `${annotated.slice(0, -4)}${slotsMarkup}</g>` : annotated);
+    }
+  }
+  extraWitnessNodes.forEach((wn, idx) => {
+    if (emittedWitnessIds.has(wn.id)) return;
+    emittedWitnessIds.add(wn.id);
+    const wy = maxBottomY + 12 + idx * (CARD_H + CARD_GAP_Y);
+    nodeSvgParts.push(
+      renderProofMapNodeCardSvg({
+        key: wn.keyJson,
+        relation: wn.relation,
+        label: wn.relation,
+        sublabel: wn.keyJson,
+        sign: 'origin_observation',
+        state: 'known',
+        proofRef: wn.proofRef,
+        x: LANE_X + LANE_PAD_X,
+        y: wy,
+        w: CARD_W,
+        h: CARD_H
+      }).replace('<g ', '<g aria-selected="true" ')
+    );
+  });
+  const nodeSvg = nodeSvgParts.join('');
 
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" data-projection="2d" role="img" aria-label="${escapeXml(packId)}">` +
@@ -883,6 +1002,9 @@ export function compileProofMapLayout(
     svg,
     ...(html !== undefined ? { html } : {}),
     ...(supposeView ? { suppose: supposeView } : {}),
+    ...(witnessProjection
+      ? { slipHtml: witnessProjection.slipHtml, activeWitnessIri: witnessProjection.activeWitnessIri }
+      : {}),
     scene
   });
 }

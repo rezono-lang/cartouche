@@ -19,6 +19,7 @@ export * from './key-page-model.ts';
 export * from './proof-map-model.ts';
 export * from './proof-map-cards.ts';
 export * from './proof-map-layout.ts';
+export * from './proof-map-witness.ts';
 export * from './proof-map-share.ts';
 export * from './proof-map-signs.ts';
 export * from './proof-map-time.ts';
