@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DATA_MARKS } from '../../reader-core/src/index.ts';
+  import { DATA_MARKS, SIGNS } from '../../reader-core/src/index.ts';
   import type { PaletteName } from '../../reader-core/src/index.ts';
   import { formatAtlasMessage } from './i18n-mf2.ts';
   import type { AtlasLocale } from './i18n-mf2.ts';
@@ -84,8 +84,7 @@
           validAt: shareState?.parsed.validAt ?? validAt,
           knownAt: shareState?.parsed.knownAt ?? knownAt,
           epoch: shareState?.parsed.epoch,
-          expansions: shareState?.parsed.expansions,
-          manifest
+          expansions: shareState?.parsed.expansions
         })
       : null
   );
@@ -187,7 +186,19 @@
           >
             <td class="mono">{node.depth}</td>
             <td>{node.lane}</td>
-            <td>{node.qualifiedName}</td>
+            <td>
+              <span>{node.qualifiedName}</span>
+              {#each node.slots ?? [] as slot, idx (slot.name + ':' + idx)}
+                {' · '}
+                {#if slot.state === 'unknown'}
+                  <span {...{ [M.sign]: 'unknown', [M.reason]: slot.reason ?? 'unknown' }}>
+                    {slot.name}: {SIGNS.unknown?.glyph ?? '▨'}
+                  </span>
+                {:else}
+                  <span>{slot.name}: {slot.display}</span>
+                {/if}
+              {/each}
+            </td>
             <td class="mono">{node.proofRef}</td>
           </tr>
         {/each}

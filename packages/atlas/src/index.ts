@@ -17,6 +17,7 @@ export * from './try-kits.ts';
 export * from './monge-model.ts';
 export * from './key-page-model.ts';
 export * from './proof-map-model.ts';
+export * from './proof-map-cards.ts';
 export * from './proof-map-layout.ts';
 export * from './proof-map-share.ts';
 export * from './proof-map-signs.ts';
